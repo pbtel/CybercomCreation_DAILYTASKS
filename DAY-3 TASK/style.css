@@ -1,0 +1,44 @@
+h1{
+    color: rgb(212, 90, 90);
+}
+.items{
+    color: rgb(19, 165, 170);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    text-decoration: wavy;
+    text-align: left;
+}
+.content , li h1 , #para1 , .text{
+    color: rgb(35, 23, 8);
+}
+
+a:link {
+  color: rgb(161, 150, 120);
+  text-decoration: underline;
+}
+
+a:visited {
+  color: rgb(196, 124, 136);
+  text-decoration: underline;
+}
+
+a:hover {
+  color: rgb(114, 207, 114);
+  text-decoration:double;
+}
+
+a:active {
+  color: rgb(236, 92, 15);
+  text-decoration: underline;
+}
+.navbar{
+    height: 20px;
+    width:100%;
+    color: white;
+    justify-content:space-between;
+    display: flex;
+    background-color:rgb(4, 16, 12) ;
+}
+ul li p{
+  font-size: 25px;
+  color: rgb(154, 52, 154);
+}
