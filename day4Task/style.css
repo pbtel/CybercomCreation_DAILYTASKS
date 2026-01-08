@@ -1,0 +1,90 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+    background: linear-gradient(120deg, #b594d9, #7154ab);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.employee-form {
+    background: #fefffb;
+    width: 700px;
+    padding: 30px;
+    border-radius: 16px;
+}
+
+.employee-form h2 {
+    text-align: center;
+    margin-bottom: 27px;
+    color: #333;
+}
+
+fieldset {
+    border: none;
+    margin-bottom: 20px;
+}
+
+legend {
+    font-weight: bold;
+    color: #754ec9;
+    margin-bottom: 10px;
+    text-decoration :underline;
+}
+
+label {
+    display: block;
+    margin-top: 12px;
+    font-weight: 500;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 10px;
+    margin-top: 6px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    outline: none;
+    transition: 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #50177e;
+    box-shadow: 0 0 8px rgba(232, 82, 255, 0.5);
+}
+
+.inline {
+    display: flex;
+    margin-top: 6px;
+}
+
+.button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    background: #2575fc;
+    color: white;
+}
+
+button:hover {
+    background: #1a5fd0;
+}
+
+.reset {
+    background: #aaa;
+}
+
+.reset:hover {
+    background: #888;
+}
+.aggrement{
+    width: auto ;
+    margin-top: 15px;
+}

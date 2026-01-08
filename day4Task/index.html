@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Employee Details Form</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<form class="employee-form" autocomplete="on">
+    <h2>Employee Registration Form</h2>
+
+    <fieldset>
+        <legend>Personal Information</legend>
+
+        <label for="name">Full Name</label>
+        <input type="text" placeholder="Enter full name" id="name" class="name" minlength="3">
+
+        <label for="email">Email</label>
+        <input type="email" placeholder="example@email.com" id="email" class="email" required>
+
+        <label for="password">Password</label>
+        <input type="password" placeholder="Create password" id="password" class="password" minlength="6">
+
+        <label for="contact">Phone Number</label>
+        <input type="tel" placeholder="10-digit mobile number" id="contact" name="contect" pattern="[0-9]{10}" required>
+
+        <label for="Date">Date of Birth</label>
+        <input type="date" id="Date" class="Date">
+
+        <label for="gender">Gender</label>
+        <div class="inline">
+            <input type="radio" id="Male" name="gender" required> Male
+            <input type="radio" id="Female" name="gender"> Female
+            <input type="radio" id="Other" name="gender"> Other
+        </div>
+    </fieldset>
+
+    <fieldset>
+        <legend>Job Details</legend>
+
+        <label for="iD">Employee ID</label>
+        <input type="text" value="EMP-001" id="iD" class="iD" readonly>
+
+        <label for="Department">Department</label>
+        <select id="dept" class="dept" required>
+            <option value="">--Select Department--</option>
+            <option value="hr">HR</option>
+            <option value="it">IT</option>
+            <option value="finance">Finance</option>
+            <option value="marketing">Marketing</option>
+        </select>
+
+        <label for="joinmonth">Joining Month</label>
+        <input type="month" id="joinmonth" class="joinmonth">
+
+        <label for="workhour">Working Hours</label>
+        <input type="time" id="workhour" class="workhour">
+    </fieldset>
+
+    <fieldset>
+        <legend>Additional Details</legend>
+
+        <label for="resume">Upload Resume</label>
+        <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" required>
+
+        <label for="url">Portfolio URL</label>
+        <input type="url" id="url" class="url" placeholder="https://example.com">
+
+        <label for="address">Address</label>
+        <textarea rows="4" id="address" class="address" placeholder= "Enter address"></textarea>
+
+        <label for="aggrement">I agree to the terms and conditions </label>
+        <input type="checkbox" id="aggrement" class="aggrement">
+
+    </fieldset>
+
+    <button type="submit" class="button">Submit Details</button>
+    <button type="reset" class="reset">Reset</button>
+</form>
+
+</body>
+</html>
