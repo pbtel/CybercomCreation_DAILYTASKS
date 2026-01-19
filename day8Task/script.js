@@ -21,9 +21,7 @@ function multiplier(factor) {
 }
 
 function calculateSum(arr) {
-    let sum = 0;
-    for (let n of arr) sum += n;
-    return sum;
+   return arr.reduce((sum,n)=> sum+n)
 }
 
 function showGreet() {
