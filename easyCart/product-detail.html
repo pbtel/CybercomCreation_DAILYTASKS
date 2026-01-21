@@ -1,265 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Smartphone X - Product Details - EasyCart</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f5f5f5;
-        }
-
-        header {
-            background-color: #2c3e50;
-            color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        header h1 {
-            margin-bottom: 0.5rem;
-        }
-
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-right: 1.5rem;
-            font-weight: 500;
-        }
-
-        nav a:hover {
-            color: #3498db;
-        }
-
-        nav:first-of-type {
-            background-color: white;
-            padding: 1rem 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        nav:first-of-type a {
-            color: #3498db;
-        }
-
-        section {
-            padding: 2rem;
-            max-width: 100%;
-            margin: 0 auto;
-            background-color: white;
-            margin-top: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-
-        section > div {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 3rem;
-        }
-
-        h1 {
-            font-size: 2rem;
-            margin-bottom: 1rem;
-            color: #2c3e50;
-        }
-
-        h2 {
-            font-size: 1.5rem;
-            margin: 1.5rem 0 1rem 0;
-            color: #2c3e50;
-            border-bottom: 2px solid #3498db;
-            padding-bottom: 0.5rem;
-        }
-
-        h3 {
-            font-size: 1.2rem;
-            margin: 1rem 0 0.5rem 0;
-            color: #2c3e50;
-        }
-
-        img {
-            width: 100%;
-            border-radius: 8px;
-            background-color: #f0f0f0;
-            margin-bottom: 1rem;
-        }
-
-        .image-gallery {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
-        }
-
-        .image-gallery img {
-            width: 23%;
-            height: 80px;
-            object-fit: cover;
-            cursor: pointer;
-            border: 2px solid #ddd;
-        }
-
-        .image-gallery img:hover {
-            border-color: #3498db;
-        }
-
-        p {
-            margin-bottom: 0.8rem;
-        }
-
-        del {
-            color: #999;
-        }
-
-        strong {
-            color: #2c3e50;
-        }
-
-        ul {
-            margin-left: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        ul li {
-            margin-bottom: 0.5rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 1.5rem;
-        }
-
-        table td {
-            padding: 0.8rem;
-            border: 1px solid #ddd;
-        }
-
-        table td:first-child {
-            background-color: #f8f9fa;
-            font-weight: bold;
-            width: 30%;
-        }
-
-        input[type="number"] {
-            width: 80px;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            margin-left: 1rem;
-        }
-
-        button {
-            padding: 0.8rem 2rem;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-right: 1rem;
-            margin-top: 1rem;
-        }
-
-        button:hover {
-            background-color: #c0392b;
-        }
-
-        button:last-of-type {
-            background-color: #27ae60;
-        }
-
-        button:last-of-type:hover {
-            background-color: #229954;
-        }
-
-        article {
-            background: #f8f9fa;
-            padding: 1rem;
-            border-radius: 5px;
-            margin-bottom: 1rem;
-            border-left: 4px solid #3498db;
-        }
-
-        .related-products {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 1.5rem;
-        }
-
-        .related-products article {
-            background: white;
-            border: 1px solid #ddd;
-            padding: 1rem;
-            text-align: center;
-            border-left: none;
-            border-radius: 8px;
-        }
-
-        .related-products article:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
-        }
-
-        .related-products img {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-        }
-
-        .related-products p {
-            color: #e74c3c;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .related-products a {
-            display: inline-block;
-            padding: 0.5rem 1rem;
-            background-color: #3498db;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            margin-top: 0.5rem;
-        }
-
-        footer {
-            background-color: #2c3e50;
-            color: white;
-            text-align: center;
-            padding: 2rem;
-            margin-top: 3rem;
-        }
-
-        footer nav {
-            margin-top: 1rem;
-        }
-
-        footer nav a {
-            color: white;
-            text-decoration: none;
-            margin: 0 1rem;
-        }
-
-        footer nav a:hover {
-            color: #3498db;
-        }
-
-        .price-section p:first-child {
-            color: #e74c3c;
-            font-size: 2rem;
-            font-weight: bold;
-        }
-    </style>
+    <link href="style.css" rel="stylesheet">
 </head>
+
 <body>
     <!-- Header -->
     <header>
@@ -274,15 +22,15 @@
     </header>
 
     <!-- Breadcrumb Navigation -->
-    <nav>
-        <a href="index.html">Home</a> &gt; 
-        <a href="products.html">Products</a> &gt; 
+    <nav style="background-color: white; padding: 1rem 2rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <a href="index.html" style="color: #3498db;">Home</a> &gt;
+        <a href="products.html" style="color: #3498db;">Products</a> &gt;
         <span>Smartphone X</span>
     </nav>
 
     <!-- Product Detail Section -->
     <section>
-        <div>
+        <div class="product-detail-container">
             <!-- Product Images Section -->
             <div>
                 <h2>Product Images</h2>
@@ -298,12 +46,12 @@
             <!-- Product Information Section -->
             <div>
                 <h1>Smartphone X</h1>
-                
+
                 <!-- Price -->
                 <div class="price-section">
-                    <p>$699.99</p>
-                    <p><del>Original Price: $899.99</del></p>
-                    <p style="color: #27ae60;">You Save: $200.00 (22% off)</p>
+                    <p style="color: #e74c3c; font-size: 2rem; font-weight: bold;">₹699.99</p>
+                    <p><del>Original Price: ₹899.99</del></p>
+                    <p style="color: #27ae60;">You Save: ₹200.00 (22% off)</p>
                 </div>
 
                 <!-- Availability -->
@@ -313,13 +61,17 @@
 
                 <!-- Product Description -->
                 <h2>Product Description</h2>
-                <p>Experience the latest in smartphone technology with the Smartphone X. This cutting-edge device features a stunning 6.5-inch OLED display, powerful octa-core processor, and an advanced triple-camera system that captures professional-quality photos and videos.</p>
-                
-                <p>The Smartphone X is designed with premium materials including aerospace-grade aluminum and Corning Gorilla Glass, making it both beautiful and durable. With 5G connectivity, you'll enjoy lightning-fast downloads and seamless streaming.</p>
+                <p>Experience the latest in smartphone technology with the Smartphone X. This cutting-edge device
+                    features a stunning 6.5-inch OLED display, powerful octa-core processor, and an advanced
+                    triple-camera system that captures professional-quality photos and videos.</p>
+
+                <p>The Smartphone X is designed with premium materials including aerospace-grade aluminum and Corning
+                    Gorilla Glass, making it both beautiful and durable. With 5G connectivity, you'll enjoy
+                    lightning-fast downloads and seamless streaming.</p>
 
                 <!-- Key Features -->
                 <h3>Key Features:</h3>
-                <ul>
+                <ul style="margin-left: 1.5rem; margin-bottom: 1rem; list-style-type: disc;">
                     <li>6.5-inch Super OLED Display with 120Hz refresh rate</li>
                     <li>Triple Camera System: 48MP main + 12MP ultra-wide + 8MP telephoto</li>
                     <li>Octa-core Processor with 8GB RAM</li>
@@ -333,13 +85,13 @@
                 <!-- Quantity Selection -->
                 <div>
                     <label for="quantity"><strong>Quantity:</strong></label>
-                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="10">
+                    <input type="number" id="quantity" name="quantity" value="1" min="1" max="10" class="qty-input">
                 </div>
 
                 <!-- Add to Cart Button -->
-                <div>
-                    <button type="button">Add to Cart</button>
-                    <button type="button">Buy Now</button>
+                <div style="margin-top: 1rem;">
+                    <button type="button" class="btn-danger">Add to Cart</button>
+                    <button type="button" class="btn-success">Buy Now</button>
                 </div>
             </div>
         </div>
@@ -348,7 +100,7 @@
     <!-- Specifications -->
     <section>
         <h2>Specifications</h2>
-        <table>
+        <table class="specs-table">
             <tr>
                 <td><strong>Display</strong></td>
                 <td>6.5" OLED, 2400 x 1080 pixels</td>
@@ -388,56 +140,58 @@
     <section>
         <h2>Customer Reviews</h2>
         <p><strong>Average Rating: 4.5/5</strong> (Based on 245 reviews)</p>
-        
-        <article>
+
+        <article class="card">
             <h3>Excellent Phone!</h3>
             <p><strong>Rating: 5/5</strong></p>
             <p><strong>By:</strong> John Smith | <strong>Date:</strong> December 15, 2024</p>
-            <p>This phone exceeded my expectations. The camera quality is amazing and the battery lasts all day. Highly recommended!</p>
+            <p>This phone exceeded my expectations. The camera quality is amazing and the battery lasts all day. Highly
+                recommended!</p>
         </article>
 
-        <article>
+        <article class="card">
             <h3>Great Value for Money</h3>
             <p><strong>Rating: 4/5</strong></p>
             <p><strong>By:</strong> Sarah Johnson | <strong>Date:</strong> December 10, 2024</p>
             <p>Really happy with this purchase. The display is gorgeous and performance is smooth.</p>
         </article>
 
-        <article>
+        <article class="card">
             <h3>Best Phone I've Owned</h3>
             <p><strong>Rating: 5/5</strong></p>
             <p><strong>By:</strong> Mike Chen | <strong>Date:</strong> December 5, 2024</p>
-            <p>Upgraded from my old phone and the difference is night and day. Fast, beautiful, and takes stunning photos.</p>
+            <p>Upgraded from my old phone and the difference is night and day. Fast, beautiful, and takes stunning
+                photos.</p>
         </article>
     </section>
 
     <!-- Related Products Section -->
     <section>
         <h2>Related Products</h2>
-        <div class="related-products">
-            <article>
+        <div class="grid-container">
+            <article class="product-card">
                 <img src="placeholder-case.jpg" alt="Phone Case">
                 <h3>Phone Case</h3>
-                <p>$24.99</p>
-                <a href="product-detail.html?id=14">View Details</a>
+                <p class="price">₹24.99</p>
+                <a href="product-detail.html?id=14" class="btn-view">View Details</a>
             </article>
-            <article>
+            <article class="product-card">
                 <img src="placeholder-charger.jpg" alt="Fast Charger">
                 <h3>Fast Charger</h3>
-                <p>$39.99</p>
-                <a href="product-detail.html?id=12">View Details</a>
+                <p class="price">₹39.99</p>
+                <a href="product-detail.html?id=12" class="btn-view">View Details</a>
             </article>
-            <article>
+            <article class="product-card">
                 <img src="placeholder-earbuds.jpg" alt="Wireless Earbuds">
                 <h3>Wireless Earbuds</h3>
-                <p>$89.99</p>
-                <a href="product-detail.html?id=11">View Details</a>
+                <p class="price">₹89.99</p>
+                <a href="product-detail.html?id=11" class="btn-view">View Details</a>
             </article>
-            <article>
+            <article class="product-card">
                 <img src="placeholder-powerbank.jpg" alt="Power Bank">
                 <h3>Power Bank</h3>
-                <p>$59.99</p>
-                <a href="product-detail.html?id=13">View Details</a>
+                <p class="price">₹59.99</p>
+                <a href="product-detail.html?id=13" class="btn-view">View Details</a>
             </article>
         </div>
     </section>
@@ -453,4 +207,5 @@
         </nav>
     </footer>
 </body>
+
 </html>
