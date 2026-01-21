@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - EasyCart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin-bottom: 0.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: #3498db;
+        }
+
+        section {
+            max-width: 700px;
+            margin: 3rem auto;
+            padding: 2rem;
+        }
+
+        section > div {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            text-align: center;
+        }
+
+        section > div > p {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 2rem;
+        }
+
+        fieldset {
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        legend {
+            font-weight: bold;
+            color: #2c3e50;
+            padding: 0 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        label {
+            display: block;
+            margin-top: 1rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="password"],
+        input[type="date"],
+        select {
+            width: 100%;
+            padding: 0.7rem;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            margin-top: 0.3rem;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        small {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 0.9rem;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 0.5rem;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #229954;
+        }
+
+        button[type="reset"] {
+            background-color: #95a5a6;
+            margin-top: 0.5rem;
+        }
+
+        button[type="reset"]:hover {
+            background-color: #7f8c8d;
+        }
+
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .social-signup {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .social-signup h3 {
+            margin-bottom: 1rem;
+            color: #7f8c8d;
+            font-size: 1rem;
+        }
+
+        .social-signup button {
+            background-color: white;
+            color: #333;
+            border: 2px solid #ddd;
+            margin-bottom: 0.8rem;
+        }
+
+        .social-signup button:hover {
+            background-color: #f8f9fa;
+            border-color: #3498db;
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #ddd;
+        }
+
+        .benefits {
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 2rem;
+        }
+
+        .benefits h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .benefits ul {
+            margin-left: 1.5rem;
+        }
+
+        .benefits li {
+            margin-bottom: 0.5rem;
+            color: #555;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        footer nav {
+            margin-top: 1rem;
+        }
+
+        footer nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        footer nav a:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>EasyCart</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="cart.html">Cart</a>
+            <a href="orders.html">My Orders</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <!-- Sign Up Section -->
+    <section>
+        <div>
+            <h2>Create Your Account</h2>
+            <p>Join EasyCart today and start shopping!</p>
+
+            <!-- Sign Up Form -->
+            <form>
+                <fieldset>
+                    <legend>Personal Information</legend>
+
+                    <label for="firstname">First Name:</label>
+                    <input type="text" id="firstname" name="firstname" placeholder="John" required>
+
+                    <label for="lastname">Last Name:</label>
+                    <input type="text" id="lastname" name="lastname" placeholder="Doe" required>
+
+                    <label for="email">Email Address:</label>
+                    <input type="email" id="email" name="email" placeholder="john.doe@example.com" required>
+
+                    <label for="phone">Phone Number:</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+1 234 567 8900" required>
+
+                    <label for="dob">Date of Birth:</label>
+                    <input type="date" id="dob" name="dob" required>
+
+                    <label for="gender">Gender:</label>
+                    <select id="gender" name="gender" required>
+                        <option value="">Select Gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                        <option value="prefer-not">Prefer not to say</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Account Security</legend>
+
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" placeholder="Minimum 8 characters" required>
+                    <small>Password must contain at least 8 characters, including uppercase, lowercase, and numbers</small>
+
+                    <label for="confirm-password">Confirm Password:</label>
+                    <input type="password" id="confirm-password" name="confirm-password" placeholder="Re-enter password" required>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Address Information (Optional)</legend>
+
+                    <label for="address">Street Address:</label>
+                    <input type="text" id="address" name="address" placeholder="123 Main Street">
+
+                    <label for="city">City:</label>
+                    <input type="text" id="city" name="city" placeholder="New York">
+
+                    <label for="state">State/Province:</label>
+                    <input type="text" id="state" name="state" placeholder="NY">
+
+                    <label for="zipcode">ZIP/Postal Code:</label>
+                    <input type="text" id="zipcode" name="zipcode" placeholder="10001">
+
+                    <label for="country">Country:</label>
+                    <select id="country" name="country">
+                        <option value="">Select Country</option>
+                        <option value="us">United States</option>
+                        <option value="ca">Canada</option>
+                        <option value="uk">United Kingdom</option>
+                        <option value="au">Australia</option>
+                        <option value="in">India</option>
+                    </select>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Preferences</legend>
+
+                    <div>
+                        <input type="checkbox" id="newsletter" name="newsletter">
+                        <label for="newsletter" style="display: inline; font-weight: normal;">Subscribe to our newsletter for exclusive deals</label>
+                    </div>
+
+                    <div>
+                        <input type="checkbox" id="sms" name="sms">
+                        <label for="sms" style="display: inline; font-weight: normal;">Receive order updates via SMS</label>
+                    </div>
+
+                    <div>
+                        <input type="checkbox" id="terms" name="terms" required>
+                        <label for="terms" style="display: inline; font-weight: normal;">I agree to the <a href="#">Terms and Conditions</a> and <a href="#">Privacy Policy</a></label>
+                    </div>
+
+                    <div>
+                        <input type="checkbox" id="age" name="age" required>
+                        <label for="age" style="display: inline; font-weight: normal;">I confirm that I am at least 18 years old</label>
+                    </div>
+                </fieldset>
+
+                <button type="submit">Create Account</button>
+                <button type="reset">Clear Form</button>
+            </form>
+
+            <!-- Social Sign Up -->
+            <div class="social-signup">
+                <h3>Or Sign Up With</h3>
+                <button type="button">🔍 Sign Up with Google</button>
+                <button type="button">📘 Sign Up with Facebook</button>
+                <button type="button">🍎 Sign Up with Apple</button>
+            </div>
+
+            <!-- Login Link -->
+            <div class="login-link">
+                <p>Already have an account? <a href="login.html"><strong>Login Here</strong></a></p>
+            </div>
+
+            <!-- Account Benefits -->
+            <div class="benefits">
+                <h3>Member Benefits</h3>
+                <ul>
+                    <li>🎁 Welcome bonus: $10 off your first order</li>
+                    <li>📦 Free shipping on orders over $50</li>
+                    <li>⭐ Earn reward points on every purchase</li>
+                    <li>🔔 Early access to sales and new products</li>
+                    <li>💳 Save multiple payment methods</li>
+                    <li>❤️ Create and manage wishlists</li>
+                    <li>📱 Track orders in real-time</li>
+                    <li>🎂 Birthday special offers</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 EasyCart. All rights reserved.</p>
+        <nav>
+            <a href="#">About Us</a>
+            <a href="#">Contact</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+        </nav>
+    </footer>
+</body>
+</html>

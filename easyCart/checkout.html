@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - EasyCart</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin-bottom: 0.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 500;
+        }
+
+        nav a:hover {
+            color: #3498db;
+        }
+
+        section {
+            padding: 2rem;
+            max-width: 100px;
+            margin: 0 auto;
+        }
+
+        section:first-of-type {
+            background-color: white;
+            text-align: center;
+            margin-top: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        section:nth-of-type(2) {
+            background-color: #e8f4f8;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+            border-radius: 5px;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+            background-color: #3498db;
+            color: white;
+            padding: 0.8rem;
+            border-radius: 5px;
+        }
+
+        h4 {
+            font-size: 1.1rem;
+            margin: 1rem 0 0.5rem 0;
+            color: #2c3e50;
+        }
+
+        section > div {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        fieldset {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        legend {
+            font-weight: bold;
+            color: #2c3e50;
+            padding: 0 0.5rem;
+        }
+
+        label {
+            display: inline-block;
+            margin-top: 0.5rem;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.6rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 0.3rem;
+            font-size: 1rem;
+        }
+
+        input[type="radio"],
+        input[type="checkbox"] {
+            margin-right: 0.5rem;
+        }
+
+        button[type="submit"] {
+            width: 100%;
+            padding: 1rem;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #229954;
+        }
+
+        .summary-box {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+
+        table td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        table img {
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+
+        .price-table td:first-child {
+            text-align: left;
+        }
+
+        .price-table td:last-child {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        .total-row {
+            font-size: 1.2rem;
+            background-color: #f8f9fa;
+        }
+
+        .total-row td {
+            padding: 1rem 0.8rem;
+            color: #e74c3c;
+        }
+
+        .security-notice {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .delivery-info {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .return-policy {
+            background-color: #f8f9fa;
+            padding: 0.8rem;
+            border-radius: 5px;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        footer nav {
+            margin-top: 1rem;
+        }
+
+        footer nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        footer nav a:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <h1>EasyCart</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="products.html">Products</a>
+            <a href="cart.html">Cart</a>
+            <a href="orders.html">My Orders</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <!-- Page Title -->
+    <section>
+        <h2>Checkout</h2>
+        <p>Complete your purchase</p>
+    </section>
+
+    <!-- Checkout Progress -->
+    <section>
+        <div>
+            <span><strong>1. Shipping Information</strong></span> → 
+            <span>2. Payment Method</span> → 
+            <span>3. Order Review</span>
+        </div>
+    </section>
+
+    <!-- Checkout Form -->
+    <section>
+        <div>
+            <!-- Left Column: Shipping & Payment -->
+            <div>
+                <form>
+                    <fieldset>
+                        <legend><h3>Shipping Information</h3></legend>
+                        
+                        <label for="fullname">Full Name:</label><br>
+                        <input type="text" id="fullname" name="fullname" placeholder="John Doe" required><br><br>
+
+                        <label for="email">Email Address:</label><br>
+                        <input type="email" id="email" name="email" placeholder="john@example.com" required><br><br>
+
+                        <label for="phone">Phone Number:</label><br>
+                        <input type="tel" id="phone" name="phone" placeholder="+1 234 567 8900" required><br><br>
+
+                        <label for="address">Street Address:</label><br>
+                        <input type="text" id="address" name="address" placeholder="123 Main Street" required><br><br>
+
+                        <label for="apartment">Apartment, Suite, etc. (Optional):</label><br>
+                        <input type="text" id="apartment" name="apartment" placeholder="Apt 4B"><br><br>
+
+                        <label for="city">City:</label><br>
+                        <input type="text" id="city" name="city" placeholder="New York" required><br><br>
+
+                        <label for="state">State/Province:</label><br>
+                        <input type="text" id="state" name="state" placeholder="NY" required><br><br>
+
+                        <label for="zipcode">ZIP/Postal Code:</label><br>
+                        <input type="text" id="zipcode" name="zipcode" placeholder="10001" required><br><br>
+
+                        <label for="country">Country:</label><br>
+                        <select id="country" name="country" required>
+                            <option value="">Select Country</option>
+                            <option value="us">United States</option>
+                            <option value="ca">Canada</option>
+                            <option value="uk">United Kingdom</option>
+                            <option value="au">Australia</option>
+                            <option value="in">India</option>
+                        </select>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend><h3>Shipping Options</h3></legend>
+                        
+                        <input type="radio" id="standard" name="shipping" value="standard" checked>
+                        <label for="standard">
+                            <strong>Standard Shipping</strong> - 5-7 Business Days - <strong>$15.00</strong>
+                        </label><br><br>
+
+                        <input type="radio" id="express" name="shipping" value="express">
+                        <label for="express">
+                            <strong>Express Shipping</strong> - 2-3 Business Days - <strong>$35.00</strong>
+                        </label><br><br>
+
+                        <input type="radio" id="overnight" name="shipping" value="overnight">
+                        <label for="overnight">
+                            <strong>Overnight Shipping</strong> - Next Business Day - <strong>$65.00</strong>
+                        </label><br><br>
+
+                        <input type="radio" id="pickup" name="shipping" value="pickup">
+                        <label for="pickup">
+                            <strong>Store Pickup</strong> - Available in 2-4 Hours - <strong>FREE</strong>
+                        </label>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend><h3>Payment Method</h3></legend>
+                        
+                        <input type="radio" id="credit" name="payment" value="credit" checked>
+                        <label for="credit"><strong>Credit Card</strong></label><br><br>
+
+                        <input type="radio" id="debit" name="payment" value="debit">
+                        <label for="debit"><strong>Debit Card</strong></label><br><br>
+
+                        <input type="radio" id="paypal" name="payment" value="paypal">
+                        <label for="paypal"><strong>PayPal</strong></label><br><br>
+
+                        <input type="radio" id="cod" name="payment" value="cod">
+                        <label for="cod"><strong>Cash on Delivery</strong></label>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend><h3>Card Details</h3></legend>
+                        
+                        <label for="cardname">Name on Card:</label><br>
+                        <input type="text" id="cardname" name="cardname" placeholder="John Doe"><br><br>
+
+                        <label for="cardnumber">Card Number:</label><br>
+                        <input type="text" id="cardnumber" name="cardnumber" placeholder="1234 5678 9012 3456"><br><br>
+
+                        <label for="expiry">Expiry Date (MM/YY):</label><br>
+                        <input type="text" id="expiry" name="expiry" placeholder="12/25"><br><br>
+
+                        <label for="cvv">CVV:</label><br>
+                        <input type="text" id="cvv" name="cvv" placeholder="123">
+                    </fieldset>
+
+                    <fieldset>
+                        <legend><h3>Additional Notes</h3></legend>
+                        
+                        <label for="notes">Order Notes (Optional):</label><br>
+                        <textarea id="notes" name="notes" rows="4" placeholder="Any special instructions for delivery..."></textarea>
+                    </fieldset>
+                </form>
+            </div>
+
+            <!-- Right Column: Order Summary -->
+            <div class="summary-box">
+                <h3>Order Summary</h3>
+                
+                <h4>Items (4):</h4>
+                <table>
+                    <tr>
+                        <td><img src="placeholder-phone.jpg" alt="Smartphone X" width="50" height="50"></td>
+                        <td><strong>Smartphone X</strong><br>Qty: 1</td>
+                        <td align="right">$699.99</td>
+                    </tr>
+                    <tr>
+                        <td><img src="placeholder-headphones.jpg" alt="Wireless Headphones" width="50" height="50"></td>
+                        <td><strong>Wireless Headphones</strong><br>Qty: 2</td>
+                        <td align="right">$399.98</td>
+                    </tr>
+                    <tr>
+                        <td><img src="placeholder-earbuds.jpg" alt="Wireless Earbuds" width="50" height="50"></td>
+                        <td><strong>Wireless Earbuds</strong><br>Qty: 1</td>
+                        <td align="right">$89.99</td>
+                    </tr>
+                    <tr>
+                        <td><img src="placeholder-case.jpg" alt="Phone Case" width="50" height="50"></td>
+                        <td><strong>Phone Case</strong><br>Qty: 3</td>
+                        <td align="right">$74.97</td>
+                    </tr>
+                </table>
+
+                <h4>Price Details:</h4>
+                <table class="price-table">
+                    <tr>
+                        <td>Subtotal:</td>
+                        <td>$1,264.93</td>
+                    </tr>
+                    <tr>
+                        <td>Shipping:</td>
+                        <td>$15.00</td>
+                    </tr>
+                    <tr>
+                        <td>Tax (10%):</td>
+                        <td>$126.49</td>
+                    </tr>
+                    <tr>
+                        <td>Discount:</td>
+                        <td style="color: #27ae60;">-$50.00</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td>Total:</td>
+                        <td>$1,356.42</td>
+                    </tr>
+                </table>
+
+                <div class="delivery-info">
+                    <h4>Estimated Delivery:</h4>
+                    <p><strong>Dec 28, 2024 - Jan 2, 2025</strong></p>
+                </div>
+
+                <input type="checkbox" id="terms" name="terms" required>
+                <label for="terms">I agree to the <a href="#">Terms and Conditions</a></label><br><br>
+
+                <button type="submit">Place Order</button>
+
+                <div class="security-notice">
+                    🔒 Secure Checkout - 256-bit SSL encryption
+                </div>
+
+                <div class="return-policy">
+                    <h4>Return Policy:</h4>
+                    <p>30-day money-back guarantee</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 EasyCart. All rights reserved.</p>
+        <nav>
+            <a href="#">About Us</a>
+            <a href="#">Contact</a>
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+        </nav>
+    </footer>
+</body>
+</html>
