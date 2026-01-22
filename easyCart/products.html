@@ -1,13 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Products - EasyCart</title>
-    <link href="style.css" rel="stylesheet">
-</head>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            margin-bottom: 0.5rem;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-right: 1.5rem;
+            font-weight: 500;
+        }
+        nav a:active {
+            text-decoration:dotted;
+        }
+        
+        nav a:hover {
+            color: #3498db;
+        }
+
+        section {
+            padding: 2rem;
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        section:first-of-type {
+            background-color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+
+        section > div {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        article {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        article:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        article img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            background-color: #f0f0f0;
+        }
+
+        article h3 {
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-size: 1.1rem;
+        }
+
+        article p {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+        }
+
+        article a {
+            display: inline-block;
+            padding: 0.6rem 1.5rem;
+            background-color: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        article a:hover {
+            background-color: #2980b9;
+        }
+
+        footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        footer nav {
+            margin-top: 1rem;
+        }
+
+        footer nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 1rem;
+        }
+
+        footer nav a:hover {
+            color: #3498db;
+        }
+    </style>
+</head>
 <body>
     <!-- Header -->
     <header>
@@ -22,140 +156,140 @@
     </header>
 
     <!-- Page Title -->
-    <section class="page-title">
+    <section>
         <h2>All Products</h2>
         <p>Browse our complete collection of products</p>
     </section>
 
     <!-- Product Listing Grid -->
     <section>
-        <div class="grid-container">
+        <div>
             <!-- Product 1 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-phone.jpg" alt="Smartphone X">
                 <h3>Smartphone X</h3>
-                <p class="price">₹699.99</p>
-                <a href="product-detail.html?id=1" class="btn-view">View Details</a>
+                <p>$699.99</p>
+                <a href="product-detail.html?id=1">View Details</a>
             </article>
 
             <!-- Product 2 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-laptop.jpg" alt="Laptop Pro">
                 <h3>Laptop Pro</h3>
-                <p class="price">₹1299.99</p>
-                <a href="product-detail.html?id=2" class="btn-view">View Details</a>
+                <p>$1299.99</p>
+                <a href="product-detail.html?id=2">View Details</a>
             </article>
 
             <!-- Product 3 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-headphones.jpg" alt="Wireless Headphones">
                 <h3>Wireless Headphones</h3>
-                <p class="price">₹199.99</p>
-                <a href="product-detail.html?id=3" class="btn-view">View Details</a>
+                <p>$199.99</p>
+                <a href="product-detail.html?id=3">View Details</a>
             </article>
 
             <!-- Product 4 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-watch.jpg" alt="Smart Watch">
                 <h3>Smart Watch</h3>
-                <p class="price">₹349.99</p>
-                <a href="product-detail.html?id=4" class="btn-view">View Details</a>
+                <p>$349.99</p>
+                <a href="product-detail.html?id=4">View Details</a>
             </article>
 
             <!-- Product 5 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-tablet.jpg" alt="Tablet Air">
                 <h3>Tablet Air</h3>
-                <p class="price">₹549.99</p>
-                <a href="product-detail.html?id=5" class="btn-view">View Details</a>
+                <p>$549.99</p>
+                <a href="product-detail.html?id=5">View Details</a>
             </article>
 
             <!-- Product 6 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-camera.jpg" alt="Digital Camera">
                 <h3>Digital Camera</h3>
-                <p class="price">₹899.99</p>
-                <a href="product-detail.html?id=6" class="btn-view">View Details</a>
+                <p>$899.99</p>
+                <a href="product-detail.html?id=6">View Details</a>
             </article>
 
             <!-- Product 7 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-speaker.jpg" alt="Bluetooth Speaker">
                 <h3>Bluetooth Speaker</h3>
-                <p class="price">₹129.99</p>
-                <a href="product-detail.html?id=7" class="btn-view">View Details</a>
+                <p>$129.99</p>
+                <a href="product-detail.html?id=7">View Details</a>
             </article>
 
             <!-- Product 8 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-keyboard.jpg" alt="Mechanical Keyboard">
                 <h3>Mechanical Keyboard</h3>
-                <p class="price">₹159.99</p>
-                <a href="product-detail.html?id=8" class="btn-view">View Details</a>
+                <p>$159.99</p>
+                <a href="product-detail.html?id=8">View Details</a>
             </article>
 
             <!-- Product 9 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-mouse.jpg" alt="Wireless Mouse">
                 <h3>Wireless Mouse</h3>
-                <p class="price">₹49.99</p>
-                <a href="product-detail.html?id=9" class="btn-view">View Details</a>
+                <p>$49.99</p>
+                <a href="product-detail.html?id=9">View Details</a>
             </article>
 
             <!-- Product 10 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-monitor.jpg" alt="4K Monitor">
                 <h3>4K Monitor</h3>
-                <p class="price">₹449.99</p>
-                <a href="product-detail.html?id=10" class="btn-view">View Details</a>
+                <p>$449.99</p>
+                <a href="product-detail.html?id=10">View Details</a>
             </article>
 
             <!-- Product 11 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-earbuds.jpg" alt="Wireless Earbuds">
                 <h3>Wireless Earbuds</h3>
-                <p class="price">₹89.99</p>
-                <a href="product-detail.html?id=11" class="btn-view">View Details</a>
+                <p>$89.99</p>
+                <a href="product-detail.html?id=11">View Details</a>
             </article>
 
             <!-- Product 12 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-charger.jpg" alt="Fast Charger">
                 <h3>Fast Charger</h3>
-                <p class="price">₹39.99</p>
-                <a href="product-detail.html?id=12" class="btn-view">View Details</a>
+                <p>$39.99</p>
+                <a href="product-detail.html?id=12">View Details</a>
             </article>
 
             <!-- Product 13 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-powerbank.jpg" alt="Power Bank">
                 <h3>Power Bank</h3>
-                <p class="price">₹59.99</p>
-                <a href="product-detail.html?id=13" class="btn-view">View Details</a>
+                <p>$59.99</p>
+                <a href="product-detail.html?id=13">View Details</a>
             </article>
 
             <!-- Product 14 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-case.jpg" alt="Phone Case">
                 <h3>Phone Case</h3>
-                <p class="price">₹24.99</p>
-                <a href="product-detail.html?id=14" class="btn-view">View Details</a>
+                <p>$24.99</p>
+                <a href="product-detail.html?id=14">View Details</a>
             </article>
 
             <!-- Product 15 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-stand.jpg" alt="Laptop Stand">
                 <h3>Laptop Stand</h3>
-                <p class="price">₹79.99</p>
-                <a href="product-detail.html?id=15" class="btn-view">View Details</a>
+                <p>$79.99</p>
+                <a href="product-detail.html?id=15">View Details</a>
             </article>
 
             <!-- Product 16 -->
-            <article class="product-card">
+            <article>
                 <img src="placeholder-webcam.jpg" alt="HD Webcam">
                 <h3>HD Webcam</h3>
-                <p class="price">₹119.99</p>
-                <a href="product-detail.html?id=16" class="btn-view">View Details</a>
+                <p>$119.99</p>
+                <a href="product-detail.html?id=16">View Details</a>
             </article>
 
             <!-- Product 17 -->
@@ -331,5 +465,4 @@
         </nav>
     </footer>
 </body>
-
 </html>
