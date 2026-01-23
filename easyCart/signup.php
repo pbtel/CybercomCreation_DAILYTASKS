@@ -12,7 +12,7 @@ require_once 'includes/header.php';
                 Join EasyCart today and start shopping!
             </p>
 
-            <form action="signup-process.php" method="POST">
+            <form action="signup-process.php<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>" method="POST">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
                     <div>
                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">First Name *</label>

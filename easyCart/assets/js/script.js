@@ -4,13 +4,58 @@
  */
 
 // ============================================
+// 0. DARK THEME TOGGLE
+// ============================================
+function initThemeToggle() {
+    const themeToggle = document.getElementById('themeToggle');
+    const themeIcon = document.querySelector('.theme-icon');
+    const html = document.documentElement;
+
+    // Check for saved theme preference or default to light mode
+    const currentTheme = localStorage.getItem('theme') || 'light';
+
+    // Apply saved theme
+    html.setAttribute('data-theme', currentTheme);
+    updateThemeIcon(currentTheme);
+
+    // Toggle theme on button click
+    if (themeToggle) {
+        themeToggle.addEventListener('click', function () {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            // Add rotation animation
+            this.classList.add('rotating');
+
+            // Change theme after a short delay for smooth transition
+            setTimeout(() => {
+                html.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                updateThemeIcon(newTheme);
+
+                // Remove rotation class after animation
+                setTimeout(() => {
+                    this.classList.remove('rotating');
+                }, 500);
+            }, 100);
+        });
+    }
+
+    function updateThemeIcon(theme) {
+        if (themeIcon) {
+            themeIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+        }
+    }
+}
+
+// ============================================
 // 1. LOGIN FORM VALIDATION
 // ============================================
 function validateLoginForm(event) {
     const form = event.target;
     const email = form.querySelector('input[name="email"]');
     const password = form.querySelector('input[name="password"]');
-    
+
     // Reset errors
     clearFormErrors(form);
     let isValid = true;
@@ -49,7 +94,7 @@ function validateSignupForm(event) {
     const phone = form.querySelector('input[name="phone"]');
     const password = form.querySelector('input[name="password"]');
     const confirmPassword = form.querySelector('input[name="confirm_password"]');
-    
+
     // Reset errors
     clearFormErrors(form);
     let isValid = true;
@@ -118,7 +163,7 @@ function validateSignupForm(event) {
 // ============================================
 function validateCheckoutForm(event) {
     const form = event.target;
-    
+
     // Reset errors
     clearFormErrors(form);
     let isValid = true;
@@ -127,58 +172,40 @@ function validateCheckoutForm(event) {
     const fields = {
         first_name: { input: form.querySelector('input[name="first_name"]'), message: 'First name is required' },
         last_name: { input: form.querySelector('input[name="last_name"]'), message: 'Last name is required' },
-        email: { input: form.querySelector('input[name="email"]'), message: 'Valid email is required' },
-        phone: { input: form.querySelector('input[name="phone"]'), message: 'Valid 10-digit phone is required' },
+        email: { input: form.querySelector('input[name="email"]'), message: 'Email is required' },
+        phone: { input: form.querySelector('input[name="phone"]'), message: 'Phone is required' },
         address: { input: form.querySelector('input[name="address"]'), message: 'Address is required' },
         city: { input: form.querySelector('input[name="city"]'), message: 'City is required' },
         state: { input: form.querySelector('input[name="state"]'), message: 'State is required' },
-        pincode: { input: form.querySelector('input[name="pincode"]'), message: 'Valid 6-digit PIN is required' }
+        pincode: { input: form.querySelector('input[name="pincode"]'), message: 'PIN code is required' }
     };
 
-    // Validate each field
-    if (!fields.first_name.input.value.trim()) {
-        showFieldError(fields.first_name.input, fields.first_name.message);
-        isValid = false;
+    // Only validate that required fields are not empty
+    // Let PHP handle detailed validation
+    for (const [key, field] of Object.entries(fields)) {
+        if (!field.input || !field.input.value.trim()) {
+            showFieldError(field.input, field.message);
+            isValid = false;
+        }
     }
 
-    if (!fields.last_name.input.value.trim()) {
-        showFieldError(fields.last_name.input, fields.last_name.message);
-        isValid = false;
-    }
-
-    if (!fields.email.input.value.trim() || !isValidEmail(fields.email.input.value)) {
-        showFieldError(fields.email.input, fields.email.message);
-        isValid = false;
-    }
-
-    if (!fields.phone.input.value.trim() || !isValidPhone(fields.phone.input.value)) {
-        showFieldError(fields.phone.input, fields.phone.message);
-        isValid = false;
-    }
-
-    if (!fields.address.input.value.trim()) {
-        showFieldError(fields.address.input, fields.address.message);
-        isValid = false;
-    }
-
-    if (!fields.city.input.value.trim()) {
-        showFieldError(fields.city.input, fields.city.message);
-        isValid = false;
-    }
-
-    if (!fields.state.input.value.trim()) {
-        showFieldError(fields.state.input, fields.state.message);
-        isValid = false;
-    }
-
-    if (!fields.pincode.input.value.trim() || !isValidPincode(fields.pincode.input.value)) {
-        showFieldError(fields.pincode.input, fields.pincode.message);
+    // Validate email format (basic check)
+    if (fields.email.input && fields.email.input.value.trim() && !isValidEmail(fields.email.input.value)) {
+        showFieldError(fields.email.input, 'Please enter a valid email');
         isValid = false;
     }
 
     if (!isValid) {
         event.preventDefault();
+        // Scroll to first error
+        const firstError = form.querySelector('.field-error');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     }
+
+    // Allow form to submit if validation passed
+    // No confirmation dialog needed
 }
 
 // ============================================
@@ -252,7 +279,7 @@ function handleRemoveItem(event) {
     event.preventDefault();
     const btn = event.target;
     const form = btn.closest('form[action="cart-remove.php"]');
-    
+
     if (confirm('Are you sure you want to remove this item from your cart?')) {
         form.submit();
     }
@@ -261,7 +288,7 @@ function handleRemoveItem(event) {
 function handleUpdateQuantity(event) {
     const btn = event.target;
     const quantityInput = btn.closest('form').querySelector('input[name="quantity"]');
-    
+
     const quantity = parseInt(quantityInput.value);
     if (quantity < 1) {
         alert('Quantity must be at least 1');
@@ -287,10 +314,10 @@ function initProductImageSwitching() {
             // Get the emoji/content from the thumbnail
             const imageContent = thumb.textContent;
             mainImage.textContent = imageContent;
-            
+
             // Remove active class from all thumbnails
             thumbs.forEach(t => t.style.opacity = '0.6');
-            
+
             // Add active class to clicked thumbnail
             thumb.style.opacity = '1';
         });
@@ -309,10 +336,10 @@ function initProductImageSwitching() {
 // ============================================
 function initShippingMethodHighlight() {
     const shippingRadios = document.querySelectorAll('input[name="shipping_method"]');
-    
+
     shippingRadios.forEach(radio => {
         const label = radio.closest('label');
-        
+
         // Set initial state
         if (radio.checked && label) {
             label.style.borderColor = 'var(--primary)';
@@ -340,10 +367,10 @@ function initShippingMethodHighlight() {
 // Also handle payment method highlighting
 function initPaymentMethodHighlight() {
     const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
-    
+
     paymentRadios.forEach(radio => {
         const label = radio.closest('label');
-        
+
         // Set initial state
         if (radio.checked && label) {
             label.style.borderColor = 'var(--primary)';
@@ -395,7 +422,7 @@ function initProductCountDisplay() {
             font-size: 0.9375rem;
             font-weight: 500;
         `;
-        
+
         // Insert after products container
         productsContainer.parentNode.insertBefore(countContainer, productsContainer.nextSibling);
     }
@@ -441,7 +468,7 @@ function showFieldError(field, message) {
         display: block;
     `;
     errorDiv.textContent = message;
-    
+
     field.style.borderColor = '#ef4444';
     field.style.borderWidth = '2px';
     field.parentNode.appendChild(errorDiv);
@@ -468,15 +495,15 @@ function initLogoutConfirmation() {
     const headerNav = document.querySelector('.header-nav');
     if (!headerNav) return;
 
-    const logoutLink = Array.from(headerNav.querySelectorAll('a')).find(link => 
+    const logoutLink = Array.from(headerNav.querySelectorAll('a')).find(link =>
         link.textContent.includes('Logout')
     );
 
     if (logoutLink) {
-        logoutLink.addEventListener('click', function(event) {
+        logoutLink.addEventListener('click', function (event) {
             event.preventDefault();
             const userName = logoutLink.textContent.match(/\(([^)]+)\)/)?.[1] || 'User';
-            
+
             if (confirm(`Are you sure you want to logout, ${userName}?`)) {
                 // Navigate to logout page
                 window.location.href = this.getAttribute('href');
@@ -486,23 +513,222 @@ function initLogoutConfirmation() {
 }
 
 // ============================================
+// 9. PRODUCT VARIANT SELECTION
+// ============================================
+function initProductVariants() {
+    const variantButtons = document.querySelectorAll('.variant-choice');
+    const form = document.querySelector('form#addToCartForm');
+
+    if (!variantButtons.length || !form) return;
+
+    // Track selected variants
+    const selectedVariants = {};
+
+    variantButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const variantGroup = this.closest('.variant-group');
+            const variantLabel = variantGroup.querySelector('.variant-label').textContent;
+            const variantType = variantLabel.replace('Choose ', '').toLowerCase().trim();
+
+            // Remove selected class from siblings
+            variantGroup.querySelectorAll('.variant-choice').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+
+            // Add selected class to clicked button
+            this.classList.add('selected');
+
+            // Store selected variant
+            selectedVariants[variantType] = this.textContent.trim();
+
+            // Update hidden inputs
+            updateVariantInputs();
+        });
+    });
+
+    function updateVariantInputs() {
+        // Remove existing variant inputs
+        form.querySelectorAll('input[name^="variant_"]').forEach(input => input.remove());
+
+        // Add new variant inputs
+        for (const [type, value] of Object.entries(selectedVariants)) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = `variant_${type}`;
+            input.value = value;
+            form.appendChild(input);
+        }
+    }
+
+    // Initialize with first option selected for each variant group
+    document.querySelectorAll('.variant-group').forEach(group => {
+        const firstButton = group.querySelector('.variant-choice.selected');
+        if (firstButton) {
+            // Trigger click to initialize
+            const event = new Event('click');
+            firstButton.dispatchEvent(event);
+        }
+    });
+}
+
+// ============================================
+// 10. TOAST NOTIFICATIONS
+// ============================================
+function showToast(message, type = 'info') {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+
+    // Create toast element
+    const toast = document.createElement('div');
+    toast.className = 'toast toast-' + type;
+
+    // Set colors based on type
+    let bgColor, borderColor, icon;
+    switch (type) {
+        case 'success':
+            bgColor = '#d4edda';
+            borderColor = '#28a745';
+            icon = '✓';
+            break;
+        case 'error':
+            bgColor = '#f8d7da';
+            borderColor = '#dc3545';
+            icon = '✗';
+            break;
+        case 'info':
+            bgColor = '#d1ecf1';
+            borderColor = '#17a2b8';
+            icon = 'ℹ';
+            break;
+        default:
+            bgColor = '#f8f9fa';
+            borderColor = '#6c757d';
+            icon = '•';
+    }
+
+    // Style the toast
+    toast.style.cssText = `
+        background: ${bgColor};
+        border-left: 4px solid ${borderColor};
+        padding: 1rem 1.5rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 300px;
+        max-width: 400px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideIn 0.3s ease-out;
+        cursor: pointer;
+        transition: transform 0.2s, opacity 0.3s;
+    `;
+
+    // Create icon
+    const iconSpan = document.createElement('span');
+    iconSpan.textContent = icon;
+    iconSpan.style.cssText = `
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: ${borderColor};
+    `;
+
+    // Create message
+    const messageSpan = document.createElement('span');
+    messageSpan.textContent = message;
+    messageSpan.style.cssText = `
+        flex: 1;
+        color: #333;
+        font-weight: 500;
+    `;
+
+    // Create close button
+    const closeBtn = document.createElement('span');
+    closeBtn.innerHTML = '×';
+    closeBtn.style.cssText = `
+        font-size: 1.5rem;
+        color: #666;
+        cursor: pointer;
+        line-height: 1;
+        padding: 0 4px;
+    `;
+    closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        removeToast(toast);
+    };
+
+    // Assemble toast
+    toast.appendChild(iconSpan);
+    toast.appendChild(messageSpan);
+    toast.appendChild(closeBtn);
+
+    // Add to container
+    container.appendChild(toast);
+
+    // Auto dismiss after 4 seconds
+    setTimeout(() => {
+        removeToast(toast);
+    }, 4000);
+
+    // Click to dismiss
+    toast.onclick = () => removeToast(toast);
+}
+
+function removeToast(toast) {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(400px)';
+    setTimeout(() => {
+        if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+        }
+    }, 300);
+}
+
+// Add CSS animation
+if (!document.getElementById('toastStyles')) {
+    const style = document.createElement('style');
+    style.id = 'toastStyles';
+    style.textContent = `
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .toast:hover {
+            transform: translateX(-5px);
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// ============================================
 // INITIALIZATION - RUN WHEN DOM IS READY
 // ============================================
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize theme toggle
+    initThemeToggle();
+
     // Attach validation to login form
-    const loginForm = document.querySelector('form[action="login-process.php"]');
+    const loginForm = document.querySelector('form[action="login-process.php"]') ||
+        document.querySelector('form[action*="login-process.php"]');
     if (loginForm) {
         loginForm.addEventListener('submit', validateLoginForm);
     }
 
     // Attach validation to signup form
-    const signupForm = document.querySelector('form[action="signup-process.php"]');
+    const signupForm = document.querySelector('form[action="signup-process.php"]') ||
+        document.querySelector('form[action*="signup-process.php"]');
     if (signupForm) {
         signupForm.addEventListener('submit', validateSignupForm);
     }
 
     // Attach validation to checkout form
-    const checkoutForm = document.querySelector('form[action="order-place.php"]');
+    const checkoutForm = document.querySelector('form[action="order-place.php"]') ||
+        document.querySelector('form[action*="order-place.php"]');
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', validateCheckoutForm);
     }
@@ -537,4 +763,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize logout confirmation
     initLogoutConfirmation();
+
+    // Initialize product variants
+    if (document.querySelector('.variant-choice')) {
+        initProductVariants();
+    }
 });

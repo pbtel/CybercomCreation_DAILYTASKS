@@ -13,6 +13,13 @@ if (empty($cartItems)) {
     header('Location: cart.php');
     exit;
 }
+
+// Check if user is logged in, if not redirect to login with return URL
+if (!isLoggedIn()) {
+    setFlashMessage('info', 'Please login or create an account to proceed with checkout.');
+    header('Location: login.php?redirect=checkout.php');
+    exit;
+}
 ?>
 
     <div class="container">

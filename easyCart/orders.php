@@ -3,8 +3,8 @@ $pageTitle = "My Orders";
 require_once 'includes/header.php';
 require_once 'includes/orders.php';
 
-// For demo, using user_id = 1
-$userId = 1;
+// Get logged-in user's ID
+$userId = isLoggedIn() ? $_SESSION['user']['user_id'] : 0;
 $userOrders = getUserOrders($userId);
 $stats = getOrderStats($userId);
 ?>

@@ -1,0 +1,121 @@
+[
+    {
+        "order_id": "ORD-2026-6979",
+        "user_id": 1,
+        "date": "2026-01-23 12:52:06",
+        "status": "processing",
+        "payment_method": "Cod",
+        "shipping_method": "Standard",
+        "shipping_address": {
+            "name": "pooja Patel",
+            "email": "pbpatel2@gmail.com",
+            "phone": "09313812076",
+            "address": "52 street Radhanpur road",
+            "city": "Mehsana",
+            "state": "Gujarat",
+            "pincode": "384001",
+            "country": "IN"
+        },
+        "items": [
+            {
+                "product_id": 3,
+                "product_name": "Wireless Headphones",
+                "quantity": 1,
+                "price": 1990,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 4,
+                "product_name": "Smart Watch",
+                "quantity": 1,
+                "price": 3000,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 17,
+                "product_name": "Classic Denim Jacket",
+                "quantity": 1,
+                "price": 2499,
+                "variant": {
+                    "color": "Blue",
+                    "size": "S"
+                }
+            }
+        ],
+        "subtotal": 7489,
+        "shipping": 0,
+        "tax": 1348,
+        "discount": 0,
+        "total": 8837,
+        "tracking_number": null,
+        "estimated_delivery": "2026-01-30"
+    },
+    {
+        "order_id": "ORD-2026-1159",
+        "user_id": 1,
+        "date": "2026-01-23 12:48:45",
+        "status": "processing",
+        "payment_method": "Cod",
+        "shipping_method": "Standard",
+        "shipping_address": {
+            "name": "pooja Patel",
+            "email": "pbpatel2@gmail.com",
+            "phone": "09313812076",
+            "address": "52 street Radhanpur road",
+            "city": "Mehsana",
+            "state": "Gujarat",
+            "pincode": "384001",
+            "country": "IN"
+        },
+        "items": [
+            {
+                "product_id": 3,
+                "product_name": "Wireless Headphones",
+                "quantity": 3,
+                "price": 1990,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 4,
+                "product_name": "Smart Watch",
+                "quantity": 1,
+                "price": 3000,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 14,
+                "product_name": "Wireless Earbuds Pro",
+                "quantity": 1,
+                "price": 2499,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 2,
+                "product_name": "Laptop Pro",
+                "quantity": 1,
+                "price": 49990,
+                "variant": {
+                    "color": "Silver",
+                    "storage": "512GB"
+                }
+            }
+        ],
+        "subtotal": 61459,
+        "shipping": 0,
+        "tax": 11063,
+        "discount": 0,
+        "total": 72522,
+        "tracking_number": null,
+        "estimated_delivery": "2026-01-30"
+    }
+]

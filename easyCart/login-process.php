@@ -11,7 +11,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($result['success']) {
         loginUser($result['user_id'], $result['name'], $email);
         setFlashMessage('success', 'Welcome back! You are now logged in.');
-        header('Location: index.php');
+        
+        // Redirect to original page if specified
+        $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
+        header('Location: ' . $redirect);
         exit;
     } else {
         setFlashMessage('error', 'Invalid email or password.');

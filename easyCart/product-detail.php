@@ -104,8 +104,9 @@ $category = getCategoryById($product['category']);
                 <?php endif; ?>
 
                 <!-- QUANTITY & ADD TO CART -->
-                <form action="cart-add.php" method="POST">
+                <form action="cart-add.php" method="POST" id="addToCartForm">
                     <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                    <!-- Variant inputs will be added dynamically by JavaScript -->
                     
                     <div style="margin-bottom: 1.5rem;">
                         <label class="variant-label">Quantity</label>

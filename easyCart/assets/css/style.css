@@ -13,6 +13,19 @@
             --radius: 16px;
         }
 
+        /* Dark Theme Variables */
+        [data-theme="dark"] {
+            --primary: #818cf8;
+            --primary-dark: #6366f1;
+            --secondary: #f472b6;
+            --accent: #2dd4bf;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -24,6 +37,55 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Theme Toggle Button */
+        .theme-toggle {
+            background: var(--bg-primary);
+            border: 2px solid var(--border);
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-toggle:hover {
+            border-color: var(--primary);
+            background: rgba(99, 102, 241, 0.1);
+            transform: rotate(15deg) scale(1.05);
+        }
+
+        .theme-toggle:active {
+            transform: rotate(15deg) scale(0.95);
+        }
+
+        .theme-icon {
+            font-size: 1.25rem;
+            transition: transform 0.5s ease;
+            display: inline-block;
+        }
+
+        .theme-toggle.rotating .theme-icon {
+            animation: rotateIcon 0.5s ease;
+        }
+
+        @keyframes rotateIcon {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(0.8);
+            }
+            100% {
+                transform: rotate(360deg) scale(1);
+            }
         }
 
         /* HEADER */
@@ -35,6 +97,7 @@
             top: 0;
             z-index: 1000;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .header-wrapper {

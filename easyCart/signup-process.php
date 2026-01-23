@@ -22,7 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Log in the new user
         loginUser($result['user_id'], $result['name'], $email);
         setFlashMessage('success', 'Account created successfully! Welcome to EasyCart.');
-        header('Location: index.php');
+        
+        // Redirect to original page if specified
+        $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
+        header('Location: ' . $redirect);
         exit;
     } else {
         setFlashMessage('error', $result['message']);

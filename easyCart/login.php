@@ -12,7 +12,7 @@ require_once 'includes/header.php';
                 Login to access your account
             </p>
 
-            <form action="login-process.php" method="POST">
+            <form action="login-process.php<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>" method="POST">
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email Address</label>
                     <input type="email" name="email" required 

@@ -9,21 +9,48 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Define JSON file paths
+define('USERS_DB_FILE', __DIR__ . '/../data/users_db.json');
+define('CARTS_DB_FILE', __DIR__ . '/../data/carts_db.json');
+
 // Initialize user database (in session) if not exists
 if (!isset($_SESSION['users_db'])) {
-    $_SESSION['users_db'] = [
-        [
-            'user_id' => 1,
-            'email' => 'demo@easycart.com',
-            'password' => 'demo123',
-            'name' => 'Demo User'
-        ]
-    ];
+    // Try to load from JSON file
+    if (file_exists(USERS_DB_FILE)) {
+        $usersData = file_get_contents(USERS_DB_FILE);
+        $_SESSION['users_db'] = json_decode($usersData, true) ?: [];
+    } else {
+        $_SESSION['users_db'] = [
+            [
+                'user_id' => 1,
+                'email' => 'demo@easycart.com',
+                'password' => 'demo123',
+                'name' => 'Demo User'
+            ]
+        ];
+    }
 }
 
-// Initialize cart if not exists
-if (!isset($_SESSION['cart'])) {
-    $_SESSION['cart'] = [];
+// Initialize cart database for persistent user carts
+if (!isset($_SESSION['carts_db'])) {
+    // Try to load from JSON file
+    if (file_exists(CARTS_DB_FILE)) {
+        $cartsData = file_get_contents(CARTS_DB_FILE);
+        $_SESSION['carts_db'] = json_decode($cartsData, true) ?: [];
+    } else {
+        $_SESSION['carts_db'] = [];
+    }
+}
+
+// Initialize session type tracking
+if (!isset($_SESSION['session_type'])) {
+    $_SESSION['session_type'] = 'guest';
+    $_SESSION['guest_id'] = 'guest_' . session_id();
+}
+
+// Initialize guest cart if not exists
+if (!isset($_SESSION['guest_cart'])) {
+    $_SESSION['guest_cart'] = [];
 }
 
 // Initialize user session data if not exists
@@ -36,56 +63,168 @@ if (!isset($_SESSION['user'])) {
     ];
 }
 
+// Helper Functions for Session Management
+
+/**
+ * Initialize a new guest session
+ */
+function initGuestSession() {
+    $_SESSION['session_type'] = 'guest';
+    $_SESSION['guest_id'] = 'guest_' . session_id();
+    $_SESSION['guest_cart'] = [];
+}
+
+/**
+ * Get the current active cart based on session type
+ */
+function getCurrentCart() {
+    if ($_SESSION['session_type'] === 'user' && isset($_SESSION['user']['user_id'])) {
+        $userId = $_SESSION['user']['user_id'];
+        return getUserCart($userId);
+    } else {
+        return $_SESSION['guest_cart'];
+    }
+}
+
+/**
+ * Set the current active cart
+ */
+function setCurrentCart($cart) {
+    if ($_SESSION['session_type'] === 'user' && isset($_SESSION['user']['user_id'])) {
+        $userId = $_SESSION['user']['user_id'];
+        saveUserCart($userId, $cart);
+    } else {
+        $_SESSION['guest_cart'] = $cart;
+    }
+}
+
+/**
+ * Load user cart from database
+ */
+function getUserCart($userId) {
+    if (isset($_SESSION['carts_db'][$userId])) {
+        return $_SESSION['carts_db'][$userId];
+    }
+    return [];
+}
+
+/**
+ * Save user cart to database
+ */
+function saveUserCart($userId, $cart) {
+    $_SESSION['carts_db'][$userId] = $cart;
+    // Persist to JSON files
+    persistToJSON();
+}
+
+/**
+ * Merge guest cart into user cart when logging in
+ */
+function mergeGuestCartWithUser($userId) {
+    $guestCart = $_SESSION['guest_cart'];
+    $userCart = getUserCart($userId);
+    
+    // Merge guest cart items into user cart
+    foreach ($guestCart as $key => $item) {
+        if (isset($userCart[$key])) {
+            // Item already exists, add quantities
+            $userCart[$key]['quantity'] += $item['quantity'];
+        } else {
+            // New item, add to user cart
+            $userCart[$key] = $item;
+        }
+    }
+    
+    // Save merged cart
+    saveUserCart($userId, $userCart);
+    
+    // Clear guest cart
+    $_SESSION['guest_cart'] = [];
+    
+    return $userCart;
+}
+
+/**
+ * Persist data to JSON files
+ */
+function persistToJSON() {
+    // Ensure data directory exists
+    $dataDir = __DIR__ . '/../data';
+    if (!is_dir($dataDir)) {
+        mkdir($dataDir, 0755, true);
+    }
+    
+    // Save users database to JSON file
+    $usersJson = json_encode($_SESSION['users_db'], JSON_PRETTY_PRINT);
+    file_put_contents(USERS_DB_FILE, $usersJson);
+    
+    // Save carts database to JSON file
+    $cartsJson = json_encode($_SESSION['carts_db'], JSON_PRETTY_PRINT);
+    file_put_contents(CARTS_DB_FILE, $cartsJson);
+}
+
 // Cart Functions
 
+
+
 function addToCart($productId, $quantity = 1, $variant = []) {
+    $cart = getCurrentCart();
     $cartItemKey = $productId . '_' . md5(serialize($variant));
     
-    if (isset($_SESSION['cart'][$cartItemKey])) {
-        $_SESSION['cart'][$cartItemKey]['quantity'] += $quantity;
+    if (isset($cart[$cartItemKey])) {
+        $cart[$cartItemKey]['quantity'] += $quantity;
     } else {
-        $_SESSION['cart'][$cartItemKey] = [
+        $cart[$cartItemKey] = [
             'product_id' => $productId,
             'quantity' => $quantity,
             'variant' => $variant,
             'added_at' => time()
         ];
     }
+    
+    setCurrentCart($cart);
     return true;
 }
 
 function updateCartQuantity($cartItemKey, $quantity) {
-    if (isset($_SESSION['cart'][$cartItemKey])) {
+    $cart = getCurrentCart();
+    
+    if (isset($cart[$cartItemKey])) {
         if ($quantity <= 0) {
-            unset($_SESSION['cart'][$cartItemKey]);
+            unset($cart[$cartItemKey]);
         } else {
-            $_SESSION['cart'][$cartItemKey]['quantity'] = $quantity;
+            $cart[$cartItemKey]['quantity'] = $quantity;
         }
+        setCurrentCart($cart);
         return true;
     }
     return false;
 }
 
 function removeFromCart($cartItemKey) {
-    if (isset($_SESSION['cart'][$cartItemKey])) {
-        unset($_SESSION['cart'][$cartItemKey]);
+    $cart = getCurrentCart();
+    
+    if (isset($cart[$cartItemKey])) {
+        unset($cart[$cartItemKey]);
+        setCurrentCart($cart);
         return true;
     }
     return false;
 }
 
 function clearCart() {
-    $_SESSION['cart'] = [];
+    setCurrentCart([]);
     return true;
 }
 
 function getCartItems() {
-    return $_SESSION['cart'];
+    return getCurrentCart();
 }
 
 function getCartCount() {
+    $cart = getCurrentCart();
     $count = 0;
-    foreach ($_SESSION['cart'] as $item) {
+    foreach ($cart as $item) {
         $count += $item['quantity'];
     }
     return $count;
@@ -93,9 +232,10 @@ function getCartCount() {
 
 function getCartTotal() {
     global $products;
+    $cart = getCurrentCart();
     $total = 0;
     
-    foreach ($_SESSION['cart'] as $item) {
+    foreach ($cart as $item) {
         $product = getProductById($item['product_id']);
         if ($product) {
             $total += $product['price'] * $item['quantity'];
@@ -111,9 +251,10 @@ function getCartSubtotal() {
 
 function getCartItemsWithDetails() {
     global $products;
+    $cart = getCurrentCart();
     $cartDetails = [];
     
-    foreach ($_SESSION['cart'] as $key => $item) {
+    foreach ($cart as $key => $item) {
         $product = getProductById($item['product_id']);
         if ($product) {
             $cartDetails[$key] = [
@@ -128,6 +269,7 @@ function getCartItemsWithDetails() {
     return $cartDetails;
 }
 
+
 // User Session Functions
 
 function isLoggedIn() {
@@ -139,22 +281,37 @@ function getUserData() {
 }
 
 function loginUser($userId, $name, $email) {
+    // Merge guest cart into user cart before logging in
+    mergeGuestCartWithUser($userId);
+    
+    // Set user session
     $_SESSION['user'] = [
         'logged_in' => true,
         'user_id' => $userId,
         'name' => $name,
         'email' => $email
     ];
+    
+    // Switch to user session type
+    $_SESSION['session_type'] = 'user';
+    
     return true;
 }
 
 function logoutUser() {
+    // User cart is already saved in carts_db, no need to do anything
+    
+    // Clear user session
     $_SESSION['user'] = [
         'logged_in' => false,
         'user_id' => null,
         'name' => null,
         'email' => null
     ];
+    
+    // Initialize new guest session
+    initGuestSession();
+    
     return true;
 }
 
@@ -170,7 +327,12 @@ function registerUser($firstName, $lastName, $email, $password) {
     }
     
     // Create new user
-    $userId = max(array_column($_SESSION['users_db'], 'user_id')) + 1;
+    // Handle empty users_db array to avoid max() error
+    if (empty($_SESSION['users_db'])) {
+        $userId = 1;
+    } else {
+        $userId = max(array_column($_SESSION['users_db'], 'user_id')) + 1;
+    }
     $fullName = $firstName . ' ' . $lastName;
     
     $_SESSION['users_db'][] = [
@@ -179,6 +341,12 @@ function registerUser($firstName, $lastName, $email, $password) {
         'password' => $password,
         'name' => $fullName
     ];
+    
+    // Initialize empty cart for new user
+    $_SESSION['carts_db'][$userId] = [];
+    
+    // Persist to JSON files
+    persistToJSON();
     
     return ['success' => true, 'user_id' => $userId, 'name' => $fullName];
 }
