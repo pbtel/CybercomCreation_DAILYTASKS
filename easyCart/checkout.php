@@ -81,6 +81,29 @@ if (empty($cartItems)) {
                         </div>
                     </div>
 
+                    <!-- SHIPPING METHOD -->
+                    <div style="background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Shipping Method</h2>
+                        
+                        <label style="display: block; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 1rem; cursor: pointer;">
+                            <input type="radio" name="shipping_method" value="standard" checked style="margin-right: 0.75rem;">
+                            <strong>Standard Delivery</strong>
+                            <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">5-7 business days</span>
+                        </label>
+
+                        <label style="display: block; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 1rem; cursor: pointer;">
+                            <input type="radio" name="shipping_method" value="express" style="margin-right: 0.75rem;">
+                            <strong>Express Delivery</strong>
+                            <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">2-3 business days - Additional ₹100</span>
+                        </label>
+
+                        <label style="display: block; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; cursor: pointer;">
+                            <input type="radio" name="shipping_method" value="overnight" style="margin-right: 0.75rem;">
+                            <strong>Overnight Delivery</strong>
+                            <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.25rem;">Next business day - Additional ₹250</span>
+                        </label>
+                    </div>
+
                     <!-- PAYMENT METHOD -->
                     <div style="background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
                         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Payment Method</h2>

@@ -9,6 +9,18 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Initialize user database (in session) if not exists
+if (!isset($_SESSION['users_db'])) {
+    $_SESSION['users_db'] = [
+        [
+            'user_id' => 1,
+            'email' => 'demo@easycart.com',
+            'password' => 'demo123',
+            'name' => 'Demo User'
+        ]
+    ];
+}
+
 // Initialize cart if not exists
 if (!isset($_SESSION['cart'])) {
     $_SESSION['cart'] = [];
@@ -144,6 +156,44 @@ function logoutUser() {
         'email' => null
     ];
     return true;
+}
+
+// User Registration Function
+function registerUser($firstName, $lastName, $email, $password) {
+    global $_SESSION;
+    
+    // Check if user already exists
+    foreach ($_SESSION['users_db'] as $user) {
+        if ($user['email'] === $email) {
+            return ['success' => false, 'message' => 'Email already registered'];
+        }
+    }
+    
+    // Create new user
+    $userId = max(array_column($_SESSION['users_db'], 'user_id')) + 1;
+    $fullName = $firstName . ' ' . $lastName;
+    
+    $_SESSION['users_db'][] = [
+        'user_id' => $userId,
+        'email' => $email,
+        'password' => $password,
+        'name' => $fullName
+    ];
+    
+    return ['success' => true, 'user_id' => $userId, 'name' => $fullName];
+}
+
+// User Login Verification Function
+function verifyUserLogin($email, $password) {
+    global $_SESSION;
+    
+    foreach ($_SESSION['users_db'] as $user) {
+        if ($user['email'] === $email && $user['password'] === $password) {
+            return ['success' => true, 'user_id' => $user['user_id'], 'name' => $user['name']];
+        }
+    }
+    
+    return ['success' => false, 'message' => 'Invalid email or password'];
 }
 
 // Flash Messages

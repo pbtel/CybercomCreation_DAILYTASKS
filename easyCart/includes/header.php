@@ -16,6 +16,7 @@ $user = getUserData();
     <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>EasyCart</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Jetbrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/script.js" defer></script>
 </head>
 <body>
     <!-- HEADER -->

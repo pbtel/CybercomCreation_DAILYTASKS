@@ -4,15 +4,24 @@ require_once 'includes/header.php';
 
 // Get filter parameters
 $selectedCategory = isset($_GET['category']) ? $_GET['category'] : 'all';
+$selectedBrand = isset($_GET['brand']) ? $_GET['brand'] : 'all';
 $selectedPriceRange = isset($_GET['price']) ? $_GET['price'] : 'all';
 $selectedRating = isset($_GET['rating']) ? floatval($_GET['rating']) : 0;
 $viewMode = isset($_GET['view']) ? $_GET['view'] : 'grid';
 
 // Get products based on filters
+$displayProducts = $products;
+
+// Apply category filter
 if ($selectedCategory !== 'all') {
     $displayProducts = getProductsByCategory($selectedCategory);
-} else {
-    $displayProducts = $products;
+}
+
+// Apply brand filter
+if ($selectedBrand !== 'all') {
+    $displayProducts = array_filter($displayProducts, function($product) use ($selectedBrand) {
+        return strtolower($product['brand']) === strtolower($selectedBrand);
+    });
 }
 
 // Apply price filter
@@ -39,6 +48,8 @@ if ($selectedRating > 0) {
 
 // Get all categories for filter
 $allCategories = getAllCategories();
+// Get all brands for filter
+$allBrands = getAllBrands();
 ?>
 
     <div class="container">
@@ -47,9 +58,9 @@ $allCategories = getAllCategories();
             <div class="filter-top">
                 <h2 class="filter-heading">Filter Products</h2>
                 <div class="view-controls">
-                    <a href="?category=<?php echo $selectedCategory; ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=grid" 
+                    <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=grid" 
                        class="view-control-btn <?php echo $viewMode === 'grid' ? 'active' : ''; ?>">◼</a>
-                    <a href="?category=<?php echo $selectedCategory; ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=list" 
+                    <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=list" 
                        class="view-control-btn <?php echo $viewMode === 'list' ? 'active' : ''; ?>">☰</a>
                 </div>
             </div>
@@ -59,12 +70,27 @@ $allCategories = getAllCategories();
                 <div class="filter-category">
                     <div class="filter-category-title">Category</div>
                     <div class="filter-chips">
-                        <a href="?category=all&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=all&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedCategory === 'all' ? 'active' : ''; ?>">All</a>
                         <?php foreach ($allCategories as $category): ?>
-                        <a href="?category=<?php echo $category['id']; ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $category['id']; ?>&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedCategory === $category['id'] ? 'active' : ''; ?>">
                             <?php echo htmlspecialchars($category['name']); ?>
+                        </a>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Brand Filter -->
+                <div class="filter-category">
+                    <div class="filter-category-title">Brand</div>
+                    <div class="filter-chips">
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=all&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                           class="filter-chip <?php echo $selectedBrand === 'all' ? 'active' : ''; ?>">All</a>
+                        <?php foreach ($allBrands as $brand): ?>
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo strtolower($brand['id']); ?>&price=<?php echo $selectedPriceRange; ?>&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                           class="filter-chip <?php echo $selectedBrand === strtolower($brand['id']) ? 'active' : ''; ?>">
+                            <?php echo htmlspecialchars($brand['name']); ?>
                         </a>
                         <?php endforeach; ?>
                     </div>
@@ -74,13 +100,13 @@ $allCategories = getAllCategories();
                 <div class="filter-category">
                     <div class="filter-category-title">Price Range</div>
                     <div class="filter-chips">
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=all&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=all&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedPriceRange === 'all' ? 'active' : ''; ?>">All</a>
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=under5k&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=under5k&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedPriceRange === 'under5k' ? 'active' : ''; ?>">Under ₹5K</a>
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=5k-20k&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=5k-20k&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedPriceRange === '5k-20k' ? 'active' : ''; ?>">₹5K - ₹20K</a>
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=above20k&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=above20k&rating=<?php echo $selectedRating; ?>&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedPriceRange === 'above20k' ? 'active' : ''; ?>">Above ₹20K</a>
                     </div>
                 </div>
@@ -89,13 +115,13 @@ $allCategories = getAllCategories();
                 <div class="filter-category">
                     <div class="filter-category-title">Rating</div>
                     <div class="filter-chips">
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=<?php echo $selectedPriceRange; ?>&rating=0&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=0&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedRating == 0 ? 'active' : ''; ?>">All</a>
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=<?php echo $selectedPriceRange; ?>&rating=4.5&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=4.5&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedRating == 4.5 ? 'active' : ''; ?>">★★★★★</a>
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=<?php echo $selectedPriceRange; ?>&rating=4&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=4&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedRating == 4 ? 'active' : ''; ?>">★★★★☆</a>
-                        <a href="?category=<?php echo $selectedCategory; ?>&price=<?php echo $selectedPriceRange; ?>&rating=3&view=<?php echo $viewMode; ?>" 
+                        <a href="?category=<?php echo $selectedCategory; ?>&brand=<?php echo $selectedBrand; ?>&price=<?php echo $selectedPriceRange; ?>&rating=3&view=<?php echo $viewMode; ?>" 
                            class="filter-chip <?php echo $selectedRating == 3 ? 'active' : ''; ?>">★★★☆☆</a>
                     </div>
                 </div>

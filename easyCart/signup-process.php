@@ -15,15 +15,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // In production, save to database and hash password
-    // For demo, we'll just log them in
-    $fullName = $firstName . ' ' . $lastName;
-    $newUserId = rand(1000, 9999); // In production, get from database
+    // Register user
+    $result = registerUser($firstName, $lastName, $email, $password);
     
-    loginUser($newUserId, $fullName, $email);
-    setFlashMessage('success', 'Account created successfully! Welcome to EasyCart.');
-    header('Location: index.php');
-    exit;
+    if ($result['success']) {
+        // Log in the new user
+        loginUser($result['user_id'], $result['name'], $email);
+        setFlashMessage('success', 'Account created successfully! Welcome to EasyCart.');
+        header('Location: index.php');
+        exit;
+    } else {
+        setFlashMessage('error', $result['message']);
+        header('Location: signup.php');
+        exit;
+    }
 } else {
     header('Location: signup.php');
     exit;
