@@ -1,6 +1,7 @@
 <?php
 require_once 'includes/session.php';
 require_once 'includes/products.php';
+require_once 'includes/shipping.php';
 
 // Define orders database file path
 define('ORDERS_DB_FILE', __DIR__ . '/data/orders_db.json');
@@ -52,20 +53,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     
-    // Calculate order totals
+    // Calculate order totals using Phase 4 logic
     $subtotal = getCartSubtotal();
-    $baseShipping = $subtotal > 999 ? 0 : 50;
+    $shippingMethod = isset($_POST['shipping_method']) ? $_POST['shipping_method'] : 'standard';
     
-    // Add shipping method cost
-    $shippingCost = $baseShipping;
-    if ($shippingMethod === 'express') {
-        $shippingCost += 100;
-    } elseif ($shippingMethod === 'overnight') {
-        $shippingCost += 250;
-    }
+    // Calculate shipping cost based on method and subtotal
+    $shippingCost = calculateShippingCost($subtotal, $shippingMethod);
     
-    $tax = round($subtotal * 0.18);
-    $total = $subtotal + $shippingCost + $tax;
+    // Calculate tax on (Subtotal + Shipping) - Phase 4 requirement
+    $tax = calculateTax($subtotal, $shippingCost);
+    
+    // Calculate total
+    $total = calculateOrderTotal($subtotal, $shippingCost, $tax);
     
     // Generate order number
     $orderNumber = 'ORD-' . date('Y') . '-' . rand(1000, 9999);
@@ -82,13 +81,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     }
     
-    // Calculate estimated delivery
-    $deliveryDays = 7; // default for standard
-    if ($shippingMethod === 'express') {
-        $deliveryDays = 3;
-    } elseif ($shippingMethod === 'overnight') {
-        $deliveryDays = 1;
-    }
+    // Calculate estimated delivery using new shipping methods
+    $deliveryDays = getDeliveryDays($shippingMethod);
     $estimatedDelivery = date('Y-m-d', strtotime("+$deliveryDays days"));
     
     // Create order object
@@ -98,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'date' => date('Y-m-d H:i:s'),
         'status' => 'processing',
         'payment_method' => ucfirst($paymentMethod),
-        'shipping_method' => ucfirst($shippingMethod),
+        'shipping_method' => getShippingMethodName($shippingMethod),
         'shipping_address' => [
             'name' => $firstName . ' ' . $lastName,
             'email' => $email,

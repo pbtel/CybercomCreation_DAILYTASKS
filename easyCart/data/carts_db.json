@@ -1,3 +1,29 @@
 {
-    "1": []
+    "1": {
+        "3_103a6e109648594b4a2ddba7b94ae7ef": {
+            "product_id": 3,
+            "quantity": 3,
+            "variant": {
+                "color": "Black"
+            },
+            "added_at": 1769513358
+        },
+        "17_3953ff5b218fc0a3dd59974415fba791": {
+            "product_id": 17,
+            "quantity": 5,
+            "variant": {
+                "color": "Blue",
+                "size": "S"
+            },
+            "added_at": 1769513365
+        },
+        "4_103a6e109648594b4a2ddba7b94ae7ef": {
+            "product_id": 4,
+            "quantity": 1,
+            "variant": {
+                "color": "Black"
+            },
+            "added_at": 1769513373
+        }
+    }
 }

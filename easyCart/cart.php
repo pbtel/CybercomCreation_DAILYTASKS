@@ -4,9 +4,10 @@ require_once 'includes/header.php';
 
 $cartItems = getCartItemsWithDetails();
 $subtotal = getCartSubtotal();
-$shipping = $subtotal > 999 ? 0 : 50; // Free shipping above ₹999
-$tax = round($subtotal * 0.18); // 18% GST
-$total = $subtotal + $shipping + $tax;
+// Shipping will be calculated at checkout based on selected method
+$shippingNote = 'Calculated at checkout';
+// Tax note - will be calculated on (Subtotal + Shipping) at checkout
+$taxNote = 'Calculated at checkout';
 ?>
 
     <div class="container">
@@ -101,33 +102,35 @@ $total = $subtotal + $shipping + $tax;
 
                         <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                                <span style="color: var(--text-secondary);">Subtotal (<?php echo count($cartItems); ?> items):</span>
+                                <span style="color: var(--text-secondary);">Subtotal (<?php echo count($cartItems); ?> unique items):</span>
                                 <span style="font-weight: 600;">₹<?php echo number_format($subtotal); ?></span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                                 <span style="color: var(--text-secondary);">Shipping:</span>
-                                <span style="font-weight: 600; color: <?php echo $shipping == 0 ? 'var(--accent)' : 'inherit'; ?>;">
-                                    <?php echo $shipping == 0 ? 'FREE' : '₹' . number_format($shipping); ?>
+                                <span style="font-weight: 600; color: var(--text-secondary); font-style: italic;">
+                                    <?php echo $shippingNote; ?>
                                 </span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                                 <span style="color: var(--text-secondary);">Tax (18% GST):</span>
-                                <span style="font-weight: 600;">₹<?php echo number_format($tax); ?></span>
+                                <span style="font-weight: 600; color: var(--text-secondary); font-style: italic;">
+                                    <?php echo $taxNote; ?>
+                                </span>
                             </div>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem;">
-                            <span>Total:</span>
-                            <span style="color: var(--primary);">₹<?php echo number_format($total); ?></span>
-                        </div>
-
-                        <?php if ($subtotal < 999): ?>
-                        <div style="background: rgba(236, 72, 153, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
-                            <p style="font-size: 0.875rem; color: var(--secondary); font-weight: 600;">
-                                Add ₹<?php echo number_format(999 - $subtotal); ?> more for FREE shipping!
+                        <div style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
+                            <p style="font-size: 0.875rem; color: var(--primary); font-weight: 600;">
+                                ℹ️ Shipping cost and final tax will be calculated based on your selected shipping method at checkout
                             </p>
                         </div>
-                        <?php endif; ?>
+
+                        <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem;">
+                            <span>Estimated Total:</span>
+                            <span style="color: var(--primary);">₹<?php echo number_format($subtotal); ?>+</span>
+                        </div>
+
+
 
                         <a href="checkout.php" style="display: block; width: 100%; padding: 1.25rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-align: center; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 1.125rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);">
                             Proceed to Checkout
