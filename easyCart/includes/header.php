@@ -16,8 +16,8 @@ $user = getUserData();
     <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>EasyCart</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Jetbrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
-    <script src="assets/js/cart-storage.js" defer></script>
     <script src="assets/js/script.js" defer></script>
+    <script src="assets/js/cart-ajax.js" defer></script>
 </head>
 <body>
     <!-- HEADER -->
@@ -29,7 +29,7 @@ $user = getUserData();
             <nav class="header-nav">
                 <a href="index.php">Home</a>
                 <a href="products.php">Products</a>
-                <a href="cart.php">Cart<?php if ($cartCount > 0): ?><span class="cart-badge"><?php echo $cartCount; ?></span><?php endif; ?></a>
+                <a href="cart.php">Cart<span class="cart-badge" id="cartBadge" style="<?php echo $cartCount > 0 ? '' : 'display: none;'; ?>"><?php echo $cartCount > 0 ? $cartCount : '0'; ?></span></a>
                 <a href="orders.php">Orders</a>
                 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
                     <span class="theme-icon">🌙</span>

@@ -401,27 +401,132 @@ For issues or questions:
 - [x] Filtering
 - [x] Product detail with variants
 
-### Phase 3 (Database) - 🔜 Next
-- [ ] MySQL database design
-- [ ] User authentication
-- [ ] Persistent cart
-- [ ] Order management
-- [ ] Admin panel
+### Phase 3 (Database) - ✅ Complete
+- [x] MySQL database design
+- [x] User authentication
+- [x] Persistent cart
+- [x] Order management
+- [x] Admin panel
+
+### Phase 4 (Enhanced Features) - ✅ Complete
+- [x] Multiple shipping options
+- [x] Dynamic shipping calculations
+- [x] Enhanced checkout flow
+- [x] Currency conversion to Rupees
+- [x] Tax calculations (18% GST)
+
+### Phase 5 (AJAX) - ✅ Complete
+- [x] Add to cart without page reload
+- [x] Update cart quantity via AJAX
+- [x] Remove cart items via AJAX
+- [x] Dynamic shipping calculations
+- [x] Real-time tax updates
+- [x] Toast notifications
+- [x] Smooth animations
+- [x] Cart badge updates
+
+---
+
+## 🆕 Phase 5: Dynamic Updates Using AJAX
+
+### New Features
+
+#### 1. **AJAX Cart Operations**
+- Add products to cart without page reload
+- Update quantities instantly
+- Remove items with smooth fade-out animation
+- Real-time cart summary updates
+- Cart badge counter updates automatically
+
+#### 2. **Dynamic Shipping Calculations**
+- Shipping cost updates instantly when method changes
+- Tax recalculates automatically (18% on Subtotal + Shipping)
+- Total amount updates in real-time
+- Smooth animations for price changes
+
+#### 3. **Toast Notifications**
+- Success notifications (green)
+- Error notifications (red)
+- Info notifications (blue)
+- Auto-dismiss after 4 seconds
+- Click to dismiss manually
+
+#### 4. **UI/UX Enhancements**
+- Loading states with spinners
+- Button text changes during operations
+- Smooth fade-out for removed items
+- Pulse animation for cart badge
+- Scale animation for price updates
+
+### API Endpoints
+
+New AJAX endpoints in `api/` directory:
+
+1. **cart-add-ajax.php** - Add products to cart
+2. **cart-update-ajax.php** - Update cart quantities
+3. **cart-remove-ajax.php** - Remove cart items
+4. **cart-summary-ajax.php** - Fetch cart summary
+5. **shipping-calculate-ajax.php** - Calculate shipping & tax
+
+### JavaScript Implementation
+
+**cart-ajax.js** - Main AJAX functionality:
+- `addToCartAjax()` - Add without reload
+- `updateCartQuantityAjax()` - Update instantly
+- `removeCartItemAjax()` - Remove with animation
+- `updateShippingCalculation()` - Dynamic shipping
+- `updateCartBadge()` - Badge updates
+- `showCartToast()` - Notifications
+
+### Backward Compatibility
+
+All AJAX features use progressive enhancement:
+- Forms still work without JavaScript
+- Fallback to page reload if AJAX fails
+- All Phase 1-4 features remain intact
+- No breaking changes
+
+### Testing AJAX Features
+
+1. **Add to Cart**: Click "Add to Cart" on any product
+   - No page reload
+   - Toast notification appears
+   - Cart badge updates with pulse
+
+2. **Update Quantity**: Change quantity in cart, click "Update"
+   - Item subtotal updates instantly
+   - Cart summary recalculates
+   - No page reload
+
+3. **Remove Item**: Click "Remove" in cart
+   - Smooth fade-out animation
+   - Cart updates automatically
+   - Empty cart message if needed
+
+4. **Change Shipping**: Select different shipping method
+   - Shipping cost updates instantly
+   - Tax recalculates (18% GST)
+   - Total updates smoothly
 
 ---
 
 ## 🎉 Congratulations!
 
-You now have a fully functional **Phase 2 E-Commerce Website** with:
+You now have a fully functional **Modern E-Commerce Website** with:
 - ✅ Modern, responsive design
 - ✅ Dynamic PHP rendering
 - ✅ Session-based shopping cart
 - ✅ Product filtering
 - ✅ Order management
 - ✅ Complete user flow
+- ✅ **AJAX-powered cart operations**
+- ✅ **Real-time updates**
+- ✅ **Smooth animations**
+- ✅ **Toast notifications**
 
-**Ready for Phase 3: Database Integration!**
+**All 5 Phases Complete!**
 
 ---
 
-*Built with ❤️ using PHP, CSS, and modern web design principles*
+*Built with ❤️ using PHP, JavaScript, AJAX, CSS, and modern web design principles*
+

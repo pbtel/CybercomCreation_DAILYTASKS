@@ -28,7 +28,7 @@ $taxNote = 'Calculated at checkout';
                 <!-- CART ITEMS -->
                 <div>
                     <?php foreach ($cartItems as $key => $item): ?>
-                    <div style="background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; display: grid; grid-template-columns: 120px 1fr auto; gap: 1.5rem; align-items: center;">
+                    <div data-cart-item data-cart-key="<?php echo $key; ?>" style="background: white; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; display: grid; grid-template-columns: 120px 1fr auto; gap: 1.5rem; align-items: center;">
                         <!-- Product Image -->
                         <div style="width: 120px; height: 120px; background: var(--bg-primary); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 3rem;">
                             <?php echo $item['product']['image']; ?>
@@ -75,7 +75,7 @@ $taxNote = 'Calculated at checkout';
                                     Remove
                                 </button>
                             </form>
-                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            <p class="item-subtotal" style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
                                 Subtotal: ₹<?php echo number_format($item['subtotal']); ?>
                             </p>
                         </div>

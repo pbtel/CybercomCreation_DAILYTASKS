@@ -276,18 +276,20 @@ if (!isLoggedIn()) {
     function updateOrderSummary() {
         // Get selected shipping method
         const selectedMethod = document.querySelector('input[name="shipping_method"]:checked').value;
-        const shippingCost = shippingCosts[selectedMethod];
         
-        // Calculate tax on (subtotal + shipping)
-        const tax = Math.round((subtotal + shippingCost) * 0.18);
-        
-        // Calculate total
-        const total = subtotal + shippingCost + tax;
-        
-        // Update display with animation
-        document.getElementById('summary-shipping').textContent = '₹' + shippingCost.toLocaleString('en-IN');
-        document.getElementById('summary-tax').textContent = '₹' + tax.toLocaleString('en-IN');
-        document.getElementById('summary-total').textContent = '₹' + total.toLocaleString('en-IN');
+        // Use AJAX to calculate shipping (from cart-ajax.js)
+        if (typeof updateShippingCalculation === 'function') {
+            updateShippingCalculation(selectedMethod);
+        } else {
+            // Fallback to original calculation if AJAX not available
+            const shippingCost = shippingCosts[selectedMethod];
+            const tax = Math.round((subtotal + shippingCost) * 0.18);
+            const total = subtotal + shippingCost + tax;
+            
+            document.getElementById('summary-shipping').textContent = '₹' + shippingCost.toLocaleString('en-IN');
+            document.getElementById('summary-tax').textContent = '₹' + tax.toLocaleString('en-IN');
+            document.getElementById('summary-total').textContent = '₹' + total.toLocaleString('en-IN');
+        }
         
         // Update shipping option borders with smooth transition
         document.querySelectorAll('.shipping-option').forEach(label => {

@@ -1,5 +1,76 @@
 [
     {
+        "order_id": "ORD-2026-3272",
+        "user_id": 1,
+        "date": "2026-01-28 10:20:02",
+        "status": "processing",
+        "payment_method": "Cod",
+        "shipping_method": "Standard Shipping",
+        "shipping_address": {
+            "name": "pooja Patel",
+            "email": "pbpatel2@gmail.com",
+            "phone": "09313812076",
+            "address": "52 street Radhanpur road",
+            "city": "Mehsana",
+            "state": "Gujarat",
+            "pincode": "384001",
+            "country": "IN"
+        },
+        "items": [
+            {
+                "product_id": 4,
+                "product_name": "Smart Watch",
+                "quantity": 3,
+                "price": 3000,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 17,
+                "product_name": "Classic Denim Jacket",
+                "quantity": 3,
+                "price": 2499,
+                "variant": {
+                    "color": "Blue",
+                    "size": "S"
+                }
+            },
+            {
+                "product_id": 3,
+                "product_name": "Wireless Headphones",
+                "quantity": 3,
+                "price": 1990,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 14,
+                "product_name": "Wireless Earbuds Pro",
+                "quantity": 1,
+                "price": 2499,
+                "variant": {
+                    "color": "Black"
+                }
+            },
+            {
+                "product_id": 62,
+                "product_name": "Fantasy Epic Series Vol 1",
+                "quantity": 1,
+                "price": 399,
+                "variant": []
+            }
+        ],
+        "subtotal": 25365,
+        "shipping": 3320,
+        "tax": 5163,
+        "discount": 0,
+        "total": 33848,
+        "tracking_number": null,
+        "estimated_delivery": "2026-02-04"
+    },
+    {
         "order_id": "ORD-2026-6979",
         "user_id": 1,
         "date": "2026-01-23 12:52:06",
