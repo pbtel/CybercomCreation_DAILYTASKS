@@ -47,6 +47,9 @@ try {
     // Get shipping method description
     $description = getShippingMethodDescription($shippingMethod, $subtotal);
     
+    // Store selected shipping method in session for persistence
+    $_SESSION['selected_shipping_method'] = $shippingMethod;
+    
     echo json_encode([
         'success' => true,
         'subtotal' => $subtotal,

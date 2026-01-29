@@ -42,18 +42,38 @@ $taxNote = 'Calculated at checkout';
                                 </a>
                             </h3>
                             <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">
-                                <?php echo ucfirst($item['product']['category']); ?> • <?php echo $item['product']['brand']; ?>
+                                <?php echo ucfirst($item['product']['category']); ?> / <?php echo $item['product']['brand']; ?>
                             </p>
-                            <?php if (!empty($item['variant'])): ?>
+                        <?php if (!empty($item['variant'])): ?>
                                 <p style="color: var(--text-secondary); font-size: 0.875rem;">
                                     <?php foreach ($item['variant'] as $type => $value): ?>
-                                        <?php echo ucfirst($type); ?>: <?php echo $value; ?> &nbsp;
+                                        <?php echo ucfirst($type); ?>: <?php echo $value; ?>&nbsp;
                                     <?php endforeach; ?>
                                 </p>
                             <?php endif; ?>
-                            <p style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-top: 0.75rem;">
-                                ₹<?php echo number_format($item['product']['price']); ?>
-                            </p>
+                            
+                            <!-- Price Display with Discount -->
+                            <div style="margin-top: 0.75rem;">
+                                <?php if ($item['discount_percent'] > 0): ?>
+                                    <!-- Discounted Price (Large, Bold) -->
+                                    <p style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin-bottom: 0.25rem;">
+                                        ₹<?php echo number_format($item['unit_price_discounted']); ?>
+                                    </p>
+                                    <!-- Original Price (Strikethrough) -->
+                                    <p style="font-size: 0.9375rem; color: var(--text-secondary); text-decoration: line-through; margin-bottom: 0.25rem;">
+                                        ₹<?php echo number_format($item['unit_price_original']); ?>
+                                    </p>
+                                    <!-- Savings -->
+                                    <p style="font-size: 0.875rem; color: #10b981; font-weight: 600;">
+                                        <?php echo formatDiscountText($item['first_unit_savings'], $item['discount_percent']); ?>
+                                    </p>
+                                <?php else: ?>
+                                    <!-- No Discount - Regular Price -->
+                                    <p style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">
+                                        ₹<?php echo number_format($item['product']['price']); ?>
+                                    </p>
+                                <?php endif; ?>
+                            </div>
                         </div>
 
                         <!-- Quantity & Remove -->
@@ -78,6 +98,11 @@ $taxNote = 'Calculated at checkout';
                             <p class="item-subtotal" style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
                                 Subtotal: ₹<?php echo number_format($item['subtotal']); ?>
                             </p>
+                            <?php if ($item['quantity'] > 1 && $item['discount_percent'] > 0): ?>
+                                <p style="font-size: 0.75rem; color: #10b981; margin-top: 0.25rem;">
+                                    💡 First unit discounted, others at full price
+                                </p>
+                            <?php endif; ?>
                         </div>
                     </div>
                     <?php endforeach; ?>

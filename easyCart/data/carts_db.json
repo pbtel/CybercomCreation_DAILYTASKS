@@ -1,3 +1,29 @@
 {
-    "1": []
+    "1": {
+        "14_103a6e109648594b4a2ddba7b94ae7ef": {
+            "product_id": 14,
+            "quantity": 2,
+            "variant": {
+                "color": "Black"
+            },
+            "added_at": 1769657340
+        },
+        "4_103a6e109648594b4a2ddba7b94ae7ef": {
+            "product_id": 4,
+            "quantity": 1,
+            "variant": {
+                "color": "Black"
+            },
+            "added_at": 1769661937
+        },
+        "17_65e2c5d009fa05cfbb02949be660755d": {
+            "product_id": 17,
+            "quantity": 2,
+            "variant": {
+                "color": "Black",
+                "size": "M"
+            },
+            "added_at": 1769664911
+        }
+    }
 }

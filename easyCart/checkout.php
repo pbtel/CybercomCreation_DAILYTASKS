@@ -5,9 +5,9 @@ require_once 'includes/shipping.php';
 
 $cartItems = getCartItemsWithDetails();
 $subtotal = getCartSubtotal();
-// Default to standard shipping for initial display
-$defaultShippingMethod = 'standard';
-$shipping = calculateShippingCost($subtotal, $defaultShippingMethod);
+// Get shipping method from session, default to standard if not set
+$selectedShippingMethod = isset($_SESSION['selected_shipping_method']) ? $_SESSION['selected_shipping_method'] : 'standard';
+$shipping = calculateShippingCost($subtotal, $selectedShippingMethod);
 $tax = calculateTax($subtotal, $shipping);
 $total = calculateOrderTotal($subtotal, $shipping, $tax);
 
@@ -98,7 +98,7 @@ if (!isLoggedIn()) {
                         <!-- Standard Shipping -->
                         <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid var(--primary); border-radius: 12px; margin-bottom: 1rem; cursor: pointer; background: rgba(99, 102, 241, 0.05); position: relative; transition: all 0.3s ease;">
                             <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="standard" checked style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
+                                <input type="radio" name="shipping_method" value="standard" <?php echo ($selectedShippingMethod === 'standard') ? 'checked' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                                         <span style="font-size: 1.25rem;">📦</span>
@@ -116,7 +116,7 @@ if (!isLoggedIn()) {
                         <!-- Express Shipping -->
                         <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 1rem; cursor: pointer; position: relative; transition: all 0.3s ease;">
                             <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="express" style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
+                                <input type="radio" name="shipping_method" value="express" <?php echo ($selectedShippingMethod === 'express') ? 'checked' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                                         <span style="font-size: 1.25rem;">⚡</span>
@@ -144,7 +144,7 @@ if (!isLoggedIn()) {
                         <!-- White Glove Delivery -->
                         <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 1rem; cursor: pointer; position: relative; transition: all 0.3s ease;">
                             <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="whiteglove" style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
+                                <input type="radio" name="shipping_method" value="whiteglove" <?php echo ($selectedShippingMethod === 'whiteglove') ? 'checked' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                                         <span style="font-size: 1.25rem;">🏆</span>
@@ -172,7 +172,7 @@ if (!isLoggedIn()) {
                         <!-- Freight Shipping -->
                         <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid var(--border); border-radius: 12px; cursor: pointer; position: relative; transition: all 0.3s ease;">
                             <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="freight" style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
+                                <input type="radio" name="shipping_method" value="freight" <?php echo ($selectedShippingMethod === 'freight') ? 'checked' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
                                 <div style="flex: 1;">
                                     <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
                                         <span style="font-size: 1.25rem;">🚚</span>
@@ -233,7 +233,23 @@ if (!isLoggedIn()) {
                             <div style="flex: 1;">
                                 <p style="font-weight: 600; font-size: 0.9375rem;"><?php echo htmlspecialchars($item['product']['name']); ?></p>
                                 <p style="color: var(--text-secondary); font-size: 0.8125rem;">Qty: <?php echo $item['quantity']; ?></p>
-                                <p style="font-weight: 600; color: var(--primary);">₹<?php echo number_format($item['subtotal']); ?></p>
+                                
+                                <?php if ($item['discount_percent'] > 0): ?>
+                                    <!-- Show discounted unit price -->
+                                    <p style="font-weight: 600; color: var(--primary); font-size: 0.875rem; margin-top: 0.25rem;">
+                                        ₹<?php echo number_format($item['unit_price_discounted']); ?> 
+                                        <span style="text-decoration: line-through; color: var(--text-secondary); font-size: 0.75rem;">
+                                            ₹<?php echo number_format($item['unit_price_original']); ?>
+                                        </span>
+                                    </p>
+                                <?php else: ?>
+                                    <!-- Regular price -->
+                                    <p style="font-weight: 600; color: var(--primary); font-size: 0.875rem; margin-top: 0.25rem;">
+                                        ₹<?php echo number_format($item['product']['price']); ?>
+                                    </p>
+                                <?php endif; ?>
+                                
+                                <p style="font-weight: 600; color: var(--primary); margin-top: 0.25rem;">₹<?php echo number_format($item['subtotal']); ?></p>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -310,6 +326,9 @@ if (!isLoggedIn()) {
 
     // Add hover effects to shipping options
     document.addEventListener('DOMContentLoaded', function() {
+        // Apply correct styling on page load based on selected shipping method
+        updateOrderSummary();
+        
         document.querySelectorAll('.shipping-option').forEach(label => {
             label.addEventListener('mouseenter', function() {
                 const radio = this.querySelector('input[type="radio"]');

@@ -517,13 +517,8 @@ function initAjaxCartHandlers() {
         }
     });
 
-    // Initialize Shipping Method changes on checkout page
-    const shippingRadios = document.querySelectorAll('input[name="shipping_method"]');
-    shippingRadios.forEach(radio => {
-        radio.addEventListener('change', function () {
-            updateShippingCalculation(this.value);
-        });
-    });
+    // Note: Shipping Method changes are handled by inline onchange handlers in checkout.php
+    // to avoid duplicate AJAX calls
 }
 
 // ============================================

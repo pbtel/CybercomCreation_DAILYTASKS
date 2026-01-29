@@ -9,6 +9,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Include discount helpers
+require_once __DIR__ . '/discount-helpers.php';
+
 // Define JSON file paths
 define('USERS_DB_FILE', __DIR__ . '/../data/users_db.json');
 define('CARTS_DB_FILE', __DIR__ . '/../data/carts_db.json');
@@ -238,7 +241,9 @@ function getCartTotal() {
     foreach ($cart as $item) {
         $product = getProductById($item['product_id']);
         if ($product) {
-            $total += $product['price'] * $item['quantity'];
+            // Calculate with first-unit discount
+            $discountInfo = calculateItemTotalWithDiscount($product['price'], $item['quantity']);
+            $total += $discountInfo['total'];
         }
     }
     
@@ -257,11 +262,20 @@ function getCartItemsWithDetails() {
     foreach ($cart as $key => $item) {
         $product = getProductById($item['product_id']);
         if ($product) {
+            // Calculate first-unit discount
+            $discountInfo = calculateItemTotalWithDiscount($product['price'], $item['quantity']);
+            
             $cartDetails[$key] = [
                 'product' => $product,
                 'quantity' => $item['quantity'],
                 'variant' => $item['variant'],
-                'subtotal' => $product['price'] * $item['quantity']
+                'subtotal' => $discountInfo['total'],
+                'discount_percent' => $discountInfo['discount_percent'],
+                'unit_price_original' => $discountInfo['unit_price_original'],
+                'unit_price_discounted' => $discountInfo['unit_price_discounted'],
+                'first_unit_savings' => $discountInfo['first_unit_savings'],
+                'total_savings' => $discountInfo['total_savings'],
+                'full_price_total' => $discountInfo['full_price_total']
             ];
         }
     }

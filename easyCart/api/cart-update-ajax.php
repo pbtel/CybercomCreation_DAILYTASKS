@@ -75,8 +75,9 @@ try {
     $cartCount = getCartCount();
     $cartSubtotal = getCartSubtotal();
     
-    // Calculate item subtotal
-    $itemSubtotal = $product['price'] * $quantity;
+    // Calculate item subtotal with first-unit discount
+    $discountInfo = calculateItemTotalWithDiscount($product['price'], $quantity);
+    $itemSubtotal = $discountInfo['total'];
     
     echo json_encode([
         'success' => true,
