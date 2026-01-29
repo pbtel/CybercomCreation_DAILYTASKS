@@ -35,17 +35,25 @@ if (!in_array($shippingMethod, $validMethods)) {
 }
 
 try {
-    // Calculate shipping cost
-    $shippingCost = calculateShippingCost($subtotal, $shippingMethod);
+    // Apply coupon discount if available
+    $appliedCoupon = getAppliedCoupon();
+    $couponDiscount = 0;
+    if ($appliedCoupon) {
+        $couponDiscount = calculateCouponDiscount($subtotal);
+    }
+    $subtotalAfterCoupon = $subtotal - $couponDiscount;
+    
+    // Calculate shipping cost on coupon-discounted subtotal
+    $shippingCost = calculateShippingCost($subtotalAfterCoupon, $shippingMethod);
     
     // Calculate tax (18% GST on Subtotal + Shipping)
-    $tax = calculateTax($subtotal, $shippingCost);
+    $tax = calculateTax($subtotalAfterCoupon, $shippingCost);
     
     // Calculate total
-    $total = calculateOrderTotal($subtotal, $shippingCost, $tax);
+    $total = calculateOrderTotal($subtotalAfterCoupon, $shippingCost, $tax);
     
     // Get shipping method description
-    $description = getShippingMethodDescription($shippingMethod, $subtotal);
+    $description = getShippingMethodDescription($shippingMethod, $subtotalAfterCoupon);
     
     // Store selected shipping method in session for persistence
     $_SESSION['selected_shipping_method'] = $shippingMethod;

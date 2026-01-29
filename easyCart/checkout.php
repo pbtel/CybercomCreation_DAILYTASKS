@@ -5,11 +5,20 @@ require_once 'includes/shipping.php';
 
 $cartItems = getCartItemsWithDetails();
 $subtotal = getCartSubtotal();
+
+// Apply coupon discount if available
+$appliedCoupon = getAppliedCoupon();
+$couponDiscount = 0;
+if ($appliedCoupon) {
+    $couponDiscount = calculateCouponDiscount($subtotal);
+}
+$subtotalAfterCoupon = $subtotal - $couponDiscount;
+
 // Get shipping method from session, default to standard if not set
 $selectedShippingMethod = isset($_SESSION['selected_shipping_method']) ? $_SESSION['selected_shipping_method'] : 'standard';
-$shipping = calculateShippingCost($subtotal, $selectedShippingMethod);
-$tax = calculateTax($subtotal, $shipping);
-$total = calculateOrderTotal($subtotal, $shipping, $tax);
+$shipping = calculateShippingCost($subtotalAfterCoupon, $selectedShippingMethod);
+$tax = calculateTax($subtotalAfterCoupon, $shipping);
+$total = calculateOrderTotal($subtotalAfterCoupon, $shipping, $tax);
 
 // Redirect if cart is empty
 if (empty($cartItems)) {
@@ -126,8 +135,8 @@ if (!isLoggedIn()) {
                                     <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('express', $subtotal); ?></span>
                                     <?php 
                                     $expressCost = calculateShippingCost($subtotal, 'express');
-                                    if ($expressCost < 6640) {
-                                        $savings = 6640 - $expressCost;
+                                    if ($expressCost < 80) {
+                                        $savings = 80 - $expressCost;
                                         echo '<div style="background: rgba(245, 158, 11, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">';
                                         echo '<span style="color: #d97706; font-size: 0.8125rem; font-weight: 600;">🎉 Save ₹' . number_format($savings) . ' with your cart value!</span>';
                                         echo '</div>';
@@ -154,8 +163,8 @@ if (!isLoggedIn()) {
                                     <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('whiteglove', $subtotal); ?></span>
                                     <?php 
                                     $whiteGloveCost = calculateShippingCost($subtotal, 'whiteglove');
-                                    if ($whiteGloveCost < 12450) {
-                                        $savings = 12450 - $whiteGloveCost;
+                                    if ($whiteGloveCost < 150) {
+                                        $savings = 150 - $whiteGloveCost;
                                         echo '<div style="background: rgba(139, 92, 246, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">';
                                         echo '<span style="color: #7c3aed; font-size: 0.8125rem; font-weight: 600;">🎉 Save ₹' . number_format($savings) . ' with your cart value!</span>';
                                         echo '</div>';
@@ -260,6 +269,14 @@ if (!isLoggedIn()) {
                             <span style="color: var(--text-secondary);">Subtotal:</span>
                             <span style="font-weight: 600;" id="summary-subtotal">₹<?php echo number_format($subtotal); ?></span>
                         </div>
+                        
+                        <?php if ($appliedCoupon && $couponDiscount > 0): ?>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                            <span style="color: #10b981; font-weight: 600;">Coupon (<?php echo $appliedCoupon['code']; ?>):</span>
+                            <span style="font-weight: 600; color: #10b981;">-₹<?php echo number_format($couponDiscount); ?></span>
+                        </div>
+                        <?php endif; ?>
+                        
                         <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                             <span style="color: var(--text-secondary);">Shipping:</span>
                             <span style="font-weight: 600;" id="summary-shipping">₹<?php echo number_format($shipping); ?></span>

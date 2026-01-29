@@ -78,23 +78,25 @@ $taxNote = 'Calculated at checkout';
 
                         <!-- Quantity & Remove -->
                         <div style="text-align: right;">
-                            <form action="cart-update.php" method="POST" style="display: inline-block; margin-bottom: 0.5rem;">
-                                <input type="hidden" name="cart_key" value="<?php echo $key; ?>">
+                            <div style="display: inline-block; margin-bottom: 0.5rem;">
                                 <div style="display: flex; align-items: center; gap: 0.5rem;">
-                                    <input type="number" name="quantity" value="<?php echo $item['quantity']; ?>" 
-                                           min="1" max="<?php echo $item['product']['stock']; ?>"
+                                    <input type="number" 
+                                           class="cart-quantity-input" 
+                                           data-cart-key="<?php echo $key; ?>" 
+                                           value="<?php echo $item['quantity']; ?>" 
+                                           min="1" 
+                                           max="<?php echo $item['product']['stock']; ?>"
                                            style="width: 70px; padding: 0.5rem; border: 2px solid var(--border); border-radius: 8px; text-align: center; font-weight: 600;">
-                                    <button type="submit" style="padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                                    <button onclick="updateCartQuantityAjax('<?php echo $key; ?>', this.previousElementSibling.value, this.closest('.cart-item'))" 
+                                            style="padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
                                         Update
                                     </button>
                                 </div>
-                            </form>
-                            <form action="cart-remove.php" method="POST" style="display: inline-block;">
-                                <input type="hidden" name="cart_key" value="<?php echo $key; ?>">
-                                <button type="submit" style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
-                                    Remove
-                                </button>
-                            </form>
+                            </div>
+                            <button onclick="removeCartItemAjax('<?php echo $key; ?>', this.closest('.cart-item'))" 
+                                    style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-block;">
+                                Remove
+                            </button>
                             <p class="item-subtotal" style="font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.5rem;">
                                 Subtotal: ₹<?php echo number_format($item['subtotal']); ?>
                             </p>
@@ -128,7 +130,7 @@ $taxNote = 'Calculated at checkout';
                         <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                                 <span style="color: var(--text-secondary);">Subtotal (<?php echo count($cartItems); ?> unique items):</span>
-                                <span style="font-weight: 600;">₹<?php echo number_format($subtotal); ?></span>
+                                <span style="font-weight: 600;" id="summary-subtotal">₹<?php echo number_format($subtotal); ?></span>
                             </div>
                             <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
                                 <span style="color: var(--text-secondary);">Shipping:</span>
@@ -144,6 +146,61 @@ $taxNote = 'Calculated at checkout';
                             </div>
                         </div>
 
+                        <!-- COUPON CODE SECTION -->
+                        <?php
+                        $appliedCoupon = getAppliedCoupon();
+                        $couponDiscount = 0;
+                        $finalSubtotal = $subtotal;
+                        
+                        if ($appliedCoupon) {
+                            $couponDiscount = calculateCouponDiscount($subtotal);
+                            $finalSubtotal = $subtotal - $couponDiscount;
+                        }
+                        ?>
+                        
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
+                            <label style="display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.9375rem;">Have a coupon code?</label>
+                            
+                            <?php if (!$appliedCoupon): ?>
+                                <!-- Coupon Input Form -->
+                                <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                                    <input type="text" id="couponCode" placeholder="Enter code (e.g., SAVE10)" 
+                                           style="flex: 1; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-size: 0.875rem;">
+                                    <button onclick="applyCouponCode()" 
+                                            style="padding: 0.75rem 1.5rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                                        Apply
+                                    </button>
+                                </div>
+                                <div id="couponMessage" style="font-size: 0.8125rem; margin-top: 0.5rem;"></div>
+                            <?php else: ?>
+                                <!-- Applied Coupon Display -->
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: rgba(16, 185, 129, 0.1); border-radius: 8px; border: 1px solid #10b981;">
+                                    <div>
+                                        <span style="font-weight: 600; color: #10b981; font-size: 0.9375rem;">
+                                            ✓ <?php echo $appliedCoupon['code']; ?> Applied
+                                        </span>
+                                        <span style="color: var(--text-secondary); font-size: 0.8125rem; margin-left: 0.5rem;">
+                                            (<?php echo $appliedCoupon['discount_percent']; ?>% off)
+                                        </span>
+                                    </div>
+                                    <button onclick="removeCouponCode()" 
+                                            style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.8125rem;">
+                                        Remove
+                                    </button>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+
+                        <!-- Show Coupon Discount if Applied -->
+                        <?php if ($appliedCoupon && $couponDiscount > 0): ?>
+                            <div style="border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                                    <span style="color: #10b981; font-weight: 600;">Coupon Discount (<?php echo $appliedCoupon['code']; ?>):</span>
+                                    <span style="font-weight: 600; color: #10b981;" data-coupon-discount>-₹<?php echo number_format($couponDiscount); ?></span>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
                         <div style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
                             <p style="font-size: 0.875rem; color: var(--primary); font-weight: 600;">
                                 ℹ️ Shipping cost and final tax will be calculated based on your selected shipping method at checkout
@@ -152,7 +209,7 @@ $taxNote = 'Calculated at checkout';
 
                         <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; margin-bottom: 2rem;">
                             <span>Estimated Total:</span>
-                            <span style="color: var(--primary);">₹<?php echo number_format($subtotal); ?>+</span>
+                            <span style="color: var(--primary);" data-estimated-total>₹<?php echo number_format($finalSubtotal); ?>+</span>
                         </div>
 
 

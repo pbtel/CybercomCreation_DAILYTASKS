@@ -12,6 +12,9 @@ if (session_status() === PHP_SESSION_NONE) {
 // Include discount helpers
 require_once __DIR__ . '/discount-helpers.php';
 
+// Include coupon helpers
+require_once __DIR__ . '/coupon-helpers.php';
+
 // Define JSON file paths
 define('USERS_DB_FILE', __DIR__ . '/../data/users_db.json');
 define('CARTS_DB_FILE', __DIR__ . '/../data/carts_db.json');

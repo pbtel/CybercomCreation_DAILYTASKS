@@ -14,24 +14,24 @@
 function calculateShippingCost($subtotal, $shippingMethod) {
     switch ($shippingMethod) {
         case 'standard':
-            // Flat ₹3,320
-            return 3320;
+            // Flat ₹40
+            return 40;
             
         case 'express':
-            // Lower of ₹6,640 or 10% of subtotal
-            return min(6640, round($subtotal * 0.10));
+            // Lower of ₹80 or 10% of subtotal
+            return min(80, round($subtotal * 0.10));
             
         case 'whiteglove':
-            // Lower of ₹12,450 or 5% of subtotal
-            return min(12450, round($subtotal * 0.05));
+            // Lower of ₹150 or 5% of subtotal
+            return min(150, round($subtotal * 0.05));
             
         case 'freight':
-            // 3% of subtotal with minimum ₹16,600
-            return max(16600, round($subtotal * 0.03));
+            // 3% of subtotal with minimum ₹200
+            return max(200, round($subtotal * 0.03));
             
         default:
             // Default to standard shipping
-            return 3320;
+            return 40;
     }
 }
 

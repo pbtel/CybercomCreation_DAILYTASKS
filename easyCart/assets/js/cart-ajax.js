@@ -321,6 +321,7 @@ function updateCartBadge(count) {
 // ============================================
 
 function updateCartSummaryDisplay(subtotal) {
+    // Update subtotal display
     const summarySubtotal = document.getElementById('summary-subtotal');
     if (summarySubtotal) {
         summarySubtotal.textContent = '₹' + subtotal.toLocaleString('en-IN');
@@ -332,6 +333,48 @@ function updateCartSummaryDisplay(subtotal) {
             summarySubtotal.style.transform = 'scale(1)';
         }, 300);
     }
+
+    // Fetch updated cart summary to get coupon discount
+    fetch('api/cart-summary-ajax.php', {
+        method: 'GET'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update coupon discount if exists
+                const couponDiscountElement = document.querySelector('[data-coupon-discount]');
+                const couponDiscountContainer = couponDiscountElement ? couponDiscountElement.closest('div[style*="border-bottom"]') : null;
+
+                if (data.coupon_discount && data.coupon_discount > 0) {
+                    // Coupon is applied, update or create discount line
+                    if (couponDiscountElement) {
+                        couponDiscountElement.textContent = '-₹' + data.coupon_discount.toLocaleString('en-IN');
+                    }
+                } else {
+                    // No coupon, remove discount line if it exists
+                    if (couponDiscountContainer) {
+                        couponDiscountContainer.remove();
+                    }
+                }
+
+                // Update estimated total
+                const estimatedTotalElement = document.querySelector('[data-estimated-total]');
+                if (estimatedTotalElement) {
+                    const finalSubtotal = data.subtotal_after_coupon || subtotal;
+                    estimatedTotalElement.textContent = '₹' + finalSubtotal.toLocaleString('en-IN') + '+';
+
+                    // Add animation
+                    estimatedTotalElement.style.transition = 'all 0.3s ease';
+                    estimatedTotalElement.style.transform = 'scale(1.05)';
+                    setTimeout(() => {
+                        estimatedTotalElement.style.transform = 'scale(1)';
+                    }, 300);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching cart summary:', error);
+        });
 }
 
 // ============================================
@@ -519,6 +562,90 @@ function initAjaxCartHandlers() {
 
     // Note: Shipping Method changes are handled by inline onchange handlers in checkout.php
     // to avoid duplicate AJAX calls
+}
+
+// ============================================
+// 11. APPLY COUPON CODE - AJAX
+// ============================================
+
+function applyCouponCode() {
+    const couponInput = document.getElementById('couponCode');
+    const couponCode = couponInput ? couponInput.value.trim() : '';
+    const messageDiv = document.getElementById('couponMessage');
+
+    if (!couponCode) {
+        if (messageDiv) {
+            messageDiv.innerHTML = '<span style="color: #ef4444;">Please enter a coupon code</span>';
+        }
+        return;
+    }
+
+    // Show loading state
+    if (messageDiv) {
+        messageDiv.innerHTML = '<span style="color: var(--text-secondary);">Applying...</span>';
+    }
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('coupon_code', couponCode);
+
+    // Send AJAX request
+    fetch('api/coupon-apply-ajax.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message and reload page to update UI
+                showCartToast(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            } else {
+                // Show error message
+                if (messageDiv) {
+                    messageDiv.innerHTML = `<span style="color: #ef4444;">${data.message}</span>`;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error applying coupon:', error);
+            if (messageDiv) {
+                messageDiv.innerHTML = '<span style="color: #ef4444;">Failed to apply coupon. Please try again.</span>';
+            }
+        });
+}
+
+// ============================================
+// 12. REMOVE COUPON CODE - AJAX
+// ============================================
+
+function removeCouponCode() {
+    if (!confirm('Remove this coupon code?')) {
+        return;
+    }
+
+    // Send AJAX request
+    fetch('api/coupon-remove-ajax.php', {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Show success message and reload page
+                showCartToast(data.message, 'success');
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            } else {
+                showCartToast(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error removing coupon:', error);
+            showCartToast('Failed to remove coupon. Please try again.', 'error');
+        });
 }
 
 // ============================================
