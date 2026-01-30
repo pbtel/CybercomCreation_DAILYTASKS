@@ -13,6 +13,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 36999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 46999,
         'discount_percent' => 21,
         'rating' => 4.8,
@@ -43,6 +45,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 49990,
+
+        'shipping_type' => 'Freight',
         'original_price' => 65999,
         'discount_percent' => 23,
         'rating' => 4.5,
@@ -73,6 +77,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'AudioMax',
         'price' => 1990,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2999,
         'discount_percent' => 34,
         'rating' => 5.0,
@@ -101,6 +107,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'SmartLife',
         'price' => 3000,
+
+        'shipping_type' => 'Freight',
         'original_price' => 4500,
         'discount_percent' => 33,
         'rating' => 4.3,
@@ -129,6 +137,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 25999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 29999,
         'discount_percent' => 13,
         'rating' => 4.6,
@@ -157,6 +167,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 159,
+
+        'shipping_type' => 'Express',
         'original_price' => 299,
         'discount_percent' => 47,
         'rating' => 4.4,
@@ -185,6 +197,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 2499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 3999,
         'discount_percent' => 38,
         'rating' => 4.7,
@@ -211,6 +225,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 199,
+
+        'shipping_type' => 'Express',
         'original_price' => 399,
         'discount_percent' => 50,
         'rating' => 4.8,
@@ -237,6 +253,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 35,
         'rating' => 4.5,
@@ -263,6 +281,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'SportsPro',
         'price' => 1899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2999,
         'discount_percent' => 37,
         'rating' => 4.6,
@@ -291,6 +311,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 99,
+
+        'shipping_type' => 'Express',
         'original_price' => 199,
         'discount_percent' => 50,
         'rating' => 4.4,
@@ -316,6 +338,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 1499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2499,
         'discount_percent' => 40,
         'rating' => 4.7,
@@ -344,6 +368,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 149,
+
+        'shipping_type' => 'Express',
         'original_price' => 299,
         'discount_percent' => 50,
         'rating' => 4.9,
@@ -369,6 +395,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 1999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2999,
         'discount_percent' => 33,
         'rating' => 4.5,
@@ -395,6 +423,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 299,
+
+        'shipping_type' => 'Express',
         'original_price' => 499,
         'discount_percent' => 40,
         'rating' => 4.8,
@@ -420,6 +450,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 349,
+
+        'shipping_type' => 'Freight',
         'original_price' => 599,
         'discount_percent' => 42,
         'rating' => 4.6,
@@ -447,6 +479,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 35,
         'rating' => 4.9,
@@ -472,6 +506,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 249,
+
+        'shipping_type' => 'Express',
         'original_price' => 499,
         'discount_percent' => 50,
         'rating' => 5.0,
@@ -500,6 +536,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'AudioMax',
         'price' => 1499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2499,
         'discount_percent' => 40,
         'rating' => 4.7,
@@ -526,6 +564,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 2999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 4999,
         'discount_percent' => 40,
         'rating' => 4.8,
@@ -551,6 +591,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 1799,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2999,
         'discount_percent' => 40,
         'rating' => 4.5,
@@ -576,6 +618,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'SmartLife',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 35,
         'rating' => 4.6,
@@ -601,6 +645,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 1599,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2499,
         'discount_percent' => 36,
         'rating' => 4.4,
@@ -626,6 +672,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 35,
         'rating' => 4.7,
@@ -651,6 +699,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'TechnoGear',
         'price' => 4999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 6999,
         'discount_percent' => 29,
         'rating' => 4.9,
@@ -676,6 +726,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'AudioMax',
         'price' => 2499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 3999,
         'discount_percent' => 38,
         'rating' => 4.6,
@@ -701,6 +753,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'SmartLife',
         'price' => 899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1499,
         'discount_percent' => 40,
         'rating' => 4.5,
@@ -726,6 +780,8 @@ $products = [
         'category' => 'electronics',
         'brand' => 'SmartLife',
         'price' => 1999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2999,
         'discount_percent' => 33,
         'rating' => 4.4,
@@ -753,6 +809,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 249,
+
+        'shipping_type' => 'Express',
         'original_price' => 499,
         'discount_percent' => 50,
         'rating' => 4.7,
@@ -778,6 +836,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1599,
         'discount_percent' => 44,
         'rating' => 4.6,
@@ -803,6 +863,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 35,
         'rating' => 4.8,
@@ -828,6 +890,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1699,
         'discount_percent' => 41,
         'rating' => 4.5,
@@ -854,6 +918,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'SportsPro',
         'price' => 129,
+
+        'shipping_type' => 'Express',
         'original_price' => 249,
         'discount_percent' => 48,
         'rating' => 4.4,
@@ -879,6 +945,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 599,
+
+        'shipping_type' => 'Freight',
         'original_price' => 999,
         'discount_percent' => 40,
         'rating' => 4.6,
@@ -905,6 +973,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 1199,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 40,
         'rating' => 4.7,
@@ -931,6 +1001,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 59,
+
+        'shipping_type' => 'Express',
         'original_price' => 99,
         'discount_percent' => 40,
         'rating' => 4.5,
@@ -956,6 +1028,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 1499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2499,
         'discount_percent' => 40,
         'rating' => 4.6,
@@ -982,6 +1056,8 @@ $products = [
         'category' => 'fashion',
         'brand' => 'FashionHub',
         'price' => 699,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1199,
         'discount_percent' => 42,
         'rating' => 4.7,
@@ -1010,6 +1086,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 699,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1199,
         'discount_percent' => 42,
         'rating' => 4.5,
@@ -1035,6 +1113,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 199,
+
+        'shipping_type' => 'Express',
         'original_price' => 399,
         'discount_percent' => 50,
         'rating' => 4.6,
@@ -1060,6 +1140,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2199,
         'discount_percent' => 41,
         'rating' => 4.7,
@@ -1086,6 +1168,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1499,
         'discount_percent' => 40,
         'rating' => 4.4,
@@ -1111,6 +1195,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 1199,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 40,
         'rating' => 4.6,
@@ -1136,6 +1222,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 999,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1699,
         'discount_percent' => 41,
         'rating' => 4.5,
@@ -1162,6 +1250,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 599,
+
+        'shipping_type' => 'Freight',
         'original_price' => 999,
         'discount_percent' => 40,
         'rating' => 4.7,
@@ -1187,6 +1277,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 799,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1299,
         'discount_percent' => 38,
         'rating' => 4.6,
@@ -1212,6 +1304,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 249,
+
+        'shipping_type' => 'Express',
         'original_price' => 499,
         'discount_percent' => 50,
         'rating' => 4.5,
@@ -1237,6 +1331,8 @@ $products = [
         'category' => 'home',
         'brand' => 'HomeEssentials',
         'price' => 899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1499,
         'discount_percent' => 40,
         'rating' => 4.4,
@@ -1264,6 +1360,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 699,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1199,
         'discount_percent' => 42,
         'rating' => 4.7,
@@ -1289,6 +1387,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 399,
+
+        'shipping_type' => 'Freight',
         'original_price' => 699,
         'discount_percent' => 43,
         'rating' => 4.6,
@@ -1314,6 +1414,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 699,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1199,
         'discount_percent' => 42,
         'rating' => 4.8,
@@ -1339,6 +1441,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 35,
         'rating' => 4.5,
@@ -1364,6 +1468,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1499,
         'discount_percent' => 40,
         'rating' => 4.6,
@@ -1389,6 +1495,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 399,
+
+        'shipping_type' => 'Freight',
         'original_price' => 699,
         'discount_percent' => 43,
         'rating' => 4.7,
@@ -1414,6 +1522,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 899,
         'discount_percent' => 44,
         'rating' => 4.5,
@@ -1439,6 +1549,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 299,
+
+        'shipping_type' => 'Express',
         'original_price' => 599,
         'discount_percent' => 50,
         'rating' => 4.6,
@@ -1464,6 +1576,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 399,
+
+        'shipping_type' => 'Freight',
         'original_price' => 799,
         'discount_percent' => 50,
         'rating' => 4.4,
@@ -1489,6 +1603,8 @@ $products = [
         'category' => 'sports',
         'brand' => 'SportsPro',
         'price' => 599,
+
+        'shipping_type' => 'Freight',
         'original_price' => 999,
         'discount_percent' => 40,
         'rating' => 4.7,
@@ -1516,6 +1632,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 279,
+
+        'shipping_type' => 'Express',
         'original_price' => 499,
         'discount_percent' => 44,
         'rating' => 4.7,
@@ -1541,6 +1659,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 399,
+
+        'shipping_type' => 'Freight',
         'original_price' => 699,
         'discount_percent' => 43,
         'rating' => 4.8,
@@ -1566,6 +1686,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 449,
+
+        'shipping_type' => 'Freight',
         'original_price' => 799,
         'discount_percent' => 44,
         'rating' => 4.9,
@@ -1591,6 +1713,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 399,
+
+        'shipping_type' => 'Freight',
         'original_price' => 699,
         'discount_percent' => 43,
         'rating' => 4.8,
@@ -1616,6 +1740,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 349,
+
+        'shipping_type' => 'Freight',
         'original_price' => 599,
         'discount_percent' => 42,
         'rating' => 4.6,
@@ -1641,6 +1767,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 299,
+
+        'shipping_type' => 'Express',
         'original_price' => 549,
         'discount_percent' => 46,
         'rating' => 4.5,
@@ -1666,6 +1794,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 899,
         'discount_percent' => 44,
         'rating' => 4.7,
@@ -1691,6 +1821,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 249,
+
+        'shipping_type' => 'Express',
         'original_price' => 449,
         'discount_percent' => 45,
         'rating' => 4.9,
@@ -1716,6 +1848,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 329,
+
+        'shipping_type' => 'Freight',
         'original_price' => 599,
         'discount_percent' => 45,
         'rating' => 4.4,
@@ -1741,6 +1875,8 @@ $products = [
         'category' => 'books',
         'brand' => 'BookWorld',
         'price' => 279,
+
+        'shipping_type' => 'Express',
         'original_price' => 499,
         'discount_percent' => 44,
         'rating' => 4.6,
@@ -1768,6 +1904,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 1499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2499,
         'discount_percent' => 40,
         'rating' => 4.8,
@@ -1793,6 +1931,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 599,
+
+        'shipping_type' => 'Freight',
         'original_price' => 999,
         'discount_percent' => 40,
         'rating' => 4.7,
@@ -1818,6 +1958,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1499,
         'discount_percent' => 40,
         'rating' => 4.9,
@@ -1843,6 +1985,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 799,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1299,
         'discount_percent' => 38,
         'rating' => 4.6,
@@ -1868,6 +2012,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 2499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 3999,
         'discount_percent' => 38,
         'rating' => 4.8,
@@ -1893,6 +2039,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 699,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1199,
         'discount_percent' => 42,
         'rating' => 4.7,
@@ -1918,6 +2066,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 1299,
+
+        'shipping_type' => 'Freight',
         'original_price' => 1999,
         'discount_percent' => 35,
         'rating' => 4.5,
@@ -1943,6 +2093,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 1899,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2999,
         'discount_percent' => 37,
         'rating' => 4.8,
@@ -1968,6 +2120,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 599,
+
+        'shipping_type' => 'Freight',
         'original_price' => 999,
         'discount_percent' => 40,
         'rating' => 4.6,
@@ -1993,6 +2147,8 @@ $products = [
         'category' => 'toys',
         'brand' => 'ToyLand',
         'price' => 1499,
+
+        'shipping_type' => 'Freight',
         'original_price' => 2499,
         'discount_percent' => 40,
         'rating' => 4.9,

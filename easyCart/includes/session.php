@@ -15,6 +15,9 @@ require_once __DIR__ . '/discount-helpers.php';
 // Include coupon helpers
 require_once __DIR__ . '/coupon-helpers.php';
 
+// Include shipping type helpers
+require_once __DIR__ . '/shipping-type-helpers.php';
+
 // Define JSON file paths
 define('USERS_DB_FILE', __DIR__ . '/../data/users_db.json');
 define('CARTS_DB_FILE', __DIR__ . '/../data/carts_db.json');
@@ -67,6 +70,11 @@ if (!isset($_SESSION['user'])) {
         'name' => null,
         'email' => null
     ];
+}
+
+// Initialize selected shipping method if not exists
+if (!isset($_SESSION['selected_shipping_method'])) {
+    $_SESSION['selected_shipping_method'] = null; // Will be set based on cart contents
 }
 
 // Helper Functions for Session Management
@@ -401,5 +409,67 @@ function getFlashMessage() {
 
 function hasFlashMessage() {
     return isset($_SESSION['flash']);
+}
+
+// Shipping Method Session Functions
+
+/**
+ * Get the currently selected shipping method
+ * Returns null if not set or auto-determines based on cart
+ */
+function getSelectedShippingMethod() {
+    return $_SESSION['selected_shipping_method'] ?? null;
+}
+
+/**
+ * Set the selected shipping method
+ * Validates that the method is available for current cart
+ */
+function setSelectedShippingMethod($method) {
+    $cartItems = getCartItemsWithDetails();
+    $subtotal = getCartSubtotal();
+    
+    // Calculate subtotal after coupon discount
+    $appliedCoupon = getAppliedCoupon();
+    if ($appliedCoupon) {
+        $couponDiscount = calculateCouponDiscount($subtotal);
+        $subtotal = $subtotal - $couponDiscount;
+    }
+    
+    // Validate method is available
+    if (isShippingMethodAvailable($method, $cartItems, $subtotal)) {
+        $_SESSION['selected_shipping_method'] = $method;
+        return true;
+    }
+    
+    return false;
+}
+
+/**
+ * Get or auto-determine shipping method based on cart
+ * If no method is selected or selected method is invalid, auto-select default
+ */
+function getOrSetDefaultShippingMethod() {
+    $cartItems = getCartItemsWithDetails();
+    $subtotal = getCartSubtotal();
+    
+    // Calculate subtotal after coupon discount
+    $appliedCoupon = getAppliedCoupon();
+    if ($appliedCoupon) {
+        $couponDiscount = calculateCouponDiscount($subtotal);
+        $subtotal = $subtotal - $couponDiscount;
+    }
+    
+    $currentMethod = getSelectedShippingMethod();
+    
+    // If current method is valid, return it
+    if ($currentMethod && isShippingMethodAvailable($currentMethod, $cartItems, $subtotal)) {
+        return $currentMethod;
+    }
+    
+    // Otherwise, auto-select default and save it
+    $defaultMethod = getDefaultShippingMethod($cartItems, $subtotal);
+    $_SESSION['selected_shipping_method'] = $defaultMethod;
+    return $defaultMethod;
 }
 ?>

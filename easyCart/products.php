@@ -163,6 +163,11 @@ $allBrands = getAllBrands();
                                 <span class="product-old-price">₹<?php echo number_format($product['original_price']); ?></span>
                             <?php endif; ?>
                         </div>
+                        <?php if (isset($product['shipping_type'])): ?>
+                        <div style="margin-top: 0.5rem; display: inline-block; padding: 0.25rem 0.75rem; background: <?php echo $product['shipping_type'] === 'Express' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(168, 85, 247, 0.1)'; ?>; color: <?php echo $product['shipping_type'] === 'Express' ? '#3b82f6' : '#a855f7'; ?>; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                            <?php echo $product['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?> <?php echo $product['shipping_type']; ?>
+                        </div>
+                        <?php endif; ?>
                     </div>
                 </a>
                 <?php endforeach; ?>

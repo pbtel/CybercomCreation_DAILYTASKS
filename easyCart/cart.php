@@ -2,8 +2,21 @@
 $pageTitle = "Shopping Cart";
 require_once 'includes/header.php';
 
+
 $cartItems = getCartItemsWithDetails();
 $subtotal = getCartSubtotal();
+
+// Calculate subtotal after applying coupon discount
+$appliedCoupon = getAppliedCoupon();
+$couponDiscount = 0;
+if ($appliedCoupon) {
+    $couponDiscount = calculateCouponDiscount($subtotal);
+}
+$subtotalAfterCoupon = $subtotal - $couponDiscount;
+
+// Get available shipping methods - use subtotal AFTER coupon
+$availableShippingMethods = getAvailableShippingMethods($cartItems, $subtotalAfterCoupon);
+
 // Shipping will be calculated at checkout based on selected method
 $shippingNote = 'Calculated at checkout';
 // Tax note - will be calculated on (Subtotal + Shipping) at checkout
@@ -87,13 +100,13 @@ $taxNote = 'Calculated at checkout';
                                            min="1" 
                                            max="<?php echo $item['product']['stock']; ?>"
                                            style="width: 70px; padding: 0.5rem; border: 2px solid var(--border); border-radius: 8px; text-align: center; font-weight: 600;">
-                                    <button onclick="updateCartQuantityAjax('<?php echo $key; ?>', this.previousElementSibling.value, this.closest('.cart-item'))" 
+                                    <button onclick="updateCartQuantityAjax('<?php echo $key; ?>', this.previousElementSibling.value, this.closest('[data-cart-item]'))" 
                                             style="padding: 0.5rem 1rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
                                         Update
                                     </button>
                                 </div>
                             </div>
-                            <button onclick="removeCartItemAjax('<?php echo $key; ?>', this.closest('.cart-item'))" 
+                            <button onclick="removeCartItemAjax('<?php echo $key; ?>', this.closest('[data-cart-item]'))" 
                                     style="padding: 0.5rem 1rem; background: #ef4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; display: inline-block;">
                                 Remove
                             </button>
@@ -148,14 +161,8 @@ $taxNote = 'Calculated at checkout';
 
                         <!-- COUPON CODE SECTION -->
                         <?php
-                        $appliedCoupon = getAppliedCoupon();
-                        $couponDiscount = 0;
-                        $finalSubtotal = $subtotal;
-                        
-                        if ($appliedCoupon) {
-                            $couponDiscount = calculateCouponDiscount($subtotal);
-                            $finalSubtotal = $subtotal - $couponDiscount;
-                        }
+                        // Coupon variables already calculated at top of file
+                        $finalSubtotal = $subtotalAfterCoupon;
                         ?>
                         
                         <div style="margin-bottom: 1.5rem; padding: 1rem; background: var(--bg-primary); border-radius: 8px;">
@@ -200,6 +207,8 @@ $taxNote = 'Calculated at checkout';
                                 </div>
                             </div>
                         <?php endif; ?>
+
+
 
                         <div style="background: rgba(99, 102, 241, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; text-align: center;">
                             <p style="font-size: 0.875rem; color: var(--primary); font-weight: 600;">

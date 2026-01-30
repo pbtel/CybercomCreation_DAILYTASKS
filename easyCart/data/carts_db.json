@@ -1,21 +1,13 @@
 {
     "1": {
-        "20_d7acd885fdb3ec2ce6660a71df6b9986": {
-            "product_id": 20,
-            "quantity": 3,
-            "variant": {
-                "color": "Black",
-                "size": "6"
-            },
-            "added_at": 1769688244
-        },
-        "51_103a6e109648594b4a2ddba7b94ae7ef": {
-            "product_id": 51,
+        "17_3953ff5b218fc0a3dd59974415fba791": {
+            "product_id": 17,
             "quantity": 1,
             "variant": {
-                "color": "Black"
+                "color": "Blue",
+                "size": "S"
             },
-            "added_at": 1769689989
+            "added_at": 1769753901
         }
     }
 }

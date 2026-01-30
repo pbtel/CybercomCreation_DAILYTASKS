@@ -57,6 +57,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $subtotal = getCartSubtotal();
     $shippingMethod = isset($_POST['shipping_method']) ? $_POST['shipping_method'] : 'standard';
     
+    // Validate shipping method is available for current cart
+    $availableShippingMethods = getAvailableShippingMethods($cartItems, $subtotal);
+    if (!in_array($shippingMethod, $availableShippingMethods)) {
+        setFlashMessage('error', 'Selected shipping method is not available for your cart. Please select a valid shipping method.');
+        header('Location: checkout.php');
+        exit;
+    }
+    
     // Calculate shipping cost based on method and subtotal
     $shippingCost = calculateShippingCost($subtotal, $shippingMethod);
     

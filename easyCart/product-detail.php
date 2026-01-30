@@ -87,6 +87,23 @@ $category = getCategoryById($product['category']);
                     </strong>
                 </div>
 
+                <!-- SHIPPING TYPE -->
+                <?php if (isset($product['shipping_type'])): ?>
+                <div style="margin-bottom: 2rem; padding: 1rem; background: <?php echo $product['shipping_type'] === 'Express' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(168, 85, 247, 0.1)'; ?>; border-radius: 8px; border: 2px solid <?php echo $product['shipping_type'] === 'Express' ? '#3b82f6' : '#a855f7'; ?>;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-size: 1.5rem;"><?php echo $product['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?></span>
+                        <div>
+                            <strong style="color: <?php echo $product['shipping_type'] === 'Express' ? '#3b82f6' : '#a855f7'; ?>; font-size: 1.125rem;">
+                                <?php echo $product['shipping_type']; ?> Shipping
+                            </strong>
+                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">
+                                <?php echo $product['shipping_type'] === 'Express' ? 'Fast delivery for lightweight items' : 'Specialized handling for high-value items'; ?>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+
                 <!-- VARIANTS -->
                 <?php if (isset($product['variants'])): ?>
                     <?php foreach ($product['variants'] as $variantType => $options): ?>
