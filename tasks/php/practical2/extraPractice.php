@@ -43,4 +43,33 @@ foreach ($attendance as $name => $status) {
     echo "$name is $status <br>";
 }
 
+
+//print * pattern 
+
+for($i=0;$i<5;$i++){
+    for($j=0;$j<=$i;$j++){
+        echo "*";
+    }
+    echo "<br>";
+}
+
+//print square pattern 
+
+for($i=0;$i<4;$i++){
+    for($j=0;$j<4;$j++){
+        if($i==0 || $i==3 || $j==0 || $j==3){
+            echo "*";
+        }
+    }
+    echo "<br>";
+}
+
+//print other star method
+
+for($i=4;$i>0;$i++){
+    for($j=4;$j<=0;$j++){
+        echo "*";
+    }
+    echo "<br>";
+}
 ?>

@@ -1,5 +1,5 @@
 <?php 
-
+//multiplication table
 echo "<h3> multiplication table of 5 using for loop</h3>";
 
 for($i=0;$i<=10;$i++){
@@ -7,7 +7,9 @@ for($i=0;$i<=10;$i++){
 echo "5 x $i = " . (5*$i) . "<br>";
 }
 
+echo "<br>";
 
+//print even numbers using while loop
 echo "<h3> even numbers between 1 to 20 using while loop</h3>";
 
 $i=1;
@@ -19,6 +21,7 @@ while($i<20){
     $i++;
 }
 
+//itarate on assosiative array
 echo "<h3>for each loop to iterate through an array</h3>";
 $arr = ["name" => "pooja" ,
         "age" => 21,
