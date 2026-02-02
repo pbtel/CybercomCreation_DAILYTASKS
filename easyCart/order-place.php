@@ -2,9 +2,7 @@
 require_once 'includes/session.php';
 require_once 'includes/products.php';
 require_once 'includes/shipping.php';
-
-// Define orders database file path
-define('ORDERS_DB_FILE', __DIR__ . '/data/orders_db.json');
+require_once 'includes/orders.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verify user is logged in
@@ -89,64 +87,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     }
     
-    // Calculate estimated delivery using new shipping methods
-    $deliveryDays = getDeliveryDays($shippingMethod);
-    $estimatedDelivery = date('Y-m-d', strtotime("+$deliveryDays days"));
-    
-    // Create order object
-    $order = [
-        'order_id' => $orderNumber,
+    // Prepare order data for database
+    $orderData = [
         'user_id' => $_SESSION['user']['user_id'],
-        'date' => date('Y-m-d H:i:s'),
-        'status' => 'processing',
-        'payment_method' => ucfirst($paymentMethod),
-        'shipping_method' => getShippingMethodName($shippingMethod),
-        'shipping_address' => [
-            'name' => $firstName . ' ' . $lastName,
-            'email' => $email,
-            'phone' => $phone,
-            'address' => $address,
-            'city' => $city,
-            'state' => $state,
-            'pincode' => $pincode,
-            'country' => $country
-        ],
-        'items' => $orderItems,
+        'order_number' => $orderNumber,
         'subtotal' => $subtotal,
-        'shipping' => $shippingCost,
+        'shipping_type' => getShippingMethodName($shippingMethod),
+        'shipping_cost' => $shippingCost,
         'tax' => $tax,
         'discount' => 0,
-        'total' => $total,
-        'tracking_number' => null,
-        'estimated_delivery' => $estimatedDelivery
+        'final_amount' => $total,
+        'status' => 'processing',
+        'items' => $orderItems,
+        'address' => [
+            'full_name' => $firstName . ' ' . $lastName,
+            'email' => $email,
+            'phone' => $phone,
+            'address_line1' => $address,
+            'address_line2' => '',
+            'city' => $city,
+            'state' => $state,
+            'postal_code' => $pincode,
+            'country' => $country
+        ]
     ];
     
-    // Load existing orders
-    $orders = [];
-    if (file_exists(ORDERS_DB_FILE)) {
-        $ordersData = file_get_contents(ORDERS_DB_FILE);
-        $orders = json_decode($ordersData, true) ?: [];
+    // Save order to database
+    $orderId = saveOrder($orderData);
+    
+    if ($orderId) {
+        // Clear cart
+        clearCart();
+        
+        // Set success message
+        setFlashMessage('success', 'Order placed successfully! Your order number is ' . $orderNumber);
+        
+        // Redirect to orders page
+        header('Location: orders.php');
+        exit;
+    } else {
+        setFlashMessage('error', 'Failed to place order. Please try again.');
+        header('Location: checkout.php');
+        exit;
     }
-    
-    // Add new order to the beginning of the array
-    array_unshift($orders, $order);
-    
-    // Save orders to file
-    $dataDir = __DIR__ . '/data';
-    if (!is_dir($dataDir)) {
-        mkdir($dataDir, 0755, true);
-    }
-    file_put_contents(ORDERS_DB_FILE, json_encode($orders, JSON_PRETTY_PRINT));
-    
-    // Clear cart
-    clearCart();
-    
-    // Set success message
-    setFlashMessage('success', 'Order placed successfully! Your order number is ' . $orderNumber);
-    
-    // Redirect to orders page
-    header('Location: orders.php');
-    exit;
 } else {
     header('Location: cart.php');
     exit;

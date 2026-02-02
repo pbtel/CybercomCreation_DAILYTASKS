@@ -1,13 +1,16 @@
 <?php
 /**
- * Session Configuration - EasyCart Phase 2
- * Handles cart and user session management
+ * Session Configuration - EasyCart Phase 6
+ * Handles cart and user session management with database
  */
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
+// Include database helpers
+require_once __DIR__ . '/db.php';
 
 // Include discount helpers
 require_once __DIR__ . '/discount-helpers.php';
@@ -18,37 +21,30 @@ require_once __DIR__ . '/coupon-helpers.php';
 // Include shipping type helpers
 require_once __DIR__ . '/shipping-type-helpers.php';
 
-// Define JSON file paths
-define('USERS_DB_FILE', __DIR__ . '/../data/users_db.json');
-define('CARTS_DB_FILE', __DIR__ . '/../data/carts_db.json');
-
-// Initialize user database (in session) if not exists
-if (!isset($_SESSION['users_db'])) {
-    // Try to load from JSON file
-    if (file_exists(USERS_DB_FILE)) {
-        $usersData = file_get_contents(USERS_DB_FILE);
-        $_SESSION['users_db'] = json_decode($usersData, true) ?: [];
-    } else {
-        $_SESSION['users_db'] = [
-            [
-                'user_id' => 1,
-                'email' => 'demo@easycart.com',
-                'password' => 'demo123',
-                'name' => 'Demo User'
-            ]
-        ];
-    }
+// Initialize session type tracking
+if (!isset($_SESSION['session_type'])) {
+    $_SESSION['session_type'] = 'guest';
+    $_SESSION['guest_id'] = 'guest_' . session_id();
 }
 
-// Initialize cart database for persistent user carts
-if (!isset($_SESSION['carts_db'])) {
-    // Try to load from JSON file
-    if (file_exists(CARTS_DB_FILE)) {
-        $cartsData = file_get_contents(CARTS_DB_FILE);
-        $_SESSION['carts_db'] = json_decode($cartsData, true) ?: [];
-    } else {
-        $_SESSION['carts_db'] = [];
-    }
+// Initialize guest cart if not exists
+if (!isset($_SESSION['guest_cart'])) {
+    $_SESSION['guest_cart'] = [];
+}
+
+// Initialize user session data if not exists
+if (!isset($_SESSION['user'])) {
+    $_SESSION['user'] = [
+        'logged_in' => false,
+        'user_id' => null,
+        'name' => null,
+        'email' => null
+    ];
+}
+
+// Initialize selected shipping method if not exists
+if (!isset($_SESSION['selected_shipping_method'])) {
+    $_SESSION['selected_shipping_method'] = null; // Will be set based on cart contents
 }
 
 // Initialize session type tracking
@@ -113,22 +109,28 @@ function setCurrentCart($cart) {
 }
 
 /**
- * Load user cart from database
+ * Load user cart from session
+ * Note: For Phase 6, we keep cart in session for simplicity
+ * Cart will be persisted to database on order placement
  */
 function getUserCart($userId) {
-    if (isset($_SESSION['carts_db'][$userId])) {
-        return $_SESSION['carts_db'][$userId];
+    if (!isset($_SESSION['user_carts'])) {
+        $_SESSION['user_carts'] = [];
+    }
+    if (isset($_SESSION['user_carts'][$userId])) {
+        return $_SESSION['user_carts'][$userId];
     }
     return [];
 }
 
 /**
- * Save user cart to database
+ * Save user cart to session
  */
 function saveUserCart($userId, $cart) {
-    $_SESSION['carts_db'][$userId] = $cart;
-    // Persist to JSON files
-    persistToJSON();
+    if (!isset($_SESSION['user_carts'])) {
+        $_SESSION['user_carts'] = [];
+    }
+    $_SESSION['user_carts'][$userId] = $cart;
 }
 
 /**
@@ -158,24 +160,6 @@ function mergeGuestCartWithUser($userId) {
     return $userCart;
 }
 
-/**
- * Persist data to JSON files
- */
-function persistToJSON() {
-    // Ensure data directory exists
-    $dataDir = __DIR__ . '/../data';
-    if (!is_dir($dataDir)) {
-        mkdir($dataDir, 0755, true);
-    }
-    
-    // Save users database to JSON file
-    $usersJson = json_encode($_SESSION['users_db'], JSON_PRETTY_PRINT);
-    file_put_contents(USERS_DB_FILE, $usersJson);
-    
-    // Save carts database to JSON file
-    $cartsJson = json_encode($_SESSION['carts_db'], JSON_PRETTY_PRINT);
-    file_put_contents(CARTS_DB_FILE, $cartsJson);
-}
 
 // Cart Functions
 
@@ -342,48 +326,41 @@ function logoutUser() {
 
 // User Registration Function
 function registerUser($firstName, $lastName, $email, $password) {
-    global $_SESSION;
-    
     // Check if user already exists
-    foreach ($_SESSION['users_db'] as $user) {
-        if ($user['email'] === $email) {
-            return ['success' => false, 'message' => 'Email already registered'];
-        }
+    $existingUser = fetchOne("SELECT user_id FROM users WHERE email = :email", ['email' => $email]);
+    if ($existingUser) {
+        return ['success' => false, 'message' => 'Email already registered'];
     }
     
     // Create new user
-    // Handle empty users_db array to avoid max() error
-    if (empty($_SESSION['users_db'])) {
-        $userId = 1;
-    } else {
-        $userId = max(array_column($_SESSION['users_db'], 'user_id')) + 1;
-    }
     $fullName = $firstName . ' ' . $lastName;
     
-    $_SESSION['users_db'][] = [
-        'user_id' => $userId,
+    $userId = dbInsert('users', [
         'email' => $email,
         'password' => $password,
         'name' => $fullName
-    ];
+    ]);
     
-    // Initialize empty cart for new user
-    $_SESSION['carts_db'][$userId] = [];
+    if ($userId) {
+        return ['success' => true, 'user_id' => $userId, 'name' => $fullName];
+    }
     
-    // Persist to JSON files
-    persistToJSON();
-    
-    return ['success' => true, 'user_id' => $userId, 'name' => $fullName];
+    return ['success' => false, 'message' => 'Failed to create user'];
 }
 
 // User Login Verification Function
 function verifyUserLogin($email, $password) {
-    global $_SESSION;
+    $user = fetchOne(
+        "SELECT user_id, name, email FROM users WHERE email = :email AND password = :password",
+        ['email' => $email, 'password' => $password]
+    );
     
-    foreach ($_SESSION['users_db'] as $user) {
-        if ($user['email'] === $email && $user['password'] === $password) {
-            return ['success' => true, 'user_id' => $user['user_id'], 'name' => $user['name']];
-        }
+    if ($user) {
+        return [
+            'success' => true, 
+            'user_id' => $user['user_id'], 
+            'name' => $user['name']
+        ];
     }
     
     return ['success' => false, 'message' => 'Invalid email or password'];

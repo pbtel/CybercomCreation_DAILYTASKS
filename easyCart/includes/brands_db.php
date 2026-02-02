@@ -59,6 +59,20 @@ function getAllBrands() {
     return $brands ?? [];
 }
 
+/**
+ * Get products by brand (uses products_db.php function)
+ * @param string $brandId
+ * @return array
+ */
+function getProductsByBrand($brandId) {
+    // This function is defined in products_db.php
+    // Include it if not already included
+    if (!function_exists('getProductsByBrand')) {
+        require_once __DIR__ . '/products_db.php';
+    }
+    return getProductsByBrand($brandId);
+}
+
 // For backward compatibility, create a $brands variable
 $brands = getAllBrands();
 ?>
