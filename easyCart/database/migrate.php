@@ -144,6 +144,9 @@ try {
     
     // Load users from JSON file
     $usersFile = __DIR__ . '/../data/users_db.json';
+    $migratedUsersFile = __DIR__ . '/../data/users_db.json.migrated';
+    
+    // Check for original file first, then migrated file
     if (file_exists($usersFile)) {
         $usersData = json_decode(file_get_contents($usersFile), true);
         if ($usersData && is_array($usersData)) {
@@ -160,6 +163,10 @@ try {
                 }
             }
         }
+    } elseif (file_exists($migratedUsersFile)) {
+        echo "  ℹ Users already migrated (found .migrated file). Skipping...\n";
+    } else {
+        echo "  ℹ No user data file found. Skipping user migration...\n";
     }
     echo "✓ Users migrated: " . count($userMap) . "\n\n";
     
@@ -171,6 +178,9 @@ try {
     
     // Load orders from JSON file
     $ordersFile = __DIR__ . '/../data/orders_db.json';
+    $migratedOrdersFile = __DIR__ . '/../data/orders_db.json.migrated';
+    
+    // Check for original file first, then migrated file
     if (file_exists($ordersFile)) {
         $ordersData = json_decode(file_get_contents($ordersFile), true);
         if ($ordersData && is_array($ordersData)) {
@@ -237,6 +247,10 @@ try {
                 }
             }
         }
+    } elseif (file_exists($migratedOrdersFile)) {
+        echo "  ℹ Orders already migrated (found .migrated file). Skipping...\n";
+    } else {
+        echo "  ℹ No order data file found. Skipping order migration...\n";
     }
     echo "✓ Orders migrated: $orderCount\n\n";
     
