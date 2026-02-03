@@ -21,6 +21,9 @@ require_once __DIR__ . '/coupon-helpers.php';
 // Include shipping type helpers
 require_once __DIR__ . '/shipping-type-helpers.php';
 
+// Include database cart helpers
+require_once __DIR__ . '/cart-db.php';
+
 // Initialize session type tracking
 if (!isset($_SESSION['session_type'])) {
     $_SESSION['session_type'] = 'guest';
@@ -97,14 +100,21 @@ function getCurrentCart() {
 }
 
 /**
- * Set the current active cart
+ * Set the current active cart and sync to DB (Guest only)
  */
 function setCurrentCart($cart) {
     if ($_SESSION['session_type'] === 'user' && isset($_SESSION['user']['user_id'])) {
         $userId = $_SESSION['user']['user_id'];
         saveUserCart($userId, $cart);
+        // We no longer sync user carts to sales_cart table as per request
     } else {
         $_SESSION['guest_cart'] = $cart;
+        
+        // Sync to DB using session_id
+        $cartId = getOrCreateDbCart(session_id());
+        if ($cartId) {
+            syncSessionCartToDb($cartId, $cart);
+        }
     }
 }
 
@@ -140,21 +150,19 @@ function mergeGuestCartWithUser($userId) {
     $guestCart = $_SESSION['guest_cart'];
     $userCart = getUserCart($userId);
     
-    // Merge guest cart items into user cart
+    // Merge guest cart items into user cart (session based)
     foreach ($guestCart as $key => $item) {
         if (isset($userCart[$key])) {
-            // Item already exists, add quantities
             $userCart[$key]['quantity'] += $item['quantity'];
         } else {
-            // New item, add to user cart
             $userCart[$key] = $item;
         }
     }
     
-    // Save merged cart
-    saveUserCart($userId, $userCart);
+    // Inactivate guest cart in DB
+    deactivateDbCart(session_id());
     
-    // Clear guest cart
+    saveUserCart($userId, $userCart);
     $_SESSION['guest_cart'] = [];
     
     return $userCart;
@@ -321,24 +329,50 @@ function logoutUser() {
     // Initialize new guest session
     initGuestSession();
     
+    // Sync empty guest cart to DB session (to clear any leftovers)
+    $cartId = getOrCreateDbCart(session_id());
+    if ($cartId) {
+        syncSessionCartToDb($cartId, []);
+    }
+    
     return true;
 }
 
+/**
+ * Access Control: Redirect to login if user is not logged in
+ * @param string $redirectUrl URL to return to after login
+ */
+function requireLogin($redirectUrl = null) {
+    if (!isLoggedIn()) {
+        $loginUrl = 'login.php';
+        if ($redirectUrl) {
+            $loginUrl .= '?redirect=' . urlencode($redirectUrl);
+        }
+        setFlashMessage('info', 'Please login to access this page.');
+        header('Location: ' . $loginUrl);
+        exit;
+    }
+}
+
 // User Registration Function
-function registerUser($firstName, $lastName, $email, $password) {
+function registerUser($firstName, $lastName, $email, $password, $phone = '') {
     // Check if user already exists
     $existingUser = fetchOne("SELECT user_id FROM users WHERE email = :email", ['email' => $email]);
     if ($existingUser) {
         return ['success' => false, 'message' => 'Email already registered'];
     }
     
+    // Hash password for security
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+    
     // Create new user
     $fullName = $firstName . ' ' . $lastName;
     
     $userId = dbInsert('users', [
         'email' => $email,
-        'password' => $password,
-        'name' => $fullName
+        'password' => $hashedPassword,
+        'name' => $fullName,
+        'phone' => $phone
     ]);
     
     if ($userId) {
@@ -351,16 +385,33 @@ function registerUser($firstName, $lastName, $email, $password) {
 // User Login Verification Function
 function verifyUserLogin($email, $password) {
     $user = fetchOne(
-        "SELECT user_id, name, email FROM users WHERE email = :email AND password = :password",
-        ['email' => $email, 'password' => $password]
+        "SELECT user_id, name, email, password FROM users WHERE email = :email",
+        ['email' => $email]
     );
     
     if ($user) {
-        return [
-            'success' => true, 
-            'user_id' => $user['user_id'], 
-            'name' => $user['name']
-        ];
+        // Verify hashed password
+        if (password_verify($password, $user['password'])) {
+            return [
+                'success' => true, 
+                'user_id' => $user['user_id'], 
+                'name' => $user['name']
+            ];
+        }
+        
+        // Backward compatibility: check if it's a plain text password (only for existing dev accounts)
+        // If it matches exactly and is NOT a hash, it's likely plain text
+        if ($password === $user['password'] && substr($user['password'], 0, 1) !== '$') {
+            // Log them in and update password to hash automatically
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+            dbUpdate('users', ['password' => $hashedPassword], 'user_id = :id', ['id' => $user['user_id']]);
+            
+            return [
+                'success' => true, 
+                'user_id' => $user['user_id'], 
+                'name' => $user['name']
+            ];
+        }
     }
     
     return ['success' => false, 'message' => 'Invalid email or password'];

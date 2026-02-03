@@ -33,7 +33,7 @@ $allBrands = getAllBrands();
 
     <!-- FEATURED PRODUCTS -->
     <div class="container">
-        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Featured Products</h2>
+        <h2 class="section-title">Featured Products</h2>
         
         <div class="products-container">
             <?php foreach ($featuredProducts as $product): ?>
@@ -70,14 +70,14 @@ $allBrands = getAllBrands();
     </div>
 
     <!-- CATEGORIES SECTION -->
-    <div class="container" style="margin-top: 4rem;">
-        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Shop by Category</h2>
+    <div class="container mt-4rem">
+        <h2 class="section-title">Shop by Category</h2>
         
         <div class="products-container">
             <?php foreach ($allCategories as $category): ?>
             <a href="products.php?category=<?php echo $category['id']; ?>" class="product-item">
-                <div class="product-image-wrapper" style="aspect-ratio: 16/9;">
-                    <span style="font-size: 6rem;"><?php echo $category['icon']; ?></span>
+                <div class="product-image-wrapper aspect-16-9">
+                    <span class="icon-lg"><?php echo $category['icon']; ?></span>
                 </div>
                 <div class="product-details">
                     <h3 class="product-title"><?php echo htmlspecialchars($category['name']); ?></h3>
@@ -89,18 +89,18 @@ $allBrands = getAllBrands();
     </div>
 
     <!-- BRANDS SECTION -->
-    <div class="container" style="margin-top: 4rem;">
-        <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">Popular Brands</h2>
+    <div class="container mt-4rem">
+        <h2 class="section-title">Popular Brands</h2>
         
         <div class="products-container">
             <?php foreach ($allBrands as $brand): ?>
             <a href="products.php?brand=<?php echo strtolower($brand['id']); ?>" class="product-item">
-                <div class="product-image-wrapper" style="aspect-ratio: 16/9; background: linear-gradient(135deg, var(--primary), var(--secondary));">
-                    <span style="font-size: 5rem;"><?php echo $brand['logo']; ?></span>
+                <div class="product-image-wrapper aspect-16-9 brand-gradient">
+                    <span class="icon-md"><?php echo $brand['logo']; ?></span>
                 </div>
                 <div class="product-details">
                     <h3 class="product-title"><?php echo htmlspecialchars($brand['name']); ?></h3>
-                    <p style="color: var(--text-secondary); font-size: 0.875rem;"><?php echo htmlspecialchars($brand['description']); ?></p>
+                    <p class="text-muted-sm"><?php echo htmlspecialchars($brand['description']); ?></p>
                 </div>
             </a>
             <?php endforeach; ?>

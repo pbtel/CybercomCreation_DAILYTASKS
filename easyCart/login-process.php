@@ -13,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlashMessage('success', 'Welcome back! You are now logged in.');
         
         // Redirect to original page if specified
-        $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
+        $redirect = !empty($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
         header('Location: ' . $redirect);
         exit;
     } else {

@@ -131,9 +131,9 @@ $allBrands = getAllBrands();
         <!-- PRODUCTS GRID/LIST -->
         <div class="products-container <?php echo $viewMode === 'list' ? 'list-layout' : ''; ?>">
             <?php if (empty($displayProducts)): ?>
-                <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem;">
-                    <h3 style="font-size: 1.5rem; color: var(--text-secondary);">No products found matching your filters</h3>
-                    <a href="products.php" style="margin-top: 1rem; display: inline-block; padding: 0.75rem 2rem; background: var(--primary); color: white; text-decoration: none; border-radius: 8px;">Clear Filters</a>
+                <div class="empty-state" style="grid-column: 1 / -1;">
+                    <h3 class="auth-subtitle" style="margin-bottom: 1rem;">No products found matching your filters</h3>
+                    <a href="products.php" class="btn-primary">Clear Filters</a>
                 </div>
             <?php else: ?>
                 <?php foreach ($displayProducts as $product): ?>
@@ -164,7 +164,7 @@ $allBrands = getAllBrands();
                             <?php endif; ?>
                         </div>
                         <?php if (isset($product['shipping_type'])): ?>
-                        <div style="margin-top: 0.5rem; display: inline-block; padding: 0.25rem 0.75rem; background: <?php echo $product['shipping_type'] === 'Express' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(168, 85, 247, 0.1)'; ?>; color: <?php echo $product['shipping_type'] === 'Express' ? '#3b82f6' : '#a855f7'; ?>; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+                        <div class="badge <?php echo $product['shipping_type'] === 'Express' ? 'badge-express' : 'badge-freight'; ?>" style="margin-top: 0.5rem;">
                             <?php echo $product['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?> <?php echo $product['shipping_type']; ?>
                         </div>
                         <?php endif; ?>
@@ -174,7 +174,7 @@ $allBrands = getAllBrands();
             <?php endif; ?>
         </div>
 
-        <div style="text-align: center; margin-top: 3rem; color: var(--text-secondary);">
+        <div class="text-center mt-4rem" style="margin-top: 3rem;">
             Showing <?php echo count($displayProducts); ?> of <?php echo count($products); ?> products
         </div>
     </div>

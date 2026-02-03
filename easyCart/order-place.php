@@ -3,6 +3,7 @@ require_once 'includes/session.php';
 require_once 'includes/products.php';
 require_once 'includes/shipping.php';
 require_once 'includes/orders.php';
+require_once 'includes/cart-db.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Verify user is logged in
@@ -18,14 +19,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     
     // Debug: Check cart status
     if (empty($rawCart)) {
-        setFlashMessage('error', 'Your cart is empty (no raw cart data). Please add items to your cart first. <a href="cart-debug.php" style="color: white; text-decoration: underline;">Debug Cart</a>');
+        setFlashMessage('error', 'Your cart is empty (no raw cart data). Please add items to your cart first. <a href="cart-debug.php" class="debug-link-white">Debug Cart</a>');
         header('Location: cart.php');
         exit;
     }
     
     // Check if cart is empty
     if (empty($cartItems)) {
-        setFlashMessage('error', 'Your cart is empty (no cart items with details). Please add items before placing an order. <a href="cart-debug.php" style="color: white; text-decoration: underline;">Debug Cart</a>');
+        setFlashMessage('error', 'Your cart is empty (no cart items with details). Please add items before placing an order. <a href="cart-debug.php" class="debug-link-white">Debug Cart</a>');
         header('Location: cart.php');
         exit;
     }
@@ -99,6 +100,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'final_amount' => $total,
         'status' => 'processing',
         'items' => $orderItems,
+        'payment_method' => strtoupper($paymentMethod),
+        'estimated_delivery' => ($shippingMethod === 'standard') ? '3-5 Business Days' : '1-2 Business Days',
         'address' => [
             'full_name' => $firstName . ' ' . $lastName,
             'email' => $email,
@@ -116,8 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $orderId = saveOrder($orderData);
     
     if ($orderId) {
-        // Clear cart
+        // Clear cart session and deactivate in DB
         clearCart();
+        deactivateDbCart(session_id());
         
         // Set success message
         setFlashMessage('success', 'Order placed successfully! Your order number is ' . $orderNumber);

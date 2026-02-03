@@ -17,10 +17,10 @@ $category = getCategoryById($product['category']);
 
     <div class="container" style="margin-top: 2rem;">
         <!-- BREADCRUMB -->
-        <div style="margin-bottom: 2rem; font-size: 0.875rem; color: var(--text-secondary);">
-            <a href="index.php" style="color: var(--primary);">Home</a> / 
-            <a href="products.php" style="color: var(--primary);">Products</a> / 
-            <a href="products.php?category=<?php echo $product['category']; ?>" style="color: var(--primary);">
+        <div class="breadcrumb">
+            <a href="index.php">Home</a> / 
+            <a href="products.php">Products</a> / 
+            <a href="products.php?category=<?php echo $product['category']; ?>">
                 <?php echo htmlspecialchars($category['name']); ?>
             </a> / 
             <span><?php echo htmlspecialchars($product['name']); ?></span>
@@ -46,8 +46,8 @@ $category = getCategoryById($product['category']);
                 <h1 class="info-title"><?php echo htmlspecialchars($product['name']); ?></h1>
 
                 <!-- RATING -->
-                <div style="margin-bottom: 1.5rem;">
-                    <div style="display: inline-block; color: #fbbf24; font-size: 1.125rem;">
+                <div class="mb-2rem" style="margin-bottom: 1.5rem;">
+                    <div class="star-rating">
                         <?php 
                         $fullStars = floor($product['rating']);
                         $hasHalfStar = ($product['rating'] - $fullStars) >= 0.5;
@@ -55,7 +55,7 @@ $category = getCategoryById($product['category']);
                         if ($hasHalfStar) echo '★';
                         for ($i = 0; $i < (5 - ceil($product['rating'])); $i++) echo '☆';
                         ?>
-                        <span style="color: var(--text-secondary); font-size: 0.9375rem; margin-left: 0.5rem;">
+                        <span class="review-count">
                             <?php echo $product['rating']; ?> (<?php echo $product['reviews_count']; ?> reviews)
                         </span>
                     </div>
@@ -74,29 +74,29 @@ $category = getCategoryById($product['category']);
                 </div>
 
                 <!-- DESCRIPTION -->
-                <div style="margin-bottom: 2rem;">
+                <div class="mb-2rem">
                     <p style="color: var(--text-secondary); line-height: 1.6;">
                         <?php echo htmlspecialchars($product['description']); ?>
                     </p>
                 </div>
 
                 <!-- STOCK STATUS -->
-                <div style="margin-bottom: 2rem; padding: 1rem; background: <?php echo $product['stock'] > 0 ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)'; ?>; border-radius: 8px;">
-                    <strong style="color: <?php echo $product['stock'] > 0 ? 'var(--accent)' : '#ef4444'; ?>;">
+                <div class="mb-2rem <?php echo $product['stock'] > 0 ? 'badge-instock' : 'badge-outofstock'; ?>">
+                    <strong>
                         <?php echo $product['stock'] > 0 ? '✓ In Stock (' . $product['stock'] . ' available)' : '✗ Out of Stock'; ?>
                     </strong>
                 </div>
 
                 <!-- SHIPPING TYPE -->
                 <?php if (isset($product['shipping_type'])): ?>
-                <div style="margin-bottom: 2rem; padding: 1rem; background: <?php echo $product['shipping_type'] === 'Express' ? 'rgba(59, 130, 246, 0.1)' : 'rgba(168, 85, 247, 0.1)'; ?>; border-radius: 8px; border: 2px solid <?php echo $product['shipping_type'] === 'Express' ? '#3b82f6' : '#a855f7'; ?>;">
+                <div class="shipping-info-card <?php echo $product['shipping_type'] === 'Express' ? 'shipping-info-express' : 'shipping-info-freight'; ?>">
                     <div style="display: flex; align-items: center; gap: 0.75rem;">
                         <span style="font-size: 1.5rem;"><?php echo $product['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?></span>
                         <div>
-                            <strong style="color: <?php echo $product['shipping_type'] === 'Express' ? '#3b82f6' : '#a855f7'; ?>; font-size: 1.125rem;">
+                            <strong class="shipping-info-title">
                                 <?php echo $product['shipping_type']; ?> Shipping
                             </strong>
-                            <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem; color: var(--text-secondary);">
+                            <p class="text-muted-sm" style="margin: 0.25rem 0 0 0;">
                                 <?php echo $product['shipping_type'] === 'Express' ? 'Fast delivery for lightweight items' : 'Specialized handling for high-value items'; ?>
                             </p>
                         </div>
@@ -125,12 +125,12 @@ $category = getCategoryById($product['category']);
                     <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
                     <!-- Variant inputs will be added dynamically by JavaScript -->
                     
-                    <div style="margin-bottom: 1.5rem;">
+                    <div class="form-input-group">
                         <label class="variant-label">Quantity</label>
-                        <div style="display: flex; align-items: center; gap: 1rem;">
+                        <div class="quantity-wrapper">
                             <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>" 
-                                   style="width: 100px; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px; font-weight: 600; text-align: center;">
-                            <span style="color: var(--text-secondary); font-size: 0.875rem;">Max: <?php echo $product['stock']; ?></span>
+                                   class="form-input" style="width: 100px; text-align: center; font-weight: 600;">
+                            <span class="text-muted-sm">Max: <?php echo $product['stock']; ?></span>
                         </div>
                     </div>
 
@@ -189,8 +189,8 @@ $category = getCategoryById($product['category']);
         $recommendedProducts = array_slice(getProductsByCategory($product['category']), 0, 4);
         if (!empty($recommendedProducts)):
         ?>
-        <div style="margin-top: 4rem;">
-            <h2 style="font-size: 2rem; font-weight: 700; margin-bottom: 2rem;">You May Also Like</h2>
+        <div class="mt-4rem">
+            <h2 class="section-title">You May Also Like</h2>
             <div class="products-container">
                 <?php foreach ($recommendedProducts as $recProduct): ?>
                     <?php if ($recProduct['id'] !== $product['id']): ?>

@@ -24,12 +24,12 @@ $user = getUserData();
     <header>
         <div class="header-wrapper">
             <div class="logo">
-                <a href="index.php" style="text-decoration: none; color: inherit;">EasyCart</a>
+                <a href="index.php" class="logo-link">EasyCart</a>
             </div>
             <nav class="header-nav">
                 <a href="index.php">Home</a>
                 <a href="products.php">Products</a>
-                <a href="cart.php">Cart<span class="cart-badge" id="cartBadge" style="<?php echo $cartCount > 0 ? '' : 'display: none;'; ?>"><?php echo $cartCount > 0 ? $cartCount : '0'; ?></span></a>
+                <a href="cart.php">Cart<span class="cart-badge" id="cartBadge" class="<?php echo $cartCount > 0 ? '' : 'display-none'; ?>"><?php echo $cartCount > 0 ? $cartCount : '0'; ?></span></a>
                 <a href="orders.php">Orders</a>
                 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
                     <span class="theme-icon">🌙</span>
@@ -44,7 +44,7 @@ $user = getUserData();
     </header>
 
     <!-- Toast Container for notifications -->
-    <div id="toastContainer" style="position: fixed; top: 80px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px;"></div>
+    <div id="toastContainer" class="toast-container"></div>
 
     <?php
     // Display flash messages as toast notifications

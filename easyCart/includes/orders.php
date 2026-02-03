@@ -7,7 +7,7 @@
 require_once __DIR__ . '/db.php';
 
 /**
- * Save order to database
+ * Save order to database (Distributed across 5 tables)
  * @param array $orderData Order data
  * @return int|false Order ID or false on failure
  */
@@ -15,15 +15,13 @@ function saveOrder($orderData) {
     try {
         beginTransaction();
         
-        // Insert order
+        // 1. Insert into sales_order (Main)
         $orderId = dbInsert('sales_order', [
             'user_id' => $orderData['user_id'] ?? null,
             'order_number' => $orderData['order_number'],
             'subtotal' => $orderData['subtotal'],
-            'shipping_type' => $orderData['shipping_type'] ?? 'Standard',
-            'shipping_cost' => $orderData['shipping_cost'] ?? 0,
-            'tax' => $orderData['tax'] ?? 0,
             'discount' => $orderData['discount'] ?? 0,
+            'tax' => $orderData['tax'] ?? 0,
             'final_amount' => $orderData['final_amount'],
             'status' => $orderData['status'] ?? 'pending'
         ]);
@@ -33,13 +31,13 @@ function saveOrder($orderData) {
             return false;
         }
         
-        // Insert order items
+        // 2. Insert into sales_order_products
         if (isset($orderData['items']) && is_array($orderData['items'])) {
             foreach ($orderData['items'] as $item) {
-                dbInsert('sales_order_product', [
+                dbInsert('sales_order_products', [
                     'order_id' => $orderId,
                     'product_id' => $item['product_id'],
-                    'product_name' => $item['product_name'],
+                    'product_name' => $item['product_name'] ?? 'Product',
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
                     'variant_data' => json_encode($item['variant'] ?? [])
@@ -47,7 +45,7 @@ function saveOrder($orderData) {
             }
         }
         
-        // Insert order address
+        // 3. Insert into sales_order_address
         if (isset($orderData['address'])) {
             $addr = $orderData['address'];
             dbInsert('sales_order_address', [
@@ -64,6 +62,21 @@ function saveOrder($orderData) {
             ]);
         }
         
+        // 4. Insert into sales_order_shipping_method
+        dbInsert('sales_order_shipping_method', [
+            'order_id' => $orderId,
+            'method_name' => $orderData['shipping_type'] ?? 'Standard',
+            'shipping_cost' => $orderData['shipping_cost'] ?? 0,
+            'estimated_delivery' => $orderData['estimated_delivery'] ?? '3-5 Business Days'
+        ]);
+        
+        // 5. Insert into sales_order_billing
+        dbInsert('sales_order_billing', [
+            'order_id' => $orderId,
+            'payment_method' => $orderData['payment_method'] ?? 'COD',
+            'billing_status' => 'pending'
+        ]);
+        
         commitTransaction();
         return $orderId;
         
@@ -75,33 +88,31 @@ function saveOrder($orderData) {
 }
 
 /**
- * Get order by ID
+ * Get order by ID (with joins)
  * @param int $orderId
  * @return array|null
  */
 function getOrderById($orderId) {
-    $sql = "SELECT * FROM sales_order WHERE order_id = :order_id";
+    $sql = "SELECT o.*, s.method_name as shipping_type, s.shipping_cost, b.payment_method
+            FROM sales_order o
+            LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
+            LEFT JOIN sales_order_billing b ON o.order_id = b.order_id
+            WHERE o.order_id = :order_id";
     $order = fetchOne($sql, ['order_id' => $orderId]);
     
     if ($order) {
-        // Get order items
         $itemsSql = "SELECT op.*, pe.name as product_name
-                     FROM sales_order_product op
+                     FROM sales_order_products op
                      JOIN catalog_product_entity pe ON op.product_id = pe.product_id
                      WHERE op.order_id = :order_id";
         $items = fetchAll($itemsSql, ['order_id' => $orderId]);
-        
-        // Decode variant data
         foreach ($items as &$item) {
             $item['variant'] = json_decode($item['variant_data'], true) ?? [];
         }
-        
         $order['items'] = $items;
         
-        // Get order address
         $addrSql = "SELECT * FROM sales_order_address WHERE order_id = :order_id";
-        $address = fetchOne($addrSql, ['order_id' => $orderId]);
-        $order['address'] = $address;
+        $order['address'] = fetchOne($addrSql, ['order_id' => $orderId]);
     }
     
     return $order;
@@ -113,24 +124,22 @@ function getOrderById($orderId) {
  * @return array
  */
 function getUserOrders($userId) {
-    $sql = "SELECT * FROM sales_order 
-            WHERE user_id = :user_id 
-            ORDER BY created_at DESC";
+    $sql = "SELECT o.*, s.method_name as shipping_type, s.shipping_cost
+            FROM sales_order o
+            LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
+            WHERE o.user_id = :user_id 
+            ORDER BY o.created_at DESC";
     $orders = fetchAll($sql, ['user_id' => $userId]);
     
-    // Get items for each order
     foreach ($orders as &$order) {
         $itemsSql = "SELECT op.*, pe.name as product_name
-                     FROM sales_order_product op
+                     FROM sales_order_products op
                      JOIN catalog_product_entity pe ON op.product_id = pe.product_id
                      WHERE op.order_id = :order_id";
         $items = fetchAll($itemsSql, ['order_id' => $order['order_id']]);
-        
-        // Decode variant data
         foreach ($items as &$item) {
             $item['variant'] = json_decode($item['variant_data'], true) ?? [];
         }
-        
         $order['items'] = $items;
     }
     
@@ -139,13 +148,13 @@ function getUserOrders($userId) {
 
 /**
  * Get orders by status
- * @param string $status
- * @return array
  */
 function getOrdersByStatus($status) {
-    $sql = "SELECT * FROM sales_order 
-            WHERE status = :status 
-            ORDER BY created_at DESC";
+    $sql = "SELECT o.*, s.method_name as shipping_type, s.shipping_cost
+            FROM sales_order o
+            LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
+            WHERE o.status = :status 
+            ORDER BY o.created_at DESC";
     return fetchAll($sql, ['status' => $status]) ?? [];
 }
 

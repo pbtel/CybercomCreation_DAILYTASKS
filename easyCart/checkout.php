@@ -35,70 +35,66 @@ if (empty($cartItems)) {
 }
 
 // Check if user is logged in, if not redirect to login with return URL
-if (!isLoggedIn()) {
-    setFlashMessage('info', 'Please login or create an account to proceed with checkout.');
-    header('Location: login.php?redirect=checkout.php');
-    exit;
-}
+requireLogin('checkout.php');
 ?>
 
     <div class="container">
-        <h1 style="font-size: 2.5rem; font-weight: 700; margin-bottom: 1rem;">Checkout</h1>
-        <p style="color: var(--text-secondary); margin-bottom: 2rem;">Complete your order</p>
+        <h1 class="section-title-lg" style="margin-bottom: 1rem;">Checkout</h1>
+        <p class="text-muted-sm mb-2rem">Complete your order</p>
 
-        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 3rem;">
+        <div class="checkout-grid">
             <!-- CHECKOUT FORM -->
             <div>
                 <form action="order-place.php" method="POST">
                     <!-- SHIPPING INFO -->
-                    <div style="background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
+                    <div class="card" style="margin-bottom: 2rem;">
                         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Shipping Information</h2>
                         
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-row">
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">First Name *</label>
-                                <input type="text" name="first_name" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
+                                <label class="form-label">First Name *</label>
+                                <input type="text" name="first_name" required class="input-text">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Last Name *</label>
-                                <input type="text" name="last_name" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
-                            </div>
-                        </div>
-
-                        <div style="margin-top: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email *</label>
-                            <input type="email" name="email" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
-                        </div>
-
-                        <div style="margin-top: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Phone *</label>
-                            <input type="tel" name="phone" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
-                        </div>
-
-                        <div style="margin-top: 1rem;">
-                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Address *</label>
-                            <input type="text" name="address" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
-                            <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">City *</label>
-                                <input type="text" name="city" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
-                            </div>
-                            <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">State *</label>
-                                <input type="text" name="state" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
+                                <label class="form-label">Last Name *</label>
+                                <input type="text" name="last_name" required class="input-text">
                             </div>
                         </div>
 
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Email *</label>
+                            <input type="email" name="email" required class="input-text">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Phone *</label>
+                            <input type="tel" name="phone" required class="input-text">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Address *</label>
+                            <input type="text" name="address" required class="input-text">
+                        </div>
+
+                        <div class="form-row form-group">
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">PIN Code *</label>
-                                <input type="text" name="pincode" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
+                                <label class="form-label">City *</label>
+                                <input type="text" name="city" required class="input-text">
                             </div>
                             <div>
-                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Country *</label>
-                                <select name="country" required style="width: 100%; padding: 0.75rem; border: 2px solid var(--border); border-radius: 8px;">
+                                <label class="form-label">State *</label>
+                                <input type="text" name="state" required class="input-text">
+                            </div>
+                        </div>
+
+                        <div class="form-row form-group">
+                            <div>
+                                <label class="form-label">PIN Code *</label>
+                                <input type="text" name="pincode" required class="input-text">
+                            </div>
+                            <div>
+                                <label class="form-label">Country *</label>
+                                <select name="country" required class="input-select">
                                     <option value="">Select Country</option>
                                     <option value="IN" selected>India</option>
                                     <option value="US">United States</option>
@@ -109,7 +105,7 @@ if (!isLoggedIn()) {
                     </div>
 
                     <!-- SHIPPING METHOD -->
-                    <div style="background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
+                    <div class="card" style="margin-bottom: 2rem;">
                         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Shipping Method</h2>
                         
                         <!-- Standard Shipping -->
@@ -241,20 +237,20 @@ if (!isLoggedIn()) {
                     </div>
 
                     <!-- PAYMENT METHOD -->
-                    <div style="background: white; border-radius: 16px; padding: 2rem; margin-bottom: 2rem;">
+                    <div class="card" style="margin-bottom: 2rem;">
                         <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Payment Method</h2>
                         
-                        <label style="display: block; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 1rem; cursor: pointer;">
+                        <label class="payment-option">
                             <input type="radio" name="payment_method" value="cod" checked style="margin-right: 0.75rem;">
                             <strong>Cash on Delivery</strong>
                         </label>
 
-                        <label style="display: block; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 1rem; cursor: pointer;">
+                        <label class="payment-option">
                             <input type="radio" name="payment_method" value="upi" style="margin-right: 0.75rem;">
                             <strong>UPI / QR Code</strong>
                         </label>
 
-                        <label style="display: block; padding: 1rem; border: 2px solid var(--border); border-radius: 8px; cursor: pointer;">
+                        <label class="payment-option last">
                             <input type="radio" name="payment_method" value="card" style="margin-right: 0.75rem;">
                             <strong>Credit / Debit Card</strong>
                         </label>
@@ -265,14 +261,14 @@ if (!isLoggedIn()) {
             </div>
 
             <!-- ORDER SUMMARY -->
-            <div style="position: sticky; top: 6rem;">
-                <div style="background: white; border-radius: 16px; padding: 2rem;">
+            <div class="sticky-summary">
+                <div class="card">
                     <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Order Summary</h2>
 
-                    <div style="max-height: 300px; overflow-y: auto; margin-bottom: 1.5rem;">
+                    <div class="scroll-summary">
                         <?php foreach ($cartItems as $item): ?>
-                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
-                            <div style="width: 60px; height: 60px; background: var(--bg-primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        <div class="product-summary-item">
+                            <div class="product-summary-image">
                                 <?php echo $item['product']['image']; ?>
                             </div>
                             <div style="flex: 1;">
@@ -300,30 +296,30 @@ if (!isLoggedIn()) {
                         <?php endforeach; ?>
                     </div>
 
-                    <div style="border-top: 2px solid var(--border); padding-top: 1rem; margin-bottom: 1rem;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                            <span style="color: var(--text-secondary);">Subtotal:</span>
-                            <span style="font-weight: 600;" id="summary-subtotal">₹<?php echo number_format($subtotal); ?></span>
+                    <div class="summary-divider">
+                        <div class="summary-row">
+                            <span class="summary-label">Subtotal:</span>
+                            <span class="summary-value" id="summary-subtotal">₹<?php echo number_format($subtotal); ?></span>
                         </div>
                         
                         <?php if ($appliedCoupon && $couponDiscount > 0): ?>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
+                        <div class="summary-row">
                             <span style="color: #10b981; font-weight: 600;">Coupon (<?php echo $appliedCoupon['code']; ?>):</span>
                             <span style="font-weight: 600; color: #10b981;">-₹<?php echo number_format($couponDiscount); ?></span>
                         </div>
                         <?php endif; ?>
                         
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                            <span style="color: var(--text-secondary);">Shipping:</span>
-                            <span style="font-weight: 600;" id="summary-shipping">₹<?php echo number_format($shipping); ?></span>
+                        <div class="summary-row">
+                            <span class="summary-label">Shipping:</span>
+                            <span class="summary-value" id="summary-shipping">₹<?php echo number_format($shipping); ?></span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.75rem;">
-                            <span style="color: var(--text-secondary);">Tax (18% GST):</span>
-                            <span style="font-weight: 600;" id="summary-tax">₹<?php echo number_format($tax); ?></span>
+                        <div class="summary-row">
+                            <span class="summary-label">Tax (18% GST):</span>
+                            <span class="summary-value" id="summary-tax">₹<?php echo number_format($tax); ?></span>
                         </div>
                     </div>
 
-                    <div style="display: flex; justify-content: space-between; font-size: 1.25rem; font-weight: 700; padding-top: 1rem; border-top: 2px solid var(--border);">
+                    <div class="total-row">
                         <span>Total:</span>
                         <span style="color: var(--primary);" id="summary-total">₹<?php echo number_format($total); ?></span>
                     </div>
