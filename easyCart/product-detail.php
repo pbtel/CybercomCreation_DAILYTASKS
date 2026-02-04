@@ -13,6 +13,7 @@ if (!$product) {
 
 $pageTitle = $product['name'];
 $category = getCategoryById($product['category']);
+$productImages = getProductImages($productId);
 ?>
 
     <div class="container mt-2">
@@ -29,12 +30,37 @@ $category = getCategoryById($product['category']);
         <div class="detail-layout">
             <!-- IMAGE SHOWCASE -->
             <div class="image-showcase">
-                <div class="showcase-main"><?php echo $product['image']; ?></div>
+                <div class="showcase-main">
+                    <?php if (strpos($product['image'], 'assets/images') === 0): ?>
+                        <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                    <?php else: ?>
+                        <?php echo $product['image']; ?>
+                    <?php endif; ?>
+                </div>
                 <div class="showcase-thumbs">
-                    <div class="showcase-thumb"><?php echo $product['image']; ?></div>
-                    <div class="showcase-thumb">📷</div>
-                    <div class="showcase-thumb">🔍</div>
-                    <div class="showcase-thumb">📐</div>
+                    <?php if (!empty($productImages)): ?>
+                        <?php foreach ($productImages as $index => $img): ?>
+                            <div class="showcase-thumb <?php echo $index === 0 ? 'active' : ''; ?>">
+                                <img src="<?php echo $img['image_url']; ?>" alt="Thumb <?php echo $index + 1; ?>">
+                            </div>
+                        <?php endforeach; ?>
+                        
+                        <!-- Ensure we have 4 slots if less than 4 images -->
+                        <?php for ($i = count($productImages); $i < 4; $i++): ?>
+                            <div class="showcase-thumb">📷</div>
+                        <?php endfor; ?>
+                    <?php else: ?>
+                        <div class="showcase-thumb active">
+                            <?php if (strpos($product['image'], 'assets/images') === 0): ?>
+                                <img src="<?php echo $product['image']; ?>" alt="Thumb">
+                            <?php else: ?>
+                                <?php echo $product['image']; ?>
+                            <?php endif; ?>
+                        </div>
+                        <div class="showcase-thumb">📷</div>
+                        <div class="showcase-thumb">🔍</div>
+                        <div class="showcase-thumb">📐</div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -185,18 +211,27 @@ $category = getCategoryById($product['category']);
 
         <!-- RECOMMENDED PRODUCTS -->
         <?php
-        // Get 4 random products from the same category
-        $recommendedProducts = array_slice(getProductsByCategory($product['category']), 0, 4);
+        // Get products from the same category, excluding current one
+        $allCatProducts = getProductsByCategory($product['category']);
+        $recommendedProducts = array_filter($allCatProducts, function($p) use ($product) {
+            return $p['id'] !== $product['id'];
+        });
+        shuffle($recommendedProducts);
+        $recommendedProducts = array_slice($recommendedProducts, 0, 4);
+        
         if (!empty($recommendedProducts)):
         ?>
         <div class="mt-3rem">
             <h2 class="section-title">You May Also Like</h2>
             <div class="products-container">
                 <?php foreach ($recommendedProducts as $recProduct): ?>
-                    <?php if ($recProduct['id'] !== $product['id']): ?>
                     <a href="product-detail.php?id=<?php echo $recProduct['id']; ?>" class="product-item">
                         <div class="product-image-wrapper">
-                            <span><?php echo $recProduct['image']; ?></span>
+                            <?php if (strpos($recProduct['image'], 'assets/images') === 0): ?>
+                                <img src="<?php echo $recProduct['image']; ?>" alt="<?php echo htmlspecialchars($recProduct['name']); ?>" class="product-img">
+                            <?php else: ?>
+                                <span><?php echo $recProduct['image']; ?></span>
+                            <?php endif; ?>
                         </div>
                         <div class="product-details">
                             <div class="product-meta"><?php echo ucfirst($recProduct['category']); ?></div>
@@ -206,7 +241,6 @@ $category = getCategoryById($product['category']);
                             </div>
                         </div>
                     </a>
-                    <?php endif; ?>
                 <?php endforeach; ?>
             </div>
         </div>

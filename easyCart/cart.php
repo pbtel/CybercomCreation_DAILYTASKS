@@ -47,7 +47,11 @@ $taxNote = 'Calculated at checkout';
                     <div data-cart-item data-cart-key="<?php echo $key; ?>" class="cart-item-card">
                         <!-- Product Image -->
                         <div class="cart-item-image">
-                            <?php echo $item['product']['image']; ?>
+                            <?php if (strpos($item['product']['image'], 'assets/images') === 0): ?>
+                                <img src="<?php echo $item['product']['image']; ?>" alt="<?php echo htmlspecialchars($item['product']['name']); ?>">
+                            <?php else: ?>
+                                <?php echo $item['product']['image']; ?>
+                            <?php endif; ?>
                         </div>
 
                         <!-- Product Info -->

@@ -16,7 +16,7 @@ function getBrandById($brandId) {
                 be.brand_id,
                 be.brand_slug as id,
                 ba.name,
-                ba.logo,
+                ba.image,
                 ba.description
             FROM catalog_brand_entity be
             JOIN catalog_brand_attribute ba ON be.brand_id = ba.brand_id
@@ -41,7 +41,7 @@ function getAllBrands() {
                 be.brand_id,
                 be.brand_slug as id,
                 ba.name,
-                ba.logo,
+                ba.image,
                 ba.description
             FROM catalog_brand_entity be
             JOIN catalog_brand_attribute ba ON be.brand_id = ba.brand_id

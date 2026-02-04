@@ -42,7 +42,11 @@ $allBrands = getAllBrands();
                     <?php if (!empty($product['tags'])): ?>
                         <div class="product-tag"><?php echo ucfirst($product['tags'][0]); ?></div>
                     <?php endif; ?>
-                    <span><?php echo $product['image']; ?></span>
+                    <?php if (strpos($product['image'], 'assets/images') === 0): ?>
+                        <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-img">
+                    <?php else: ?>
+                        <span><?php echo $product['image']; ?></span>
+                    <?php endif; ?>
                 </div>
                 <div class="product-details">
                     <div class="product-meta"><?php echo ucfirst($product['category']); ?></div>
@@ -77,7 +81,11 @@ $allBrands = getAllBrands();
             <?php foreach ($allCategories as $category): ?>
             <a href="products.php?category=<?php echo $category['id']; ?>" class="product-item">
                 <div class="product-image-wrapper aspect-16-9">
-                    <span class="icon-lg"><?php echo $category['icon']; ?></span>
+                    <?php if (strpos($category['image'], 'assets/images') === 0): ?>
+                        <img src="<?php echo $category['image']; ?>" alt="<?php echo htmlspecialchars($category['name']); ?>" class="category-img">
+                    <?php else: ?>
+                        <span class="icon-lg"><?php echo $category['image']; ?></span>
+                    <?php endif; ?>
                 </div>
                 <div class="product-details">
                     <h3 class="product-title"><?php echo htmlspecialchars($category['name']); ?></h3>
@@ -96,7 +104,11 @@ $allBrands = getAllBrands();
             <?php foreach ($allBrands as $brand): ?>
             <a href="products.php?brand=<?php echo strtolower($brand['id']); ?>" class="product-item">
                 <div class="product-image-wrapper aspect-16-9 brand-gradient">
-                    <span class="icon-md"><?php echo $brand['logo']; ?></span>
+                    <?php if (strpos($brand['image'], 'assets/images') === 0): ?>
+                        <img src="<?php echo $brand['image']; ?>" alt="<?php echo htmlspecialchars($brand['name']); ?>" class="brand-img">
+                    <?php else: ?>
+                        <span class="icon-md"><?php echo $brand['image']; ?></span>
+                    <?php endif; ?>
                 </div>
                 <div class="product-details">
                     <h3 class="product-title"><?php echo htmlspecialchars($brand['name']); ?></h3>

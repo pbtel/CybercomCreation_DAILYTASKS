@@ -16,7 +16,7 @@ function getCategoryById($categoryId) {
                 ce.entity_id,
                 ce.category_slug as id,
                 ca.name,
-                ca.icon,
+                ca.image,
                 ca.description
             FROM catalog_category_entity ce
             JOIN catalog_category_attribute ca ON ce.entity_id = ca.entity_id
@@ -48,7 +48,7 @@ function getAllCategories() {
                 ce.entity_id,
                 ce.category_slug as id,
                 ca.name,
-                ca.icon,
+                ca.image,
                 ca.description
             FROM catalog_category_entity ce
             JOIN catalog_category_attribute ca ON ce.entity_id = ca.entity_id

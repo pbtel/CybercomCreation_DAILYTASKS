@@ -269,7 +269,11 @@ requireLogin('checkout.php');
                         <?php foreach ($cartItems as $item): ?>
                         <div class="product-summary-item">
                             <div class="product-summary-image">
-                                <?php echo $item['product']['image']; ?>
+                                <?php if (strpos($item['product']['image'], 'assets/images') === 0): ?>
+                                    <img src="<?php echo $item['product']['image']; ?>" alt="<?php echo htmlspecialchars($item['product']['name']); ?>">
+                                <?php else: ?>
+                                    <?php echo $item['product']['image']; ?>
+                                <?php endif; ?>
                             </div>
                             <div class="flex-1">
                                 <p class="font-600 fs-0-9375"><?php echo htmlspecialchars($item['product']['name']); ?></p>

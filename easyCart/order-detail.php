@@ -35,8 +35,7 @@ if (!$order || $order['user_id'] != $_SESSION['user']['user_id']) {
                 'pending'    => 'status-pending',
                 'processing' => 'status-processing',
                 'shipped'    => 'status-shipped',
-                'delivered'  => 'status-delivered',
-                'cancelled'  => 'status-cancelled'
+                'delivered'  => 'status-delivered'
             ];
             echo $statusClasses[$order['status']] ?? 'status-pending';
             ?>">
@@ -57,8 +56,11 @@ if (!$order || $order['user_id'] != $_SESSION['user']['user_id']) {
                         <div class="order-item-thumb-lg">
                             <?php 
                                 $product = getProductById($item['product_id']);
-                                echo $product ? $product['image'] : '📦'; 
-                            ?>
+                                if ($product && strpos($product['image'], 'assets/images') === 0): ?>
+                                    <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                <?php else: ?>
+                                    <?php echo $product ? $product['image'] : '📦'; ?>
+                                <?php endif; ?>
                         </div>
                         <div class="flex-1 pl-1-5">
                             <h4 class="font-600 mb-0-25 fs-1-1"><?php echo htmlspecialchars($item['product_name']); ?></h4>

@@ -311,22 +311,20 @@ function initProductImageSwitching() {
     thumbs.forEach((thumb, index) => {
         thumb.style.cursor = 'pointer';
         thumb.addEventListener('click', () => {
-            // Get the emoji/content from the thumbnail
-            const imageContent = thumb.textContent;
-            mainImage.textContent = imageContent;
+            // Get the HTML content from the thumbnail
+            const imageContent = thumb.innerHTML;
+            mainImage.innerHTML = imageContent;
 
             // Remove active class from all thumbnails
-            thumbs.forEach(t => t.style.opacity = '0.6');
+            thumbs.forEach(t => t.classList.remove('active'));
 
             // Add active class to clicked thumbnail
-            thumb.style.opacity = '1';
+            thumb.classList.add('active');
         });
 
         // Set initial state
         if (index === 0) {
-            thumb.style.opacity = '1';
-        } else {
-            thumb.style.opacity = '0.6';
+            thumb.classList.add('active');
         }
     });
 }

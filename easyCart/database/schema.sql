@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS catalog_category_attribute (
     attribute_id SERIAL PRIMARY KEY,
     entity_id INTEGER NOT NULL REFERENCES catalog_category_entity(entity_id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
-    icon VARCHAR(50),
+    image VARCHAR(255),
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS catalog_brand_attribute (
     attribute_id SERIAL PRIMARY KEY,
     brand_id INTEGER NOT NULL REFERENCES catalog_brand_entity(brand_id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
-    logo VARCHAR(50),
+    image VARCHAR(255),
     description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -64,8 +64,7 @@ $stats = getOrderStats($userId);
                                 'pending'    => 'status-pending',
                                 'processing' => 'status-processing',
                                 'shipped'    => 'status-shipped',
-                                'delivered'  => 'status-delivered',
-                                'cancelled'  => 'status-cancelled'
+                                'delivered'  => 'status-delivered'
                             ];
                             echo $statusClasses[$order['status']];
                             ?>">
@@ -93,7 +92,11 @@ $stats = getOrderStats($userId);
                         <?php $product = getProductById($item['product_id']); ?>
                         <div class="order-item-row">
                             <div class="order-item-thumb">
-                                <?php echo $product ? $product['image'] : '📦'; ?>
+                                <?php if ($product && strpos($product['image'], 'assets/images') === 0): ?>
+                                    <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                <?php else: ?>
+                                    <?php echo $product ? $product['image'] : '📦'; ?>
+                                <?php endif; ?>
                             </div>
                             <div class="flex-1">
                                 <h4 class="font-600 mb-0-25"><?php echo htmlspecialchars($item['product_name']); ?></h4>
@@ -114,33 +117,10 @@ $stats = getOrderStats($userId);
                 </div>
 
                 <!-- Order Actions -->
-                <div class="btn-group">
-                    <a href="order-detail.php?id=<?php echo $order['order_id']; ?>" class="btn-primary btn-padding-lg">
-                        View Details
+                <div class="card-footer border-t mt-1-5 pt-1-5 flex-end">
+                    <a href="order-detail.php?id=<?php echo $order['order_id']; ?>" class="btn-outline-primary btn-padding-lg font-600">
+                        View Order Details
                     </a>
-                    
-                    <?php if ($order['status'] === 'shipped' || $order['status'] === 'delivered'): ?>
-                        <?php if ($order['tracking_number']): ?>
-                            <a href="#" class="btn-outline-primary">
-                                Track Order (<?php echo $order['tracking_number']; ?>)
-                            </a>
-                        <?php endif; ?>
-                    <?php endif; ?>
-                    
-                    <?php if ($order['status'] === 'delivered'): ?>
-                        <a href="#" class="btn-primary btn-padding-lg">
-                            Leave Review
-                        </a>
-                        <a href="#" class="btn-outline-accent">
-                            Reorder
-                        </a>
-                    <?php endif; ?>
-
-                    <?php if ($order['status'] === 'processing'): ?>
-                        <a href="#" class="btn-outline-danger">
-                            Cancel Order
-                        </a>
-                    <?php endif; ?>
                 </div>
 
                 <?php if ($order['status'] === 'shipped' && isset($order['estimated_delivery'])): ?>

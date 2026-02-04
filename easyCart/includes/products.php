@@ -326,6 +326,17 @@ function getFeaturedProducts() {
     return $products ?? [];
 }
 
+/**
+ * Get all images for a product
+ * @param int $productId
+ * @return array
+ */
+function getProductImages($productId) {
+    $sql = "SELECT * FROM product_images WHERE product_id = :product_id ORDER BY position ASC";
+    $images = fetchAll($sql, ['product_id' => $productId]);
+    return $images ?? [];
+}
+
 // For backward compatibility, create a $products variable
 $products = getAllProducts();
 ?>
