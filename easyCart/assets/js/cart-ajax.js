@@ -385,11 +385,11 @@ function showEmptyCartMessage() {
     const cartLayout = document.querySelector('.cart-layout');
     if (cartLayout) {
         cartLayout.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: white; border-radius: 16px;">
-                <div style="font-size: 5rem; margin-bottom: 1rem;">🛒</div>
-                <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Your cart is empty</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Start shopping to add items to your cart</p>
-                <a href="products.php" style="display: inline-block; padding: 1rem 2.5rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-decoration: none; border-radius: 12px; font-weight: 700;">
+            <div class="grid-col-all ta-center p-4-2 bg-white border-radius-16">
+                <div class="fs-5 mb-1">🛒</div>
+                <h2 class="fs-1-5 mb-1">Your cart is empty</h2>
+                <p class="color-text-secondary mb-2">Start shopping to add items to your cart</p>
+                <a href="products.php" class="btn-primary-lg dib">
                     Continue Shopping
                 </a>
             </div>
@@ -413,15 +413,7 @@ function showCartToast(message, type = 'info') {
     if (!container) {
         container = document.createElement('div');
         container.id = 'toastContainer';
-        container.style.cssText = `
-            position: fixed;
-            top: 6rem;
-            right: 2rem;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        `;
+        container.className = 'toast-container-fixed';
         document.body.appendChild(container);
     }
 
@@ -454,27 +446,15 @@ function showCartToast(message, type = 'info') {
     }
 
     // Style the toast
-    toast.style.cssText = `
-        background: ${bgColor};
-        border-left: 4px solid ${borderColor};
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        min-width: 300px;
-        max-width: 400px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        animation: slideIn 0.3s ease-out;
-        cursor: pointer;
-        transition: transform 0.2s, opacity 0.3s;
-    `;
+    toast.className = `toast toast-${type} p-1-1-5 border-radius-8 shadow-sm min-w-300 max-w-400 f-center gap-12 anime-slideIn anime-slideOut cp`;
+    toast.style.borderLeft = `4px solid ${borderColor}`;
+    toast.style.background = bgColor;
 
     // Create content
     toast.innerHTML = `
-        <span style="font-size: 1.5rem; font-weight: bold; color: ${borderColor};">${icon}</span>
-        <span style="flex: 1; color: #333; font-weight: 500;">${message}</span>
-        <span style="font-size: 1.5rem; color: #666; cursor: pointer; line-height: 1; padding: 0 4px;">×</span>
+        <span class="fs-1-5 font-bold" style="color: ${borderColor};">${icon}</span>
+        <span class="flex-1 color-text-main font-500">${message}</span>
+        <span class="fs-1-5 color-text-secondary cp lh-1 p-0-4">×</span>
     `;
 
     // Add to container
@@ -575,14 +555,14 @@ function applyCouponCode() {
 
     if (!couponCode) {
         if (messageDiv) {
-            messageDiv.innerHTML = '<span style="color: #ef4444;">Please enter a coupon code</span>';
+            messageDiv.innerHTML = '<span class="color-danger">Please enter a coupon code</span>';
         }
         return;
     }
 
     // Show loading state
     if (messageDiv) {
-        messageDiv.innerHTML = '<span style="color: var(--text-secondary);">Applying...</span>';
+        messageDiv.innerHTML = '<span class="color-text-secondary">Applying...</span>';
     }
 
     // Prepare form data
@@ -605,14 +585,14 @@ function applyCouponCode() {
             } else {
                 // Show error message
                 if (messageDiv) {
-                    messageDiv.innerHTML = `<span style="color: #ef4444;">${data.message}</span>`;
+                    messageDiv.innerHTML = `<span class="color-danger">${data.message}</span>`;
                 }
             }
         })
         .catch(error => {
             console.error('Error applying coupon:', error);
             if (messageDiv) {
-                messageDiv.innerHTML = '<span style="color: #ef4444;">Failed to apply coupon. Please try again.</span>';
+                messageDiv.innerHTML = '<span class="color-danger">Failed to apply coupon. Please try again.</span>';
             }
         });
 }

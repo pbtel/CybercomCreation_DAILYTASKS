@@ -32,11 +32,6 @@ require_once 'includes/header.php';
                            class="form-input">
                 </div>
 
-                <div class="form-input-group">
-                    <label class="form-label">Phone Number *</label>
-                    <input type="tel" name="phone" required 
-                           class="form-input">
-                </div>
 
                 <div class="form-input-group">
                     <label class="form-label">Password *</label>
@@ -51,22 +46,22 @@ require_once 'includes/header.php';
                            class="form-input">
                 </div>
 
-                <div class="form-flex" style="justify-content: flex-start; gap: 0.75rem;">
-                    <input type="checkbox" name="terms" required style="margin-top: 0.25rem;">
+                <div class="form-flex flex-start-gap-0-75">
+                    <input type="checkbox" name="terms" required class="mt-0-25">
                     <span class="form-checkbox-text">
-                        I agree to the <a href="#" style="color: var(--primary); font-weight: 600;">Terms and Conditions</a> 
-                        and <a href="#" style="color: var(--primary); font-weight: 600;">Privacy Policy</a>
+                        I agree to the <a href="#" class="color-primary font-600">Terms and Conditions</a> 
+                        and <a href="#" class="color-primary font-600">Privacy Policy</a>
                     </span>
                 </div>
 
-                <div class="form-flex" style="justify-content: flex-start; gap: 0.75rem;">
+                <div class="form-flex flex-start-gap-0-75">
                     <input type="checkbox" name="newsletter">
                     <span class="form-checkbox-text">
                         Subscribe to newsletter for exclusive deals
                     </span>
                 </div>
 
-                <button type="submit" class="action-button" style="width: 100%; margin-bottom: 1.5rem;">
+                <button type="submit" class="action-button w-100 mb-1-5">
                     Create Account
                 </button>
             </form>
@@ -74,13 +69,13 @@ require_once 'includes/header.php';
             <div class="auth-footer">
                 <p class="text-muted-sm">
                     Already have an account? 
-                    <a href="login.php" style="color: var(--primary); font-weight: 700;">Login</a>
+                    <a href="login.php" class="color-primary font-700">Login</a>
                 </p>
             </div>
 
             <!-- Member Benefits -->
             <div class="benefits-box">
-                <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Member Benefits</h3>
+                <h3 class="fs-1-0625 font-700 mb-1">Member Benefits</h3>
                 <div class="benefits-grid">
                     <div class="benefit-tick">✓ Free shipping on orders over ₹999</div>
                     <div class="benefit-tick">✓ Early access to sales</div>

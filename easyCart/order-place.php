@@ -88,6 +88,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         ];
     }
     
+    // Calculate coupon discount
+    $appliedCoupon = getAppliedCoupon();
+    $couponDiscount = calculateCouponDiscount($subtotal);
+    $couponCode = $appliedCoupon ? $appliedCoupon['code'] : null;
+    
     // Prepare order data for database
     $orderData = [
         'user_id' => $_SESSION['user']['user_id'],
@@ -96,8 +101,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'shipping_type' => getShippingMethodName($shippingMethod),
         'shipping_cost' => $shippingCost,
         'tax' => $tax,
-        'discount' => 0,
+        'discount' => $couponDiscount,
         'final_amount' => $total,
+        'applied_coupon' => $couponCode,
         'status' => 'processing',
         'items' => $orderItems,
         'payment_method' => strtoupper($paymentMethod),

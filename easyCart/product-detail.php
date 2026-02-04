@@ -15,7 +15,7 @@ $pageTitle = $product['name'];
 $category = getCategoryById($product['category']);
 ?>
 
-    <div class="container" style="margin-top: 2rem;">
+    <div class="container mt-2">
         <!-- BREADCRUMB -->
         <div class="breadcrumb">
             <a href="index.php">Home</a> / 
@@ -46,7 +46,7 @@ $category = getCategoryById($product['category']);
                 <h1 class="info-title"><?php echo htmlspecialchars($product['name']); ?></h1>
 
                 <!-- RATING -->
-                <div class="mb-2rem" style="margin-bottom: 1.5rem;">
+                <div class="mb-1-5">
                     <div class="star-rating">
                         <?php 
                         $fullStars = floor($product['rating']);
@@ -75,7 +75,7 @@ $category = getCategoryById($product['category']);
 
                 <!-- DESCRIPTION -->
                 <div class="mb-2rem">
-                    <p style="color: var(--text-secondary); line-height: 1.6;">
+                    <p class="color-text-secondary lh-1-6">
                         <?php echo htmlspecialchars($product['description']); ?>
                     </p>
                 </div>
@@ -90,13 +90,13 @@ $category = getCategoryById($product['category']);
                 <!-- SHIPPING TYPE -->
                 <?php if (isset($product['shipping_type'])): ?>
                 <div class="shipping-info-card <?php echo $product['shipping_type'] === 'Express' ? 'shipping-info-express' : 'shipping-info-freight'; ?>">
-                    <div style="display: flex; align-items: center; gap: 0.75rem;">
-                        <span style="font-size: 1.5rem;"><?php echo $product['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?></span>
+                    <div class="flex-center-gap-0-5 flex-start-gap-0-75">
+                        <span class="fs-1-5"><?php echo $product['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?></span>
                         <div>
                             <strong class="shipping-info-title">
                                 <?php echo $product['shipping_type']; ?> Shipping
                             </strong>
-                            <p class="text-muted-sm" style="margin: 0.25rem 0 0 0;">
+                            <p class="text-muted-sm m-0 mt-0-25">
                                 <?php echo $product['shipping_type'] === 'Express' ? 'Fast delivery for lightweight items' : 'Specialized handling for high-value items'; ?>
                             </p>
                         </div>
@@ -129,7 +129,7 @@ $category = getCategoryById($product['category']);
                         <label class="variant-label">Quantity</label>
                         <div class="quantity-wrapper">
                             <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>" 
-                                   class="form-input" style="width: 100px; text-align: center; font-weight: 600;">
+                                   class="form-input w-100px ta-center font-600">
                             <span class="text-muted-sm">Max: <?php echo $product['stock']; ?></span>
                         </div>
                     </div>
@@ -189,7 +189,7 @@ $category = getCategoryById($product['category']);
         $recommendedProducts = array_slice(getProductsByCategory($product['category']), 0, 4);
         if (!empty($recommendedProducts)):
         ?>
-        <div class="mt-4rem">
+        <div class="mt-3rem">
             <h2 class="section-title">You May Also Like</h2>
             <div class="products-container">
                 <?php foreach ($recommendedProducts as $recProduct): ?>

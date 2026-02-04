@@ -29,13 +29,13 @@ require_once 'includes/header.php';
 
                 <div class="form-flex">
                     <label class="form-checkbox-label">
-                        <input type="checkbox" name="remember" style="margin-right: 0.5rem;">
+                        <input type="checkbox" name="remember" class="mr-0-75">
                         <span class="form-checkbox-text">Remember me</span>
                     </label>
-                    <a href="#" style="font-size: 0.9375rem; color: var(--primary); font-weight: 600;">Forgot Password?</a>
+                    <a href="#" class="fs-0-9375 color-primary font-600">Forgot Password?</a>
                 </div>
 
-                <button type="submit" class="action-button" style="width: 100%; margin-bottom: 1.5rem;">
+                <button type="submit" class="action-button w-100 mb-1-5">
                     Login to Account
                 </button>
             </form>
@@ -43,14 +43,14 @@ require_once 'includes/header.php';
             <div class="auth-footer">
                 <p class="text-muted-sm">
                     Don't have an account? 
-                    <a href="signup.php" style="color: var(--primary); font-weight: 700;">Sign Up</a>
+                    <a href="signup.php" class="color-primary font-700">Sign Up</a>
                 </p>
             </div>
 
             <!-- Demo Login Info -->
             <div class="demo-box">
-                <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">Demo Login Credentials</h3>
-                <p class="text-muted-sm" style="margin-bottom: 0.5rem;">
+                <h3 class="fs-1-0625 font-700 mb-1">Demo Login Credentials</h3>
+                <p class="text-muted-sm mb-0-5">
                     <strong>Email:</strong> demo@easycart.com<br>
                     <strong>Password:</strong> demo123
                 </p>

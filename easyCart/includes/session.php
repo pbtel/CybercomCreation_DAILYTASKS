@@ -355,7 +355,7 @@ function requireLogin($redirectUrl = null) {
 }
 
 // User Registration Function
-function registerUser($firstName, $lastName, $email, $password, $phone = '') {
+function registerUser($firstName, $lastName, $email, $password) {
     // Check if user already exists
     $existingUser = fetchOne("SELECT user_id FROM users WHERE email = :email", ['email' => $email]);
     if ($existingUser) {
@@ -371,8 +371,7 @@ function registerUser($firstName, $lastName, $email, $password, $phone = '') {
     $userId = dbInsert('users', [
         'email' => $email,
         'password' => $hashedPassword,
-        'name' => $fullName,
-        'phone' => $phone
+        'name' => $fullName
     ]);
     
     if ($userId) {

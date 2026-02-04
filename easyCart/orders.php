@@ -22,15 +22,15 @@ $stats = getOrderStats($userId);
                 <div class="stat-label">Total Orders</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" style="color: #f59e0b;"><?php echo $stats['processing']; ?></div>
+                <div class="stat-value color-warning"><?php echo $stats['processing']; ?></div>
                 <div class="stat-label">Processing</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" style="color: #3b82f6;"><?php echo $stats['shipped']; ?></div>
+                <div class="stat-value color-info"><?php echo $stats['shipped']; ?></div>
                 <div class="stat-label">Shipped</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" style="color: var(--accent);"><?php echo $stats['delivered']; ?></div>
+                <div class="stat-value color-accent"><?php echo $stats['delivered']; ?></div>
                 <div class="stat-label">Delivered</div>
             </div>
         </div>
@@ -39,7 +39,7 @@ $stats = getOrderStats($userId);
         <?php if (empty($userOrders)): ?>
             <div class="empty-state">
                 <div class="empty-state-icon">📦</div>
-                <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">No orders yet</h2>
+                <h2 class="fs-1-5 mb-1">No orders yet</h2>
                 <p class="text-muted-sm mb-2rem">Start shopping to see your orders here</p>
                 <a href="products.php" class="btn-primary-lg">
                     Start Shopping
@@ -47,14 +47,14 @@ $stats = getOrderStats($userId);
             </div>
         <?php else: ?>
             <?php foreach ($userOrders as $order): ?>
-            <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card mb-1-5">
                 <!-- Order Header -->
                 <div class="order-header">
                     <div>
-                        <h3 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;">
+                        <h3 class="mb-0-5">
                             Order <?php echo $order['order_id']; ?>
                         </h3>
-                        <p class="text-muted-sm" style="font-size: 0.9375rem;">
+                        <p class="text-muted-sm">
                             Placed on <?php echo date('d M, Y', strtotime($order['created_at'])); ?>
                         </p>
                     </div>
@@ -71,9 +71,19 @@ $stats = getOrderStats($userId);
                             ?>">
                             <?php echo ucfirst($order['status']); ?>
                         </div>
-                        <p style="font-size: 1.5rem; font-weight: 700; color: var(--primary); margin-top: 0.5rem;">
+                        <p class="product-current-price mt-0-5">
                             ₹<?php echo number_format($order['final_amount']); ?>
                         </p>
+                        <?php if ($order['discount'] > 0): ?>
+                            <p class="text-success-sm font-500 fs-0-875">
+                                <?php if (!empty($order['applied_coupon'])): ?>
+                                    <span class="badge badge-success-soft fs-0-75">
+                                        <?php echo htmlspecialchars($order['applied_coupon']); ?>
+                                    </span>
+                                <?php endif; ?>
+                                Discount: -₹<?php echo number_format($order['discount']); ?>
+                            </p>
+                        <?php endif; ?>
                     </div>
                 </div>
 
@@ -85,8 +95,8 @@ $stats = getOrderStats($userId);
                             <div class="order-item-thumb">
                                 <?php echo $product ? $product['image'] : '📦'; ?>
                             </div>
-                            <div style="flex: 1;">
-                                <h4 style="font-weight: 600; margin-bottom: 0.25rem;"><?php echo htmlspecialchars($item['product_name']); ?></h4>
+                            <div class="flex-1">
+                                <h4 class="font-600 mb-0-25"><?php echo htmlspecialchars($item['product_name']); ?></h4>
                                 <p class="text-muted-sm">Quantity: <?php echo $item['quantity']; ?></p>
                                 <?php if (!empty($item['variant'])): ?>
                                     <p class="text-muted-sm">
@@ -97,7 +107,7 @@ $stats = getOrderStats($userId);
                                 <?php endif; ?>
                             </div>
                             <div class="text-right">
-                                <p style="font-weight: 700; color: var(--primary);">₹<?php echo number_format($item['price'] * $item['quantity']); ?></p>
+                                <p class="font-700 color-primary">₹<?php echo number_format($item['price'] * $item['quantity']); ?></p>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -105,6 +115,10 @@ $stats = getOrderStats($userId);
 
                 <!-- Order Actions -->
                 <div class="btn-group">
+                    <a href="order-detail.php?id=<?php echo $order['order_id']; ?>" class="btn-primary btn-padding-lg">
+                        View Details
+                    </a>
+                    
                     <?php if ($order['status'] === 'shipped' || $order['status'] === 'delivered'): ?>
                         <?php if ($order['tracking_number']): ?>
                             <a href="#" class="btn-outline-primary">
@@ -114,7 +128,7 @@ $stats = getOrderStats($userId);
                     <?php endif; ?>
                     
                     <?php if ($order['status'] === 'delivered'): ?>
-                        <a href="#" class="btn-primary" style="padding: 0.75rem 1.5rem !important;">
+                        <a href="#" class="btn-primary btn-padding-lg">
                             Leave Review
                         </a>
                         <a href="#" class="btn-outline-accent">

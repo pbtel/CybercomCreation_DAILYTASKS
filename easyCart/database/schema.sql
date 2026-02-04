@@ -173,6 +173,7 @@ CREATE TABLE sales_order (
     discount DECIMAL(10, 2) DEFAULT 0,
     tax DECIMAL(10, 2) DEFAULT 0,
     final_amount DECIMAL(10, 2) NOT NULL,
+    applied_coupon VARCHAR(50),
     status VARCHAR(50) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

@@ -131,8 +131,8 @@ $allBrands = getAllBrands();
         <!-- PRODUCTS GRID/LIST -->
         <div class="products-container <?php echo $viewMode === 'list' ? 'list-layout' : ''; ?>">
             <?php if (empty($displayProducts)): ?>
-                <div class="empty-state" style="grid-column: 1 / -1;">
-                    <h3 class="auth-subtitle" style="margin-bottom: 1rem;">No products found matching your filters</h3>
+                <div class="empty-state grid-col-all">
+                    <h3 class="auth-subtitle mb-1">No products found matching your filters</h3>
                     <a href="products.php" class="btn-primary">Clear Filters</a>
                 </div>
             <?php else: ?>
@@ -164,7 +164,7 @@ $allBrands = getAllBrands();
                             <?php endif; ?>
                         </div>
                         <?php if (isset($product['shipping_type'])): ?>
-                        <div class="badge <?php echo $product['shipping_type'] === 'Express' ? 'badge-express' : 'badge-freight'; ?>" style="margin-top: 0.5rem;">
+                        <div class="badge <?php echo $product['shipping_type'] === 'Express' ? 'badge-express' : 'badge-freight'; ?> mt-0-5">
                             <?php echo $product['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?> <?php echo $product['shipping_type']; ?>
                         </div>
                         <?php endif; ?>
@@ -174,7 +174,7 @@ $allBrands = getAllBrands();
             <?php endif; ?>
         </div>
 
-        <div class="text-center mt-4rem" style="margin-top: 3rem;">
+        <div class="text-center mt-3rem">
             Showing <?php echo count($displayProducts); ?> of <?php echo count($products); ?> products
         </div>
     </div>

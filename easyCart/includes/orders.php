@@ -23,6 +23,7 @@ function saveOrder($orderData) {
             'discount' => $orderData['discount'] ?? 0,
             'tax' => $orderData['tax'] ?? 0,
             'final_amount' => $orderData['final_amount'],
+            'applied_coupon' => $orderData['applied_coupon'] ?? null,
             'status' => $orderData['status'] ?? 'pending'
         ]);
         

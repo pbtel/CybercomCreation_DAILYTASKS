@@ -6,7 +6,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lastName = isset($_POST['last_name']) ? trim($_POST['last_name']) : '';
     $email = isset($_POST['email']) ? trim($_POST['email']) : '';
     $password = isset($_POST['password']) ? $_POST['password'] : '';
-    $phone = isset($_POST['phone']) ? trim($_POST['phone']) : '';
+    $confirmPassword = isset($_POST['confirm_password']) ? $_POST['confirm_password'] : '';
     
     // Basic validation
     if ($password !== $confirmPassword) {
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     
     // Register user
-    $result = registerUser($firstName, $lastName, $email, $password, $phone);
+    $result = registerUser($firstName, $lastName, $email, $password);
     
     if ($result['success']) {
         // Log in the new user

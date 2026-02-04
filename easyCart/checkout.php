@@ -39,7 +39,7 @@ requireLogin('checkout.php');
 ?>
 
     <div class="container">
-        <h1 class="section-title-lg" style="margin-bottom: 1rem;">Checkout</h1>
+        <h1 class="section-title-lg mb-1">Checkout</h1>
         <p class="text-muted-sm mb-2rem">Complete your order</p>
 
         <div class="checkout-grid">
@@ -47,8 +47,8 @@ requireLogin('checkout.php');
             <div>
                 <form action="order-place.php" method="POST">
                     <!-- SHIPPING INFO -->
-                    <div class="card" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Shipping Information</h2>
+                    <div class="card mb-2">
+                        <h2 class="card-title-lg mb-1-5">Shipping Information</h2>
                         
                         <div class="form-row">
                             <div>
@@ -105,28 +105,28 @@ requireLogin('checkout.php');
                     </div>
 
                     <!-- SHIPPING METHOD -->
-                    <div class="card" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Shipping Method</h2>
+                    <div class="card mb-2">
+                        <h2 class="card-title-lg mb-1-5">Shipping Method</h2>
                         
                         <!-- Standard Shipping -->
                         <?php $standardAvailable = in_array('standard', $availableShippingMethods); ?>
-                        <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid <?php echo $standardAvailable ? 'var(--primary)' : 'var(--border)'; ?>; border-radius: 12px; margin-bottom: 1rem; cursor: <?php echo $standardAvailable ? 'pointer' : 'not-allowed'; ?>; background: <?php echo $standardAvailable ? 'rgba(99, 102, 241, 0.05)' : 'rgba(0, 0, 0, 0.02)'; ?>; position: relative; transition: all 0.3s ease; <?php echo !$standardAvailable ? 'opacity: 0.5;' : ''; ?>">
-                            <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="standard" <?php echo ($selectedShippingMethod === 'standard') ? 'checked' : ''; ?> <?php echo !$standardAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
-                                <div style="flex: 1;">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">📦</span>
-                                        <strong style="font-size: 1.0625rem;">Standard Shipping</strong>
+                        <label class="shipping-option <?php echo !$standardAvailable ? 'disabled' : ''; ?>" id="label-standard">
+                            <div class="flex-start-gap-0-75">
+                                <input type="radio" name="shipping_method" value="standard" <?php echo ($selectedShippingMethod === 'standard') ? 'checked' : ''; ?> <?php echo !$standardAvailable ? 'disabled' : ''; ?> class="mt-0-25" onchange="updateOrderSummary()">
+                                <div class="flex-1">
+                                    <div class="flex-center-gap-0-5 mb-0-5">
+                                        <span class="fs-1-25">📦</span>
+                                        <strong class="fs-1-0625">Standard Shipping</strong>
                                         <?php if ($standardAvailable): ?>
-                                            <span style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">MOST POPULAR</span>
+                                            <span class="shipping-badge bg-primary-soft color-primary">MOST POPULAR</span>
                                         <?php else: ?>
-                                            <span style="background: #9ca3af; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">NOT AVAILABLE</span>
+                                            <span class="shipping-badge badge-grey-soft">NOT AVAILABLE</span>
                                         <?php endif; ?>
                                     </div>
-                                    <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('standard', $subtotal); ?></span>
+                                    <span class="db color-text-secondary fs-0-875 mb-0-5"><?php echo getShippingMethodDescription('standard', $subtotal); ?></span>
                                     <?php if ($standardAvailable): ?>
-                                        <div style="background: rgba(16, 185, 129, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">
-                                            <span style="color: #059669; font-size: 0.8125rem; font-weight: 600;">💰 Most economical option</span>
+                                        <div class="shipping-promo">
+                                            <span>💰 Most economical option</span>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -135,31 +135,31 @@ requireLogin('checkout.php');
 
                         <!-- Express Shipping -->
                         <?php $expressAvailable = in_array('express', $availableShippingMethods); ?>
-                        <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 1rem; cursor: <?php echo $expressAvailable ? 'pointer' : 'not-allowed'; ?>; position: relative; transition: all 0.3s ease; <?php echo !$expressAvailable ? 'opacity: 0.5;' : ''; ?>">
-                            <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="express" <?php echo ($selectedShippingMethod === 'express') ? 'checked' : ''; ?> <?php echo !$expressAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
-                                <div style="flex: 1;">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">⚡</span>
-                                        <strong style="font-size: 1.0625rem;">Express Shipping</strong>
+                        <label class="shipping-option <?php echo !$expressAvailable ? 'disabled' : ''; ?>" id="label-express">
+                            <div class="flex-start-gap-0-75">
+                                <input type="radio" name="shipping_method" value="express" <?php echo ($selectedShippingMethod === 'express') ? 'checked' : ''; ?> <?php echo !$expressAvailable ? 'disabled' : ''; ?> class="mt-0-25" onchange="updateOrderSummary()">
+                                <div class="flex-1">
+                                    <div class="flex-center-gap-0-5 mb-0-5">
+                                        <span class="fs-1-25">⚡</span>
+                                        <strong class="fs-1-0625">Express Shipping</strong>
                                         <?php if ($expressAvailable): ?>
-                                            <span style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">FAST</span>
+                                            <span class="shipping-badge bg-warning-soft color-warning">FAST</span>
                                         <?php else: ?>
-                                            <span style="background: #9ca3af; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">NOT AVAILABLE</span>
+                                            <span class="shipping-badge badge-grey-soft">NOT AVAILABLE</span>
                                         <?php endif; ?>
                                     </div>
-                                    <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('express', $subtotal); ?></span>
+                                    <span class="db color-text-secondary fs-0-875 mb-0-5"><?php echo getShippingMethodDescription('express', $subtotal); ?></span>
                                     <?php if ($expressAvailable): ?>
                                         <?php 
                                         $expressCost = calculateShippingCost($subtotal, 'express');
                                         if ($expressCost < 80) {
                                             $savings = 80 - $expressCost;
-                                            echo '<div style="background: rgba(245, 158, 11, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">';
-                                            echo '<span style="color: #d97706; font-size: 0.8125rem; font-weight: 600;">🎉 Save ₹' . number_format($savings) . ' with your cart value!</span>';
+                                            echo '<div class="shipping-promo bg-warning-soft color-warning">';
+                                            echo '<span>🎉 Save ₹' . number_format($savings) . ' with your cart value!</span>';
                                             echo '</div>';
                                         } else {
-                                            echo '<div style="background: rgba(99, 102, 241, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">';
-                                            echo '<span style="color: var(--primary); font-size: 0.8125rem; font-weight: 600;">⚡ Faster delivery guaranteed</span>';
+                                            echo '<div class="shipping-promo bg-primary-soft color-primary">';
+                                            echo '<span>⚡ Faster delivery guaranteed</span>';
                                             echo '</div>';
                                         }
                                         ?>
@@ -170,31 +170,31 @@ requireLogin('checkout.php');
 
                         <!-- White Glove Delivery -->
                         <?php $whitegloveAvailable = in_array('whiteglove', $availableShippingMethods); ?>
-                        <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 1rem; cursor: <?php echo $whitegloveAvailable ? 'pointer' : 'not-allowed'; ?>; position: relative; transition: all 0.3s ease; <?php echo !$whitegloveAvailable ? 'opacity: 0.5;' : ''; ?>">
-                            <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="whiteglove" <?php echo ($selectedShippingMethod === 'whiteglove') ? 'checked' : ''; ?> <?php echo !$whitegloveAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
-                                <div style="flex: 1;">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">🏆</span>
-                                        <strong style="font-size: 1.0625rem;">White Glove Delivery</strong>
+                        <label class="shipping-option <?php echo !$whitegloveAvailable ? 'disabled' : ''; ?>" id="label-whiteglove">
+                            <div class="flex-start-gap-0-75">
+                                <input type="radio" name="shipping_method" value="whiteglove" <?php echo ($selectedShippingMethod === 'whiteglove') ? 'checked' : ''; ?> <?php echo !$whitegloveAvailable ? 'disabled' : ''; ?> class="mt-0-25" onchange="updateOrderSummary()">
+                                <div class="flex-1">
+                                    <div class="flex-center-gap-0-5 mb-0-5">
+                                        <span class="fs-1-25">🏆</span>
+                                        <strong class="fs-1-0625">White Glove Delivery</strong>
                                         <?php if ($whitegloveAvailable): ?>
-                                            <span style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">PREMIUM</span>
+                                            <span class="shipping-badge bg-accent-soft color-accent">PREMIUM</span>
                                         <?php else: ?>
-                                            <span style="background: #9ca3af; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">NOT AVAILABLE</span>
+                                            <span class="shipping-badge badge-grey-soft">NOT AVAILABLE</span>
                                         <?php endif; ?>
                                     </div>
-                                    <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('whiteglove', $subtotal); ?></span>
+                                    <span class="db color-text-secondary fs-0-875 mb-0-5"><?php echo getShippingMethodDescription('whiteglove', $subtotal); ?></span>
                                     <?php if ($whitegloveAvailable): ?>
                                         <?php 
                                         $whiteGloveCost = calculateShippingCost($subtotal, 'whiteglove');
                                         if ($whiteGloveCost < 150) {
                                             $savings = 150 - $whiteGloveCost;
-                                            echo '<div style="background: rgba(139, 92, 246, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">';
-                                            echo '<span style="color: #7c3aed; font-size: 0.8125rem; font-weight: 600;">🎉 Save ₹' . number_format($savings) . ' with your cart value!</span>';
+                                            echo '<div class="shipping-promo bg-accent-soft color-accent">';
+                                            echo '<span>🎉 Save ₹' . number_format($savings) . ' with your cart value!</span>';
                                             echo '</div>';
                                         } else {
-                                            echo '<div style="background: rgba(139, 92, 246, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">';
-                                            echo '<span style="color: #7c3aed; font-size: 0.8125rem; font-weight: 600;">✨ Includes unpacking, assembly & setup</span>';
+                                            echo '<div class="shipping-promo bg-accent-soft color-accent">';
+                                            echo '<span>✨ Includes unpacking, assembly & setup</span>';
                                             echo '</div>';
                                         }
                                         ?>
@@ -205,23 +205,23 @@ requireLogin('checkout.php');
 
                         <!-- Freight Shipping -->
                         <?php $freightAvailable = in_array('freight', $availableShippingMethods); ?>
-                        <label class="shipping-option" style="display: block; padding: 1.25rem; border: 2px solid var(--border); border-radius: 12px; cursor: <?php echo $freightAvailable ? 'pointer' : 'not-allowed'; ?>; position: relative; transition: all 0.3s ease; <?php echo !$freightAvailable ? 'opacity: 0.5;' : ''; ?>">
-                            <div style="display: flex; align-items: start; gap: 0.75rem;">
-                                <input type="radio" name="shipping_method" value="freight" <?php echo ($selectedShippingMethod === 'freight') ? 'checked' : ''; ?> <?php echo !$freightAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
-                                <div style="flex: 1;">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                                        <span style="font-size: 1.25rem;">🚚</span>
-                                        <strong style="font-size: 1.0625rem;">Freight Shipping</strong>
+                        <label class="shipping-option <?php echo !$freightAvailable ? 'disabled' : ''; ?>" id="label-freight">
+                            <div class="flex-start-gap-0-75">
+                                <input type="radio" name="shipping_method" value="freight" <?php echo ($selectedShippingMethod === 'freight') ? 'checked' : ''; ?> <?php echo !$freightAvailable ? 'disabled' : ''; ?> class="mt-0-25" onchange="updateOrderSummary()">
+                                <div class="flex-1">
+                                    <div class="flex-center-gap-0-5 mb-0-5">
+                                        <span class="fs-1-25">🚚</span>
+                                        <strong class="fs-1-0625">Freight Shipping</strong>
                                         <?php if ($freightAvailable): ?>
-                                            <span style="background: linear-gradient(135deg, #ef4444, #dc2626); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">HEAVY ITEMS</span>
+                                            <span class="shipping-badge bg-danger-soft color-danger">HEAVY ITEMS</span>
                                         <?php else: ?>
-                                            <span style="background: #9ca3af; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700;">NOT AVAILABLE</span>
+                                            <span class="shipping-badge badge-grey-soft">NOT AVAILABLE</span>
                                         <?php endif; ?>
                                     </div>
-                                    <span style="display: block; color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('freight', $subtotal); ?></span>
+                                    <span class="db color-text-secondary fs-0-875 mb-0-5"><?php echo getShippingMethodDescription('freight', $subtotal); ?></span>
                                     <?php if ($freightAvailable): ?>
-                                        <div style="background: rgba(239, 68, 68, 0.1); padding: 0.5rem 0.75rem; border-radius: 6px; display: inline-block;">
-                                            <span style="color: #dc2626; font-size: 0.8125rem; font-weight: 600;">📦 Best for bulk or oversized orders</span>
+                                        <div class="shipping-promo bg-danger-soft color-danger">
+                                            <span>📦 Best for bulk or oversized orders</span>
                                         </div>
                                     <?php endif; ?>
                                 </div>
@@ -229,29 +229,29 @@ requireLogin('checkout.php');
                         </label>
 
                         <!-- Info Note -->
-                        <div style="background: rgba(99, 102, 241, 0.05); border-left: 4px solid var(--primary); padding: 1rem; border-radius: 8px; margin-top: 1rem;">
-                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
-                                <strong style="color: var(--primary);">ℹ️ Note:</strong> All delivery times are estimated and may vary based on your location. Tracking information will be provided once your order ships.
+                        <div class="alert-info-soft mt-1">
+                            <p class="fs-0-875 color-text-secondary m-0">
+                                <strong class="color-primary">ℹ️ Note:</strong> All delivery times are estimated and may vary based on your location. Tracking information will be provided once your order ships.
                             </p>
                         </div>
                     </div>
 
                     <!-- PAYMENT METHOD -->
-                    <div class="card" style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Payment Method</h2>
+                    <div class="card mb-2">
+                        <h2 class="card-title-lg mb-1-5">Payment Method</h2>
                         
                         <label class="payment-option">
-                            <input type="radio" name="payment_method" value="cod" checked style="margin-right: 0.75rem;">
+                            <input type="radio" name="payment_method" value="cod" checked class="mr-0-75">
                             <strong>Cash on Delivery</strong>
                         </label>
 
                         <label class="payment-option">
-                            <input type="radio" name="payment_method" value="upi" style="margin-right: 0.75rem;">
+                            <input type="radio" name="payment_method" value="upi" class="mr-0-75">
                             <strong>UPI / QR Code</strong>
                         </label>
 
                         <label class="payment-option last">
-                            <input type="radio" name="payment_method" value="card" style="margin-right: 0.75rem;">
+                            <input type="radio" name="payment_method" value="card" class="mr-0-75">
                             <strong>Credit / Debit Card</strong>
                         </label>
                     </div>
@@ -263,7 +263,7 @@ requireLogin('checkout.php');
             <!-- ORDER SUMMARY -->
             <div class="sticky-summary">
                 <div class="card">
-                    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1.5rem;">Order Summary</h2>
+                    <h2 class="card-title-lg mb-1-5">Order Summary</h2>
 
                     <div class="scroll-summary">
                         <?php foreach ($cartItems as $item): ?>
@@ -271,26 +271,26 @@ requireLogin('checkout.php');
                             <div class="product-summary-image">
                                 <?php echo $item['product']['image']; ?>
                             </div>
-                            <div style="flex: 1;">
-                                <p style="font-weight: 600; font-size: 0.9375rem;"><?php echo htmlspecialchars($item['product']['name']); ?></p>
-                                <p style="color: var(--text-secondary); font-size: 0.8125rem;">Qty: <?php echo $item['quantity']; ?></p>
+                            <div class="flex-1">
+                                <p class="font-600 fs-0-9375"><?php echo htmlspecialchars($item['product']['name']); ?></p>
+                                <p class="color-text-secondary fs-0-8125">Qty: <?php echo $item['quantity']; ?></p>
                                 
                                 <?php if ($item['discount_percent'] > 0): ?>
                                     <!-- Show discounted unit price -->
-                                    <p style="font-weight: 600; color: var(--primary); font-size: 0.875rem; margin-top: 0.25rem;">
+                                    <p class="font-600 color-primary fs-0-875 mt-0-25">
                                         ₹<?php echo number_format($item['unit_price_discounted']); ?> 
-                                        <span style="text-decoration: line-through; color: var(--text-secondary); font-size: 0.75rem;">
+                                        <span class="text-muted-sm td-lt fs-0-75">
                                             ₹<?php echo number_format($item['unit_price_original']); ?>
                                         </span>
                                     </p>
                                 <?php else: ?>
                                     <!-- Regular price -->
-                                    <p style="font-weight: 600; color: var(--primary); font-size: 0.875rem; margin-top: 0.25rem;">
+                                    <p class="font-600 color-primary fs-0-875 mt-0-25">
                                         ₹<?php echo number_format($item['product']['price']); ?>
                                     </p>
                                 <?php endif; ?>
                                 
-                                <p style="font-weight: 600; color: var(--primary); margin-top: 0.25rem;">₹<?php echo number_format($item['subtotal']); ?></p>
+                                <p class="font-600 color-primary mt-0-25">₹<?php echo number_format($item['subtotal']); ?></p>
                             </div>
                         </div>
                         <?php endforeach; ?>
@@ -304,8 +304,8 @@ requireLogin('checkout.php');
                         
                         <?php if ($appliedCoupon && $couponDiscount > 0): ?>
                         <div class="summary-row">
-                            <span style="color: #10b981; font-weight: 600;">Coupon (<?php echo $appliedCoupon['code']; ?>):</span>
-                            <span style="font-weight: 600; color: #10b981;">-₹<?php echo number_format($couponDiscount); ?></span>
+                            <span class="font-600 color-accent">Coupon (<?php echo $appliedCoupon['code']; ?>):</span>
+                            <span class="font-600 color-accent">-₹<?php echo number_format($couponDiscount); ?></span>
                         </div>
                         <?php endif; ?>
                         
@@ -321,7 +321,7 @@ requireLogin('checkout.php');
 
                     <div class="total-row">
                         <span>Total:</span>
-                        <span style="color: var(--primary);" id="summary-total">₹<?php echo number_format($total); ?></span>
+                        <span class="color-primary" id="summary-total">₹<?php echo number_format($total); ?></span>
                     </div>
                 </div>
             </div>
@@ -378,45 +378,18 @@ requireLogin('checkout.php');
         document.querySelectorAll('.shipping-option').forEach(label => {
             const radio = label.querySelector('input[type="radio"]');
             if (radio.checked) {
-                label.style.borderColor = 'var(--primary)';
-                label.style.background = 'rgba(99, 102, 241, 0.05)';
-                label.style.transform = 'scale(1.02)';
-                label.style.boxShadow = '0 4px 12px rgba(99, 102, 241, 0.15)';
+                label.classList.add('selected');
+                label.classList.remove('shadow-none');
             } else {
-                label.style.borderColor = 'var(--border)';
-                label.style.background = 'white';
-                label.style.transform = 'scale(1)';
-                label.style.boxShadow = 'none';
+                label.classList.remove('selected');
+                label.classList.add('shadow-none');
             }
         });
     }
 
-    // Add hover effects to shipping options
+    // Initialize styling on page load
     document.addEventListener('DOMContentLoaded', function() {
-        // Apply correct styling on page load based on selected shipping method
         updateOrderSummary();
-        
-        document.querySelectorAll('.shipping-option').forEach(label => {
-            label.addEventListener('mouseenter', function() {
-                const radio = this.querySelector('input[type="radio"]');
-                if (!radio.checked) {
-                    this.style.borderColor = 'rgba(99, 102, 241, 0.5)';
-                    this.style.background = 'rgba(99, 102, 241, 0.02)';
-                    this.style.transform = 'translateY(-2px)';
-                    this.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
-                }
-            });
-
-            label.addEventListener('mouseleave', function() {
-                const radio = this.querySelector('input[type="radio"]');
-                if (!radio.checked) {
-                    this.style.borderColor = 'var(--border)';
-                    this.style.background = 'white';
-                    this.style.transform = 'translateY(0)';
-                    this.style.boxShadow = 'none';
-                }
-            });
-        });
     });
     </script>
 
