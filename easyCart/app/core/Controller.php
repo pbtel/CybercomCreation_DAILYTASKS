@@ -10,7 +10,7 @@ class Controller {
      * Load a model
      */
     public function model($model) {
-        require_once '../app/models/' . $model . '.php';
+        require_once __DIR__ . '/../models/' . $model . '.php';
         return new $model();
     }
 
@@ -22,7 +22,7 @@ class Controller {
         extract($data);
         
         // Check if view file exists
-        $viewFile = '../app/views/' . $view . '.php';
+        $viewFile = __DIR__ . '/../views/' . $view . '.php';
         if (file_exists($viewFile)) {
             require_once $viewFile;
         } else {

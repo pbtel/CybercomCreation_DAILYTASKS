@@ -74,7 +74,7 @@ class CouponModel {
         $coupon = $this->getApplied();
         
         if ($coupon && isset($coupon['discount_percent'])) {
-            return round($subtotal * $coupon['discount_percent'] / 100);
+            return ($subtotal * $coupon['discount_percent'] / 100);
         }
         
         return 0;

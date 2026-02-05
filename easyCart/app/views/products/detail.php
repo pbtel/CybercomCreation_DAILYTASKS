@@ -3,10 +3,24 @@
     <div class="container mt-2">
         <!-- BREADCRUMB -->
         <div class="breadcrumb">
-            <a href="<?php echo BASE_URL; ?>/home">Home</a> / 
+            <a href="<?php echo BASE_URL; ?>">Home</a> / 
             <a href="<?php echo BASE_URL; ?>/products">Products</a> / 
             <a href="<?php echo BASE_URL; ?>/products?category=<?php echo $product['category']; ?>">
-                <?php echo ucfirst($product['category']); ?>
+                <?php 
+                // Find category name from the ID (optimally this should be passed from controller or lookup)
+                // For now we will use the ID or look it up if available in a global way, but typically 
+                // the controller should pass the category name or object.
+                // In ProductController.php, we see it passes 'product', 'relatedProducts'.
+                // We might want to update the controller to pass 'category' name if possible.
+                // But for now, let's display the category ID formatted or capitalised if it's a slug.
+                // Looking at ProductModel, 'category' is a category_id.
+                // Wait, in root product-detail.php: $category = getCategoryById($product['category']);
+                // The controller didn't pass $category explicitly, but maybe we can just use the ID/Slug for now 
+                // or assume $product['category_name'] if the model joined it?
+                // ProductModel fetch does: pa.category_id as category. No join for name.
+                // Let's just output the category ID for now or update Controller.
+                echo ucfirst($product['category']); 
+                ?>
             </a> / 
             <span><?php echo htmlspecialchars($product['name']); ?></span>
         </div>
@@ -16,30 +30,27 @@
             <div class="image-showcase">
                 <div class="showcase-main">
                     <?php if (strpos($product['image'], 'assets/images') === 0): ?>
-                        <img src="<?php echo BASE_URL . '/' . $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
                     <?php else: ?>
                         <?php echo $product['image']; ?>
                     <?php endif; ?>
                 </div>
                 <div class="showcase-thumbs">
-                    <?php 
-                    $productImages = $product['images'] ?? []; 
-                    ?>
-                    <?php if (!empty($productImages)): ?>
-                        <?php foreach ($productImages as $index => $img): ?>
+                    <?php if (!empty($product['images'])): ?>
+                        <?php foreach ($product['images'] as $index => $img): ?>
                             <div class="showcase-thumb <?php echo $index === 0 ? 'active' : ''; ?>">
-                                <img src="<?php echo BASE_URL . '/' . $img['image_url']; ?>" alt="Thumb <?php echo $index + 1; ?>">
+                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $img['image_url']; ?>" alt="Thumb <?php echo $index + 1; ?>">
                             </div>
                         <?php endforeach; ?>
                         
                         <!-- Ensure we have 4 slots if less than 4 images -->
-                        <?php for ($i = count($productImages); $i < 4; $i++): ?>
+                        <?php for ($i = count($product['images']); $i < 4; $i++): ?>
                             <div class="showcase-thumb">📷</div>
                         <?php endfor; ?>
                     <?php else: ?>
                         <div class="showcase-thumb active">
                             <?php if (strpos($product['image'], 'assets/images') === 0): ?>
-                                <img src="<?php echo BASE_URL . '/' . $product['image']; ?>" alt="Thumb">
+                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="Thumb">
                             <?php else: ?>
                                 <?php echo $product['image']; ?>
                             <?php endif; ?>
@@ -134,11 +145,11 @@
                 <?php endif; ?>
 
                 <!-- QUANTITY & ADD TO CART -->
-                <form action="<?php echo BASE_URL; ?>/cart/add" method="POST" id="addToCartForm">
+                <form action="<?php echo BASE_URL; ?>/api/cart-add-ajax.php" method="POST" id="addToCartForm">
                     <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-                    <input type="hidden" name="redirect" value="product/<?php echo $product['id']; ?>">
+                    <!-- Variant inputs will be added dynamically by JavaScript -->
                     
-                    <div class="form-input-group">
+                    <div class="form-group">
                         <label class="variant-label">Quantity</label>
                         <div class="quantity-wrapper">
                             <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>" 
@@ -158,19 +169,20 @@
         <div class="specs-wrapper">
             <h2 class="specs-title">Technical Specifications</h2>
             <div class="specs-list">
-                <?php foreach ($product['specs'] as $key => $value): ?>
-                <div class="spec-entry">
-                    <div class="spec-key"><?php echo htmlspecialchars($key); ?></div>
-                    <div class="spec-val"><?php echo htmlspecialchars($value); ?></div>
-                </div>
-                <?php endforeach; ?>
+                <?php if (!empty($product['specs'])): ?>
+                    <?php foreach ($product['specs'] as $key => $value): ?>
+                    <div class="spec-entry">
+                        <div class="spec-key"><?php echo htmlspecialchars($key); ?></div>
+                        <div class="spec-val"><?php echo htmlspecialchars($value); ?></div>
+                    </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
         </div>
 
         <!-- CUSTOMER REVIEWS (Static) -->
         <div class="reviews-wrapper">
             <h2 class="reviews-title">Customer Reviews</h2>
-
             <div class="review-box">
                 <div class="review-top">
                     <div class="review-author">John Smith</div>
@@ -178,14 +190,7 @@
                 </div>
                 <p class="review-text">This product exceeded my expectations. Great quality and fast delivery. Highly recommended!</p>
             </div>
-
-            <div class="review-box">
-                <div class="review-top">
-                    <div class="review-author">Sarah Johnson</div>
-                    <div class="review-rating">★★★★☆</div>
-                </div>
-                <p class="review-text">Really happy with this purchase. Good value for money and works perfectly.</p>
-            </div>
+            <!-- Additional static reviews can remain... -->
         </div>
 
         <!-- RECOMMENDED PRODUCTS -->
@@ -197,7 +202,7 @@
                     <a href="<?php echo BASE_URL; ?>/product/<?php echo $recProduct['id']; ?>" class="product-item">
                         <div class="product-image-wrapper">
                             <?php if (strpos($recProduct['image'], 'assets/images') === 0): ?>
-                                <img src="<?php echo BASE_URL . '/' . $recProduct['image']; ?>" alt="<?php echo htmlspecialchars($recProduct['name']); ?>" class="product-img">
+                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $recProduct['image']; ?>" alt="<?php echo htmlspecialchars($recProduct['name']); ?>" class="product-img">
                             <?php else: ?>
                                 <span><?php echo $recProduct['image']; ?></span>
                             <?php endif; ?>

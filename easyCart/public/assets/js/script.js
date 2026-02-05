@@ -578,77 +578,31 @@ function showToast(message, type = 'info') {
 
     // Create toast element
     const toast = document.createElement('div');
-    toast.className = 'toast toast-' + type;
+    toast.className = `toast toast-${type}`;
 
-    // Set colors based on type
-    let bgColor, borderColor, icon;
+    // Set icon based on type
+    let icon;
     switch (type) {
-        case 'success':
-            bgColor = '#d4edda';
-            borderColor = '#28a745';
-            icon = '✓';
-            break;
-        case 'error':
-            bgColor = '#f8d7da';
-            borderColor = '#dc3545';
-            icon = '✗';
-            break;
-        case 'info':
-            bgColor = '#d1ecf1';
-            borderColor = '#17a2b8';
-            icon = 'ℹ';
-            break;
-        default:
-            bgColor = '#f8f9fa';
-            borderColor = '#6c757d';
-            icon = '•';
+        case 'success': icon = '✓'; break;
+        case 'error': icon = '✗'; break;
+        case 'info': icon = 'ℹ'; break;
+        default: icon = '•';
     }
-
-    // Style the toast
-    toast.style.cssText = `
-        background: ${bgColor};
-        border-left: 4px solid ${borderColor};
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        min-width: 300px;
-        max-width: 400px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        animation: slideIn 0.3s ease-out;
-        cursor: pointer;
-        transition: transform 0.2s, opacity 0.3s;
-    `;
 
     // Create icon
     const iconSpan = document.createElement('span');
+    iconSpan.className = 'toast-icon';
     iconSpan.textContent = icon;
-    iconSpan.style.cssText = `
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: ${borderColor};
-    `;
 
     // Create message
     const messageSpan = document.createElement('span');
+    messageSpan.className = 'toast-message';
     messageSpan.textContent = message;
-    messageSpan.style.cssText = `
-        flex: 1;
-        color: #333;
-        font-weight: 500;
-    `;
 
     // Create close button
     const closeBtn = document.createElement('span');
-    closeBtn.innerHTML = '×';
-    closeBtn.style.cssText = `
-        font-size: 1.5rem;
-        color: #666;
-        cursor: pointer;
-        line-height: 1;
-        padding: 0 4px;
-    `;
+    closeBtn.className = 'toast-close';
+    closeBtn.innerHTML = '&times;';
     closeBtn.onclick = (e) => {
         e.stopPropagation();
         removeToast(toast);
@@ -663,44 +617,25 @@ function showToast(message, type = 'info') {
     container.appendChild(toast);
 
     // Auto dismiss after 4 seconds
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
         removeToast(toast);
     }, 4000);
 
     // Click to dismiss
-    toast.onclick = () => removeToast(toast);
+    toast.onclick = () => {
+        clearTimeout(timeoutId);
+        removeToast(toast);
+    };
 }
 
 function removeToast(toast) {
-    toast.style.opacity = '0';
-    toast.style.transform = 'translateX(400px)';
+    if (!toast || !toast.parentNode) return;
+    toast.style.animation = 'slideOut 0.3s ease-in forwards';
     setTimeout(() => {
         if (toast.parentNode) {
             toast.parentNode.removeChild(toast);
         }
     }, 300);
-}
-
-// Add CSS animation
-if (!document.getElementById('toastStyles')) {
-    const style = document.createElement('style');
-    style.id = 'toastStyles';
-    style.textContent = `
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        .toast:hover {
-            transform: translateX(-5px);
-        }
-    `;
-    document.head.appendChild(style);
 }
 
 // ============================================

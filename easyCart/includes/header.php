@@ -15,29 +15,32 @@ $user = getUserData();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($pageTitle) ? $pageTitle . ' - ' : ''; ?>EasyCart</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Jetbrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
-    <script src="assets/js/script.js" defer></script>
-    <script src="assets/js/cart-ajax.js" defer></script>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/style.css">
+    <script>
+        window.BASE_URL = '<?php echo BASE_URL; ?>';
+    </script>
+    <script src="<?php echo BASE_URL; ?>/public/assets/js/script.js" defer></script>
+    <script src="<?php echo BASE_URL; ?>/public/assets/js/cart-ajax.js" defer></script>
 </head>
 <body>
     <!-- HEADER -->
     <header>
         <div class="header-wrapper">
             <div class="logo">
-                <a href="index.php" class="logo-link">EasyCart</a>
+                <a href="<?php echo BASE_URL; ?>/index.php" class="logo-link">EasyCart</a>
             </div>
             <nav class="header-nav">
-                <a href="index.php">Home</a>
-                <a href="products.php">Products</a>
-                <a href="cart.php">Cart<span class="cart-badge" id="cartBadge" class="<?php echo $cartCount > 0 ? '' : 'display-none'; ?>"><?php echo $cartCount > 0 ? $cartCount : '0'; ?></span></a>
-                <a href="orders.php">Orders</a>
+                <a href="<?php echo BASE_URL; ?>/index.php">Home</a>
+                <a href="<?php echo BASE_URL; ?>/products.php">Products</a>
+                <a href="<?php echo BASE_URL; ?>/cart.php">Cart<span class="cart-badge <?php echo $cartCount > 0 ? '' : 'hidden'; ?>" id="cartBadge"><?php echo $cartCount > 0 ? $cartCount : '0'; ?></span></a>
+                <a href="<?php echo BASE_URL; ?>/orders.php">Orders</a>
                 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
                     <span class="theme-icon">🌙</span>
                 </button>
                 <?php if ($user['logged_in']): ?>
-                    <a href="logout.php">Logout (<?php echo htmlspecialchars($user['name']); ?>)</a>
+                    <a href="<?php echo BASE_URL; ?>/logout.php">Logout (<?php echo htmlspecialchars($user['name']); ?>)</a>
                 <?php else: ?>
-                    <a href="login.php">Login</a>
+                    <a href="<?php echo BASE_URL; ?>/login.php">Login</a>
                 <?php endif; ?>
             </nav>
         </div>

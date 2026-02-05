@@ -43,7 +43,7 @@ $allBrands = getAllBrands();
                         <div class="product-tag"><?php echo ucfirst($product['tags'][0]); ?></div>
                     <?php endif; ?>
                     <?php if (strpos($product['image'], 'assets/images') === 0): ?>
-                        <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-img">
+                        <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-img">
                     <?php else: ?>
                         <span><?php echo $product['image']; ?></span>
                     <?php endif; ?>
@@ -82,7 +82,7 @@ $allBrands = getAllBrands();
             <a href="products.php?category=<?php echo $category['id']; ?>" class="product-item">
                 <div class="product-image-wrapper aspect-16-9">
                     <?php if (strpos($category['image'], 'assets/images') === 0): ?>
-                        <img src="<?php echo $category['image']; ?>" alt="<?php echo htmlspecialchars($category['name']); ?>" class="category-img">
+                        <img src="<?php echo BASE_URL; ?>/public/<?php echo $category['image']; ?>" alt="<?php echo htmlspecialchars($category['name']); ?>" class="category-img">
                     <?php else: ?>
                         <span class="icon-lg"><?php echo $category['image']; ?></span>
                     <?php endif; ?>
@@ -105,7 +105,7 @@ $allBrands = getAllBrands();
             <a href="products.php?brand=<?php echo strtolower($brand['id']); ?>" class="product-item">
                 <div class="product-image-wrapper aspect-16-9 brand-gradient">
                     <?php if (strpos($brand['image'], 'assets/images') === 0): ?>
-                        <img src="<?php echo $brand['image']; ?>" alt="<?php echo htmlspecialchars($brand['name']); ?>" class="brand-img">
+                        <img src="<?php echo BASE_URL; ?>/public/<?php echo $brand['image']; ?>" alt="<?php echo htmlspecialchars($brand['name']); ?>" class="brand-img">
                     <?php else: ?>
                         <span class="icon-md"><?php echo $brand['image']; ?></span>
                     <?php endif; ?>

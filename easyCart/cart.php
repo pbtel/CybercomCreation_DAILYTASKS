@@ -48,7 +48,7 @@ $taxNote = 'Calculated at checkout';
                         <!-- Product Image -->
                         <div class="cart-item-image">
                             <?php if (strpos($item['product']['image'], 'assets/images') === 0): ?>
-                                <img src="<?php echo $item['product']['image']; ?>" alt="<?php echo htmlspecialchars($item['product']['name']); ?>">
+                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $item['product']['image']; ?>" alt="<?php echo htmlspecialchars($item['product']['name']); ?>">
                             <?php else: ?>
                                 <?php echo $item['product']['image']; ?>
                             <?php endif; ?>

@@ -7,9 +7,9 @@
 // 1. ADD TO CART - AJAX
 // ============================================
 
-function addToCartAjax(productId, quantity = 1, variant = {}) {
+function addToCartAjax(productId, quantity = 1, variant = {}, btnElement = null) {
     // Show loading state
-    const addButton = event ? event.target : null;
+    const addButton = btnElement;
     if (addButton) {
         addButton.disabled = true;
         addButton.dataset.originalText = addButton.textContent;
@@ -26,8 +26,10 @@ function addToCartAjax(productId, quantity = 1, variant = {}) {
     if (variant.storage) formData.append('variant_storage', variant.storage);
     if (variant.size) formData.append('variant_size', variant.size);
 
-    // Send AJAX request
-    fetch(window.BASE_URL + '/api/cartAdd', {
+    // Send AJAX request - Use .php extension for root compatibility if needed
+    const apiUrl = window.BASE_URL + '/api/cart-add-ajax.php';
+
+    fetch(apiUrl, {
         method: 'POST',
         body: formData
     })
@@ -85,7 +87,7 @@ function updateCartQuantityAjax(cartKey, quantity, itemElement) {
     formData.append('quantity', quantity);
 
     // Send AJAX request
-    fetch(window.BASE_URL + '/api/cartUpdate', {
+    fetch(window.BASE_URL + '/api/cart-update-ajax.php', {
         method: 'POST',
         body: formData
     })
@@ -160,7 +162,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 
     // Send AJAX request after animation
     setTimeout(() => {
-        fetch(window.BASE_URL + '/api/cartRemove', {
+        fetch(window.BASE_URL + '/api/cart-remove-ajax.php', {
             method: 'POST',
             body: formData
         })
@@ -214,7 +216,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 // ============================================
 
 function fetchCartSummary() {
-    return fetch(window.BASE_URL + '/api/cartSummary', {
+    return fetch(window.BASE_URL + '/api/cart-summary-ajax.php', {
         method: 'GET'
     })
         .then(response => response.json())
@@ -250,7 +252,7 @@ function updateShippingCalculation(shippingMethod) {
     formData.append('shipping_method', shippingMethod);
 
     // Send AJAX request
-    fetch(window.BASE_URL + '/api/shippingCalculate', {
+    fetch(window.BASE_URL + '/api/shipping-calculate-ajax.php', {
         method: 'POST',
         body: formData
     })
@@ -301,9 +303,9 @@ function updateCartBadge(count) {
     if (cartBadge) {
         cartBadge.textContent = count;
 
-        // Show badge if count > 0, hide if count = 0
+        // Toggle hidden class based on count
         if (count > 0) {
-            cartBadge.style.display = 'inline-block';
+            cartBadge.classList.remove('hidden');
 
             // Add pulse animation
             cartBadge.classList.add('updating');
@@ -311,7 +313,7 @@ function updateCartBadge(count) {
                 cartBadge.classList.remove('updating');
             }, 300);
         } else {
-            cartBadge.style.display = 'none';
+            cartBadge.classList.add('hidden');
         }
     }
 }
@@ -492,6 +494,7 @@ function initAjaxCartHandlers() {
 
             const productId = form.querySelector('input[name="product_id"]').value;
             const quantity = form.querySelector('input[name="quantity"]')?.value || 1;
+            const submitBtn = form.querySelector('button[type="submit"]');
 
             // Get variant data
             const variant = {};
@@ -503,7 +506,7 @@ function initAjaxCartHandlers() {
             if (variantStorage) variant.storage = variantStorage.value;
             if (variantSize) variant.size = variantSize.value;
 
-            addToCartAjax(productId, quantity, variant);
+            addToCartAjax(productId, quantity, variant, submitBtn);
         });
     });
 
@@ -570,7 +573,7 @@ function applyCouponCode() {
     formData.append('coupon_code', couponCode);
 
     // Send AJAX request
-    fetch(window.BASE_URL + '/api/couponApply', {
+    fetch(window.BASE_URL + '/api/coupon-apply-ajax.php', {
         method: 'POST',
         body: formData
     })
@@ -607,7 +610,7 @@ function removeCouponCode() {
     }
 
     // Send AJAX request
-    fetch(window.BASE_URL + '/api/couponRemove', {
+    fetch(window.BASE_URL + '/api/coupon-remove-ajax.php', {
         method: 'POST'
     })
         .then(response => response.json())

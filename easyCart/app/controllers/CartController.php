@@ -10,9 +10,9 @@ class CartController extends Controller {
      * Display cart page
      */
     public function index() {
-        // Require login
+        // Initialize user model for checks if needed, but allow guests
         $userModel = $this->model('UserModel');
-        $userModel->requireLogin('cart');
+        // Guest access allowed for cart
         
         // Load models
         $cartModel = $this->model('CartModel');

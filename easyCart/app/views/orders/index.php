@@ -83,7 +83,7 @@
                         <div class="order-item-row">
                             <div class="order-item-thumb">
                                 <?php if (isset($item['image']) && strpos($item['image'], 'assets/images') === 0): ?>
-                                    <img src="<?php echo BASE_URL . '/' . $item['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                    <img src="<?php echo BASE_URL . '/public/' . $item['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
                                 <?php else: ?>
                                     <span class="fs-1-5">📦</span>
                                 <?php endif; ?>

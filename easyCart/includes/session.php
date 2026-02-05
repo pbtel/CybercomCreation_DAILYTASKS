@@ -9,6 +9,26 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Define base URL dynamically if not already defined (by MVC public/index.php)
+if (!defined('BASE_URL')) {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $scriptName = $_SERVER['SCRIPT_NAME'];
+    // For root files like index.php, get directory of script
+    // For nested files like public/index.php, this will be handled there, 
+    // but we add a fallback here for safety.
+    $path = str_replace('\\', '/', dirname($scriptName));
+    if ($path === '/' || $path === '\\') $path = '';
+    
+    // If we are in public, we want the parent dir as BASE_URL for root access
+    if (strpos($path, '/public') !== false) {
+        $path = str_replace('/public', '', $path);
+    }
+    
+    $baseUrl = rtrim($protocol . '://' . $host . $path, '/');
+    define('BASE_URL', $baseUrl);
+}
+
 // Include database helpers
 require_once __DIR__ . '/db.php';
 

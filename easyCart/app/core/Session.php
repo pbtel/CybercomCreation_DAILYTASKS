@@ -116,4 +116,12 @@ class Session {
     public static function logout() {
         self::remove('user');
     }
+    /**
+     * Get cart count
+     */
+    public static function getCartCount() {
+        require_once __DIR__ . '/../models/CartModel.php';
+        $cartModel = new CartModel();
+        return $cartModel->getCount();
+    }
 }

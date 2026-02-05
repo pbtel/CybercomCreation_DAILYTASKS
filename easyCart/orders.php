@@ -93,7 +93,7 @@ $stats = getOrderStats($userId);
                         <div class="order-item-row">
                             <div class="order-item-thumb">
                                 <?php if ($product && strpos($product['image'], 'assets/images') === 0): ?>
-                                    <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                    <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
                                 <?php else: ?>
                                     <?php echo $product ? $product['image'] : '📦'; ?>
                                 <?php endif; ?>

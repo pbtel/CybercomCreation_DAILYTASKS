@@ -143,7 +143,7 @@ $allBrands = getAllBrands();
                             <div class="product-tag"><?php echo ucfirst($product['tags'][0]); ?></div>
                         <?php endif; ?>
                         <?php if (strpos($product['image'], 'assets/images') === 0): ?>
-                            <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-img">
+                            <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-img">
                         <?php else: ?>
                             <span><?php echo $product['image']; ?></span>
                         <?php endif; ?>

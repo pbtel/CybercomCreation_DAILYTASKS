@@ -128,6 +128,8 @@ class CartModel {
         $cart = $this->getCurrentCart();
         $total = 0;
         
+        require_once __DIR__ . '/ProductModel.php';
+        require_once __DIR__ . '/DiscountModel.php';
         $productModel = new ProductModel();
         $discountModel = new DiscountModel();
         
@@ -149,6 +151,8 @@ class CartModel {
         $cart = $this->getCurrentCart();
         $cartDetails = [];
         
+        require_once __DIR__ . '/ProductModel.php';
+        require_once __DIR__ . '/DiscountModel.php';
         $productModel = new ProductModel();
         $discountModel = new DiscountModel();
         

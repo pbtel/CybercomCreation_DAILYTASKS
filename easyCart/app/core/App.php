@@ -36,14 +36,14 @@ class App {
         }
 
         // Check if controller exists
-        $controllerFile = '../app/controllers/' . ucfirst($url[0]) . 'Controller.php';
+        $controllerFile = __DIR__ . '/../controllers/' . ucfirst($url[0]) . 'Controller.php';
         if (file_exists($controllerFile)) {
             $this->controller = ucfirst($url[0]) . 'Controller';
             unset($url[0]);
         }
 
         // Require the controller
-        require_once '../app/controllers/' . $this->controller . '.php';
+        require_once __DIR__ . '/../controllers/' . $this->controller . '.php';
         $this->controller = new $this->controller;
 
         // Check if method exists

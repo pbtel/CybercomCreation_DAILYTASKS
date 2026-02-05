@@ -32,7 +32,7 @@ $productImages = getProductImages($productId);
             <div class="image-showcase">
                 <div class="showcase-main">
                     <?php if (strpos($product['image'], 'assets/images') === 0): ?>
-                        <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                        <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($product['name']); ?>">
                     <?php else: ?>
                         <?php echo $product['image']; ?>
                     <?php endif; ?>
@@ -41,7 +41,7 @@ $productImages = getProductImages($productId);
                     <?php if (!empty($productImages)): ?>
                         <?php foreach ($productImages as $index => $img): ?>
                             <div class="showcase-thumb <?php echo $index === 0 ? 'active' : ''; ?>">
-                                <img src="<?php echo $img['image_url']; ?>" alt="Thumb <?php echo $index + 1; ?>">
+                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $img['image_url']; ?>" alt="Thumb <?php echo $index + 1; ?>">
                             </div>
                         <?php endforeach; ?>
                         
@@ -52,7 +52,7 @@ $productImages = getProductImages($productId);
                     <?php else: ?>
                         <div class="showcase-thumb active">
                             <?php if (strpos($product['image'], 'assets/images') === 0): ?>
-                                <img src="<?php echo $product['image']; ?>" alt="Thumb">
+                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="Thumb">
                             <?php else: ?>
                                 <?php echo $product['image']; ?>
                             <?php endif; ?>
@@ -151,7 +151,7 @@ $productImages = getProductImages($productId);
                     <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
                     <!-- Variant inputs will be added dynamically by JavaScript -->
                     
-                    <div class="form-input-group">
+                    <div class="form-group">
                         <label class="variant-label">Quantity</label>
                         <div class="quantity-wrapper">
                             <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>" 
@@ -228,7 +228,7 @@ $productImages = getProductImages($productId);
                     <a href="product-detail.php?id=<?php echo $recProduct['id']; ?>" class="product-item">
                         <div class="product-image-wrapper">
                             <?php if (strpos($recProduct['image'], 'assets/images') === 0): ?>
-                                <img src="<?php echo $recProduct['image']; ?>" alt="<?php echo htmlspecialchars($recProduct['name']); ?>" class="product-img">
+                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $recProduct['image']; ?>" alt="<?php echo htmlspecialchars($recProduct['name']); ?>" class="product-img">
                             <?php else: ?>
                                 <span><?php echo $recProduct['image']; ?></span>
                             <?php endif; ?>

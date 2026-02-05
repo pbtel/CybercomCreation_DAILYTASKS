@@ -57,7 +57,7 @@ if (!$order || $order['user_id'] != $_SESSION['user']['user_id']) {
                             <?php 
                                 $product = getProductById($item['product_id']);
                                 if ($product && strpos($product['image'], 'assets/images') === 0): ?>
-                                    <img src="<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                    <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="<?php echo htmlspecialchars($item['product_name']); ?>">
                                 <?php else: ?>
                                     <?php echo $product ? $product['image'] : '📦'; ?>
                                 <?php endif; ?>

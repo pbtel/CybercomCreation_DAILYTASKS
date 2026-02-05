@@ -9,15 +9,15 @@ class Database {
     private $connection;
 
     private function __construct() {
-        $config = require_once '../config/database.php';
+        require_once __DIR__ . '/../../config/database.php';
         
         try {
             $this->connection = pg_connect(
-                "host={$config['host']} " .
-                "port={$config['port']} " .
-                "dbname={$config['database']} " .
-                "user={$config['username']} " .
-                "password={$config['password']}"
+                "host=" . DB_HOST . " " .
+                "port=" . DB_PORT . " " .
+                "dbname=" . DB_NAME . " " .
+                "user=" . DB_USER . " " .
+                "password=" . DB_PASS
             );
             
             if (!$this->connection) {

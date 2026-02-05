@@ -90,7 +90,7 @@ function calculateCouponDiscount($subtotal) {
     $coupon = getAppliedCoupon();
     
     if ($coupon && isset($coupon['discount_percent'])) {
-        return round($subtotal * $coupon['discount_percent'] / 100);
+        return ($subtotal * $coupon['discount_percent'] / 100);
     }
     
     return 0;
