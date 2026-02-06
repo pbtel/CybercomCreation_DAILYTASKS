@@ -56,11 +56,12 @@ function insertCategory($categoryData)
 /**
  * Insert category attribute
  */
-function insertCategoryAttribute($categoryId, $attributeType)
+function insertCategoryAttribute($categoryId, $attributeType, $attributeValue)
 {
     return dbInsert('catalog_category_attribute', [
         'category_id' => $categoryId,
-        'attribute_type' => $attributeType
+        'attribute_type' => $attributeType,
+        'attribute_value' => $attributeValue
     ]);
 }
 ?>

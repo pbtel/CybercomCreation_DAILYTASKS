@@ -98,7 +98,7 @@
                 <!-- View Details Button -->
                 <div style="margin-top: 1rem;">
                     <button onclick="toggleOrderDetails(<?php echo $order['order_id']; ?>)" class="view-details-btn">
-                        <span>&#128203; View Order Details</span>
+                        View Order Details
                         <span id="details-icon-<?php echo $order['order_id']; ?>">&#9660;</span>
                     </button>
                 </div>
@@ -275,7 +275,7 @@
                                 tooltip: {
                                     callbacks: {
                                         label: function (context) {
-                                            return ' &#8377;' + context.parsed.y.toLocaleString('en-IN');
+                                            return ' \u20B9' + context.parsed.y.toLocaleString('en-IN');
                                         }
                                     },
                                     backgroundColor: 'rgba(0,0,0,0.8)',
@@ -288,7 +288,7 @@
                                     beginAtZero: true,
                                     grid: { borderDash: [2, 4], color: '#f3f4f6' },
                                     ticks: {
-                                        callback: value => '&#8377;' + value,
+                                        callback: value => '\u20B9' + value,
                                         font: { size: 11 }
                                     }
                                 },

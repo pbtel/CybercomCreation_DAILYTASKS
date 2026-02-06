@@ -102,119 +102,117 @@
                     <!-- Express Shipping -->
                     <?php $expressAvailable = in_array('express', $availableShippingMethods); ?>
                     <label
-                            class="shipping-option <?php echo !$expressAvailable ? 'disabled' : ''; ?> <?php echo ($selectedShippingMethod === 'express') ? 'selected' : ''; ?>">
-                            <div class="shipping-option-row">
-                                <input type="radio" name="shipping_method" value="express" <?php echo ($selectedShippingMethod === 'express') ? 'checked' : ''; ?> <?php echo !$expressAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;"
-                                    onchange="updateOrderSummary()">
-                                <div class="shipping-option-details">
-                                    <div class="shipping-option-title-row">
-                                        <span class="shipping-icon">&#9889;</span>
-                                        <strong class="shipping-name">Express Shipping</strong>
-                                        <?php if ($expressAvailable): ?>
-                                            <span class="shipping-badge badge-orange-gradient">FAST</span>
-                                        <?php else: ?>
-                                            <span class="shipping-badge badge-gray">NOT AVAILABLE</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <span class="cart-item-meta"
-                                        style="display: block; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('express', $subtotal); ?></span>
+                        class="shipping-option <?php echo !$expressAvailable ? 'disabled' : ''; ?> <?php echo ($selectedShippingMethod === 'express') ? 'selected' : ''; ?>">
+                        <div class="shipping-option-row">
+                            <input type="radio" name="shipping_method" value="express" <?php echo ($selectedShippingMethod === 'express') ? 'checked' : ''; ?> <?php echo !$expressAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
+                            <div class="shipping-option-details">
+                                <div class="shipping-option-title-row">
+                                    <span class="shipping-icon">&#9889;</span>
+                                    <strong class="shipping-name">Express Shipping</strong>
                                     <?php if ($expressAvailable): ?>
-                                        <?php
-                                        $expressCost = calculateShippingCost($subtotal, 'express');
-                                        if ($expressCost < 80) {
-                                            $savings = 80 - $expressCost;
-                                            echo '<div class="shipping-note-box note-orange">';
-                                            echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#127881; Save &#8377;' . number_format($savings) . ' with your cart value!</span>';
-                                            echo '</div>';
-                                        } else {
-                                            echo '<div class="shipping-note-box note-primary">';
-                                            echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#9889; Faster delivery guaranteed</span>';
-                                            echo '</div>';
-                                        }
-                                        ?>
+                                        <span class="shipping-badge badge-orange-gradient">FAST</span>
+                                    <?php else: ?>
+                                        <span class="shipping-badge badge-gray">NOT AVAILABLE</span>
                                     <?php endif; ?>
                                 </div>
+                                <span class="cart-item-meta"
+                                    style="display: block; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('express', $subtotal); ?></span>
+                                <?php if ($expressAvailable): ?>
+                                    <?php
+                                    $expressCost = calculateShippingCost($subtotal, 'express');
+                                    if ($expressCost < 80) {
+                                        $savings = 80 - $expressCost;
+                                        echo '<div class="shipping-note-box note-orange">';
+                                        echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#127881; Save &#8377;' . number_format($savings) . ' with your cart value!</span>';
+                                        echo '</div>';
+                                    } else {
+                                        echo '<div class="shipping-note-box note-primary">';
+                                        echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#9889; Faster delivery guaranteed</span>';
+                                        echo '</div>';
+                                    }
+                                    ?>
+                                <?php endif; ?>
                             </div>
-                        </label>
-
-                        <!-- White Glove Delivery -->
-                        <?php $whitegloveAvailable = in_array('whiteglove', $availableShippingMethods); ?>
-                        <label
-                            class="shipping-option <?php echo !$whitegloveAvailable ? 'disabled' : ''; ?> <?php echo ($selectedShippingMethod === 'whiteglove') ? 'selected' : ''; ?>">
-                            <div class="shipping-option-row">
-                                <input type="radio" name="shipping_method" value="whiteglove" <?php echo ($selectedShippingMethod === 'whiteglove') ? 'checked' : ''; ?> <?php echo !$whitegloveAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;"
-                                    onchange="updateOrderSummary()">
-                                <div class="shipping-option-details">
-                                    <div class="shipping-option-title-row">
-                                        <span class="shipping-icon">&#127942;</span>
-                                        <strong class="shipping-name">White Glove Delivery</strong>
-                                        <?php if ($whitegloveAvailable): ?>
-                                            <span class="shipping-badge badge-purple-gradient">PREMIUM</span>
-                                        <?php else: ?>
-                                            <span class="shipping-badge badge-gray">NOT AVAILABLE</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <span class="cart-item-meta"
-                                        style="display: block; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('whiteglove', $subtotal); ?></span>
-                                    <?php if ($whitegloveAvailable): ?>
-                                        <?php
-                                        $whiteGloveCost = calculateShippingCost($subtotal, 'whiteglove');
-                                        if ($whiteGloveCost < 150) {
-                                            $savings = 150 - $whiteGloveCost;
-                                            echo '<div class="shipping-note-box note-purple">';
-                                            echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#127881; Save &#8377;' . number_format($savings) . ' with your cart value!</span>';
-                                            echo '</div>';
-                                        } else {
-                                            echo '<div class="shipping-note-box note-purple">';
-                                            echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#10024; Includes unpacking, assembly & setup</span>';
-                                            echo '</div>';
-                                        }
-                                        ?>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </label>
-
-                        <!-- Freight Shipping -->
-                        <?php $freightAvailable = in_array('freight', $availableShippingMethods); ?>
-                        <label
-                            class="shipping-option <?php echo !$freightAvailable ? 'disabled' : ''; ?> <?php echo ($selectedShippingMethod === 'freight') ? 'selected' : ''; ?>">
-                            <div class="shipping-option-row">
-                                <input type="radio" name="shipping_method" value="freight" <?php echo ($selectedShippingMethod === 'freight') ? 'checked' : ''; ?> <?php echo !$freightAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;"
-                                    onchange="updateOrderSummary()">
-                                <div class="shipping-option-details">
-                                    <div class="shipping-option-title-row">
-                                        <span class="shipping-icon">&#128666;</span>
-                                        <strong class="shipping-name">Freight Shipping</strong>
-                                        <?php if ($freightAvailable): ?>
-                                            <span class="shipping-badge badge-red-gradient">HEAVY ITEMS</span>
-                                        <?php else: ?>
-                                            <span class="shipping-badge badge-gray">NOT AVAILABLE</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <span class="cart-item-meta"
-                                        style="display: block; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('freight', $subtotal); ?></span>
-                                    <?php if ($freightAvailable): ?>
-                                        <div class="shipping-note-box note-red">
-                                            <span style="font-size: 0.8125rem; font-weight: 600;">&#128230; Best for bulk or
-                                                oversized orders</span>
-                                        </div>
-                                    <?php endif; ?>
-                                </div>
-                            </div>
-                        </label>
-
-                        <!-- Info Note -->
-                        <div class="info-note">
-                            <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
-                                <strong style="color: var(--primary);">&#8505;&#65039; Note:</strong> All delivery times
-                                are
-                                estimated
-                                and may vary based on your location. Tracking information will be provided once your
-                                order
-                                ships.
-                            </p>
                         </div>
+                    </label>
+
+                    <!-- White Glove Delivery -->
+                    <?php $whitegloveAvailable = in_array('whiteglove', $availableShippingMethods); ?>
+                    <label
+                        class="shipping-option <?php echo !$whitegloveAvailable ? 'disabled' : ''; ?> <?php echo ($selectedShippingMethod === 'whiteglove') ? 'selected' : ''; ?>">
+                        <div class="shipping-option-row">
+                            <input type="radio" name="shipping_method" value="whiteglove" <?php echo ($selectedShippingMethod === 'whiteglove') ? 'checked' : ''; ?> <?php echo !$whitegloveAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;"
+                                onchange="updateOrderSummary()">
+                            <div class="shipping-option-details">
+                                <div class="shipping-option-title-row">
+                                    <span class="shipping-icon">&#127942;</span>
+                                    <strong class="shipping-name">White Glove Delivery</strong>
+                                    <?php if ($whitegloveAvailable): ?>
+                                        <span class="shipping-badge badge-purple-gradient">PREMIUM</span>
+                                    <?php else: ?>
+                                        <span class="shipping-badge badge-gray">NOT AVAILABLE</span>
+                                    <?php endif; ?>
+                                </div>
+                                <span class="cart-item-meta"
+                                    style="display: block; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('whiteglove', $subtotal); ?></span>
+                                <?php if ($whitegloveAvailable): ?>
+                                    <?php
+                                    $whiteGloveCost = calculateShippingCost($subtotal, 'whiteglove');
+                                    if ($whiteGloveCost < 150) {
+                                        $savings = 150 - $whiteGloveCost;
+                                        echo '<div class="shipping-note-box note-purple">';
+                                        echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#127881; Save &#8377;' . number_format($savings) . ' with your cart value!</span>';
+                                        echo '</div>';
+                                    } else {
+                                        echo '<div class="shipping-note-box note-purple">';
+                                        echo '<span style="font-size: 0.8125rem; font-weight: 600;">&#10024; Includes unpacking, assembly & setup</span>';
+                                        echo '</div>';
+                                    }
+                                    ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Freight Shipping -->
+                    <?php $freightAvailable = in_array('freight', $availableShippingMethods); ?>
+                    <label
+                        class="shipping-option <?php echo !$freightAvailable ? 'disabled' : ''; ?> <?php echo ($selectedShippingMethod === 'freight') ? 'selected' : ''; ?>">
+                        <div class="shipping-option-row">
+                            <input type="radio" name="shipping_method" value="freight" <?php echo ($selectedShippingMethod === 'freight') ? 'checked' : ''; ?> <?php echo !$freightAvailable ? 'disabled' : ''; ?> style="margin-top: 0.25rem;" onchange="updateOrderSummary()">
+                            <div class="shipping-option-details">
+                                <div class="shipping-option-title-row">
+                                    <span class="shipping-icon">&#128666;</span>
+                                    <strong class="shipping-name">Freight Shipping</strong>
+                                    <?php if ($freightAvailable): ?>
+                                        <span class="shipping-badge badge-red-gradient">HEAVY ITEMS</span>
+                                    <?php else: ?>
+                                        <span class="shipping-badge badge-gray">NOT AVAILABLE</span>
+                                    <?php endif; ?>
+                                </div>
+                                <span class="cart-item-meta"
+                                    style="display: block; margin-bottom: 0.5rem;"><?php echo getShippingMethodDescription('freight', $subtotal); ?></span>
+                                <?php if ($freightAvailable): ?>
+                                    <div class="shipping-note-box note-red">
+                                        <span style="font-size: 0.8125rem; font-weight: 600;">&#128230; Best for bulk or
+                                            oversized orders</span>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Info Note -->
+                    <div class="info-note">
+                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin: 0;">
+                            <strong style="color: var(--primary);">&#8505;&#65039; Note:</strong> All delivery times
+                            are
+                            estimated
+                            and may vary based on your location. Tracking information will be provided once your
+                            order
+                            ships.
+                        </p>
+                    </div>
                 </div>
 
                 <!-- PAYMENT METHOD -->

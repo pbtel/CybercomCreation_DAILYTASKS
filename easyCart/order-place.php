@@ -12,9 +12,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    // Get cart items
+    $userId = $_SESSION['user']['user_id'];
+
+    // Get current cart items (could be from sales_cart or a cart-order)
     $cartItems = getCartItemsWithDetails();
-    $cartId = getCurrentCartId();
+
+    // Find the current active cart order
+    $activeOrder = getActiveCartOrderDB($userId);
 
     // Check if cart is empty
     if (empty($cartItems)) {
@@ -58,74 +62,98 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $discountAmount = calculateCouponDiscount($subtotal);
     }
 
-    // Validate shipping method is available for current cart
+    // Validate shipping method
     $availableShippingMethods = getAvailableShippingMethods($cartItems, $subtotal);
     if (!in_array($shippingMethod, $availableShippingMethods)) {
-        setFlashMessage('error', 'Selected shipping method is not available for your cart. Please select a valid shipping method.');
+        setFlashMessage('error', 'Selected shipping method is not available. Please select a valid shipping method.');
         header('Location: checkout.php');
         exit;
     }
 
-    // Calculate shipping cost based on method and subtotal (after discount)
+    // Calculate costs
     $subtotalAfterDiscount = $subtotal - $discountAmount;
     $shippingCost = calculateShippingCost($subtotalAfterDiscount, $shippingMethod);
-
-    // Calculate tax on (Subtotal after discount + Shipping)
     $tax = calculateTax($subtotalAfterDiscount, $shippingCost);
-
-    // Calculate total
     $total = calculateOrderTotal($subtotalAfterDiscount, $shippingCost, $tax);
 
     try {
         beginTransaction();
 
-        // Create order in database
-        $orderData = [
-            'user_id' => $_SESSION['user']['user_id'],
-            'cart_id' => $cartId,
-            'subtotal' => $subtotal,
-            'shipping_cost' => $shippingCost,
-            'tax' => $tax,
-            'discount_amount' => $discountAmount,
-            'final_amount' => $total,
-            'status' => 'processing'
-        ];
+        $orderId = null;
+        $orderNumber = null;
 
-        $order = createOrderDB($orderData);
-        $orderId = $order['order_id'];
+        if ($activeOrder) {
+            // Update existing cart-order to become a real order
+            $orderId = $activeOrder['order_id'];
+            $orderNumber = $activeOrder['order_number'];
 
-        // Add order items
-        foreach ($cartItems as $key => $item) {
-            addOrderItemDB($orderId, [
-                'product_id' => $item['product']['id'],
-                'product_name' => $item['product']['name'],
-                'quantity' => $item['quantity'],
-                'unit_price' => $item['product']['price'],
-                'variant' => $item['variant'],
-                'subtotal' => $item['subtotal']
+            dbUpdate('sales_order', [
+                'subtotal' => $subtotal,
+                'shipping_cost' => $shippingCost,
+                'tax' => $tax,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $total,
+                'status' => 'processing',
+                'customer_email' => $email,
+                'customer_phone' => $phone,
+                'updated_at' => date('Y-m-d H:i:s')
+            ], 'order_id = :id', [':id' => $orderId]);
+        } else {
+            // Fallback: Create new order (should not normally happen with current logic)
+            $order = createOrderDB([
+                'user_id' => $userId,
+                'subtotal' => $subtotal,
+                'shipping_cost' => $shippingCost,
+                'tax' => $tax,
+                'discount_amount' => $discountAmount,
+                'final_amount' => $total,
+                'status' => 'processing',
+                'customer_email' => $email,
+                'customer_phone' => $phone
             ]);
+            $orderId = $order['order_id'];
+            $orderNumber = $order['order_number'];
+
+            // Move items if they weren't in order tables (e.g. if we somehow bypass login migration)
+            // But we know getCartItemsWithDetails handles the switch.
+            // If activeOrder is null, it means items are still in sales_cart (unlikely ifLoggedIn)
+            if (!empty($cartItems)) {
+                foreach ($cartItems as $item) {
+                    addOrderItemDB($orderId, [
+                        'product_id' => $item['product']['id'],
+                        'product_name' => $item['product']['name'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['product']['price'],
+                        'variant' => $item['variant'],
+                        'subtotal' => $item['subtotal']
+                    ]);
+                }
+            }
         }
 
-        // Add shipping address
+        // Add/Update shipping address
+        // Delete old one first if exists to avoid duplicates
+        dbDelete('sales_order_address', 'order_id = :id', [':id' => $orderId]);
         addOrderAddressDB($orderId, [
             'full_name' => $firstName . ' ' . $lastName,
             'phone' => $phone,
             'address_line1' => $address,
-            'address_line2' => '',
             'city' => $city,
             'state' => $state,
             'pincode' => $pincode,
             'country' => $country
         ]);
 
-        // Add billing information with coupon code
+        // Add/Update billing
+        dbDelete('sales_order_billing', 'order_id = :id', [':id' => $orderId]);
         addOrderBillingDB($orderId, [
             'payment_method' => ucfirst($paymentMethod),
             'payment_status' => $paymentMethod === 'cod' ? 'pending' : 'completed',
             'coupon_code' => $couponCode
         ]);
 
-        // Add shipping method
+        // Add/Update shipping method
+        dbDelete('sales_order_shipping_method', 'order_id = :id', [':id' => $orderId]);
         $shippingTypeInfo = getCartShippingType($cartItems);
         addOrderShippingMethodDB($orderId, [
             'shipping_method' => getShippingMethodName($shippingMethod),
@@ -134,28 +162,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         commitTransaction();
 
-        // Deactivate cart after successful order (sets is_active = false)
-        deactivateCartDB($cartId);
+        // If items were in guest cart, deactivate it (though they should have been migrated)
+        $guestCartId = $_SESSION['guest_cart_id'] ?? null;
+        if ($guestCartId) {
+            deactivateCartDB($guestCartId);
+            unset($_SESSION['guest_cart_id']);
+        }
 
-        // Reset session cart ID so a new active cart is created next time
+        // Reset session cart ID
         $_SESSION['cart_id'] = null;
 
-        // Clear applied coupon
         if ($appliedCoupon) {
             removeCoupon();
         }
 
-        // Set success message
-        setFlashMessage('success', 'Order placed successfully! Your order number is ' . $order['order_number']);
-
-        // Redirect to orders page
+        setFlashMessage('success', 'Order placed successfully! Your order number is ' . $orderNumber);
         header('Location: orders.php');
         exit;
 
     } catch (Exception $e) {
-        rollbackTransaction();
+        if (getDBConnection()->inTransaction()) {
+            rollbackTransaction();
+        }
         error_log("Order placement failed: " . $e->getMessage());
-        setFlashMessage('error', 'Failed to place order. Please try again.');
+        setFlashMessage('error', 'Failed to place order. ' . $e->getMessage());
         header('Location: checkout.php');
         exit;
     }

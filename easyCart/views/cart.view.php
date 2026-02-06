@@ -55,7 +55,7 @@
                                     </p>
                                     <!-- Savings -->
                                     <p class="cart-savings">
-                                        <?php echo formatDiscountText($item['first_unit_savings'], $item['discount_percent']); ?>
+                                        <?php echo formatDiscountText($item['first_unit_savings'] ?? 0, $item['discount_percent']); ?>
                                     </p>
                                 <?php else: ?>
                                     <!-- No Discount - Regular Price -->
@@ -236,5 +236,3 @@
 </div>
 
 <?php require_once __DIR__ . '/includes/footer.php'; ?>
-
-

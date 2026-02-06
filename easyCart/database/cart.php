@@ -45,6 +45,17 @@ function getOrCreateCartDB($userId = null, $sessionId = null)
 }
 
 /**
+ * Update cart coupon info
+ */
+function updateCartCouponDB($cartId, $couponCode)
+{
+    return dbUpdate('sales_cart', [
+        'coupon_code' => $couponCode,
+        'updated_at' => date('Y-m-d H:i:s')
+    ], 'cart_id = :cart_id', [':cart_id' => $cartId]);
+}
+
+/**
  * Get cart items with product details
  */
 function getCartItemsDB($cartId)
@@ -172,22 +183,45 @@ function clearCartDB($cartId)
 }
 
 /**
- * Merge guest cart into user cart
+ * Merge guest cart into user order cart
  */
-function mergeGuestCartToUserDB($guestCartId, $userCartId)
+function mergeGuestCartToOrderDB($guestCartId, $userId)
 {
+    require_once __DIR__ . '/orders.php';
+
     // Get all items from guest cart
     $guestItems = getCartItemsDB($guestCartId);
 
+    // Get or create user's order cart
+    $orderCart = getOrCreateActiveCartOrderDB($userId);
+
+    // Transfer coupon if exists in guest cart
+    $sql = "SELECT coupon_code FROM sales_cart WHERE cart_id = :id";
+    $guestCart = fetchOne($sql, [':id' => $guestCartId]);
+
+    if ($guestCart && $guestCart['coupon_code']) {
+        // For logged in users, the discount is calculated based on subtotal in order tables
+        // So we just transfer the code and the order total update will handle the math
+        require_once __DIR__ . '/../includes/session.php';
+        require_once __DIR__ . '/../includes/coupon-helpers.php';
+
+        $subtotal = getCartSubtotal();
+        $_SESSION['applied_coupon'] = validateCouponCode($guestCart['coupon_code']);
+        $discountAmount = calculateCouponDiscount($subtotal);
+
+        updateOrderCartCouponDB($orderCart['order_id'], $guestCart['coupon_code'], $discountAmount);
+        updateOrderTotalsDB($orderCart['order_id']);
+    }
+
     foreach ($guestItems as $item) {
-        // Add to user cart (will merge if exists)
-        addCartItemDB($userCartId, $item['product_id'], $item['quantity'], $item['variant']);
+        // Add to user order cart
+        addItemToOrderCartDB($orderCart['order_id'], $item['product_id'], $item['quantity'], $item['variant']);
     }
 
     // Deactivate guest cart
     deactivateCartDB($guestCartId);
 
-    return true;
+    return $orderCart['order_id'];
 }
 
 /**

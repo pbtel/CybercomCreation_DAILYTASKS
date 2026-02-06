@@ -78,10 +78,7 @@ CREATE TABLE catalog_brand_entity (
     name VARCHAR(255) NOT NULL,
     logo VARCHAR(50),
     description TEXT,
-    website VARCHAR(255),
-    country VARCHAR(100),
     is_active BOOLEAN DEFAULT TRUE,
-    sort_order INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -92,6 +89,7 @@ CREATE TABLE catalog_brand_attribute (
     attribute_id SERIAL PRIMARY KEY,
     brand_id INTEGER NOT NULL REFERENCES catalog_brand_entity(entity_id) ON DELETE CASCADE,
     attribute_type VARCHAR(100) NOT NULL,
+    attribute_value TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -110,9 +108,6 @@ CREATE TABLE catalog_category_entity (
     icon VARCHAR(50),
     description TEXT,
     is_active BOOLEAN DEFAULT TRUE,
-    sort_order INTEGER DEFAULT 0,
-    meta_title VARCHAR(255),
-    meta_description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -124,6 +119,7 @@ CREATE TABLE catalog_category_attribute (
     attribute_id SERIAL PRIMARY KEY,
     category_id INTEGER NOT NULL REFERENCES catalog_category_entity(entity_id) ON DELETE CASCADE,
     attribute_type VARCHAR(100) NOT NULL,
+    attribute_value TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -148,13 +144,6 @@ CREATE TABLE catalog_product_entity (
     description TEXT,
     shipping_type VARCHAR(50),
     is_active BOOLEAN DEFAULT TRUE,
-    weight DECIMAL(10, 2),
-    dimensions VARCHAR(100),
-    warranty_period VARCHAR(50),
-    return_policy VARCHAR(100),
-    meta_title VARCHAR(255),
-    meta_description TEXT,
-    meta_keywords TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -211,10 +200,7 @@ CREATE TABLE sales_cart (
     user_id INTEGER REFERENCES customer_entity(entity_id) ON DELETE CASCADE,
     session_id VARCHAR(255),
     is_active BOOLEAN DEFAULT TRUE,
-    ip_address VARCHAR(45),
-    user_agent TEXT,
     coupon_code VARCHAR(50),
-    discount_amount DECIMAL(10, 2) DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -243,7 +229,6 @@ CREATE INDEX idx_cart_product_product ON sales_cart_product(product_id);
 CREATE TABLE sales_order (
     order_id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES customer_entity(entity_id) ON DELETE SET NULL,
-    cart_id INTEGER REFERENCES sales_cart(cart_id) ON DELETE SET NULL,
     order_number VARCHAR(50) UNIQUE NOT NULL,
     subtotal DECIMAL(10, 2) NOT NULL,
     shipping_cost DECIMAL(10, 2) DEFAULT 0,
@@ -253,10 +238,6 @@ CREATE TABLE sales_order (
     status VARCHAR(50) DEFAULT 'pending',
     customer_email VARCHAR(255),
     customer_phone VARCHAR(20),
-    ip_address VARCHAR(45),
-    user_agent TEXT,
-    notes TEXT,
-    estimated_delivery_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -317,11 +298,6 @@ CREATE TABLE sales_order_shipping_method (
     order_id INTEGER NOT NULL REFERENCES sales_order(order_id) ON DELETE CASCADE,
     shipping_method VARCHAR(100) NOT NULL,
     shipping_type VARCHAR(50) NOT NULL,
-    carrier_name VARCHAR(100),
-    tracking_number VARCHAR(255),
-    tracking_url TEXT,
-    estimated_delivery_date DATE,
-    actual_delivery_date DATE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

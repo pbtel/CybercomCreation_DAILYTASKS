@@ -16,14 +16,15 @@ function createOrderDB($orderData)
 
     $order = dbInsert('sales_order', [
         'user_id' => $orderData['user_id'] ?? null,
-        'cart_id' => $orderData['cart_id'] ?? null,
         'order_number' => $orderNumber,
         'subtotal' => $orderData['subtotal'],
-        'shipping_cost' => $orderData['shipping_cost'],
-        'tax' => $orderData['tax'],
+        'shipping_cost' => $orderData['shipping_cost'] ?? 0,
+        'tax' => $orderData['tax'] ?? 0,
         'discount_amount' => $orderData['discount_amount'] ?? 0,
         'final_amount' => $orderData['final_amount'],
         'status' => $orderData['status'] ?? 'pending',
+        'customer_email' => $orderData['customer_email'] ?? null,
+        'customer_phone' => $orderData['customer_phone'] ?? null,
         'created_at' => date('Y-m-d H:i:s'),
         'updated_at' => date('Y-m-d H:i:s')
     ]);
@@ -91,7 +92,6 @@ function addOrderShippingMethodDB($orderId, $shippingData)
         'order_id' => $orderId,
         'shipping_method' => $shippingData['shipping_method'],
         'shipping_type' => $shippingData['shipping_type'],
-        'tracking_number' => $shippingData['tracking_number'] ?? null,
         'created_at' => date('Y-m-d H:i:s')
     ]);
 }
@@ -137,15 +137,11 @@ function getOrderByNumberDB($orderNumber)
  */
 function getUserOrdersDB($userId)
 {
-    $sql = "SELECT * FROM sales_order WHERE user_id = :user_id ORDER BY created_at DESC";
+    $sql = "SELECT * FROM sales_order WHERE user_id = :user_id AND status != 'cart' ORDER BY created_at DESC";
     $orders = fetchAll($sql, [':user_id' => $userId]);
 
     foreach ($orders as &$order) {
         $order['items'] = getOrderItemsDB($order['order_id']);
-
-        // Fetch shipping info for tracking number
-        $shipping = getOrderShippingMethodDB($order['order_id']);
-        $order['tracking_number'] = $shipping['tracking_number'] ?? null;
 
         // Fetch billing info for coupon code
         $billing = getOrderBillingDB($order['order_id']);
@@ -214,6 +210,178 @@ function updateOrderStatusDB($orderId, $status)
 }
 
 /**
+ * Get active cart order for user
+ */
+function getActiveCartOrderDB($userId)
+{
+    $sql = "SELECT * FROM sales_order WHERE user_id = :user_id AND status = 'cart' LIMIT 1";
+    return fetchOne($sql, [':user_id' => $userId]);
+}
+
+/**
+ * Get or create active cart order for user
+ */
+function getOrCreateActiveCartOrderDB($userId)
+{
+    $order = getActiveCartOrderDB($userId);
+    if (!$order) {
+        $order = createOrderDB([
+            'user_id' => $userId,
+            'subtotal' => 0,
+            'shipping_cost' => 0,
+            'tax' => 0,
+            'discount_amount' => 0,
+            'final_amount' => 0,
+            'status' => 'cart'
+        ]);
+    }
+    return $order;
+}
+
+/**
+ * Add or update item in an order-based cart
+ */
+function addItemToOrderCartDB($orderId, $productId, $quantity, $variant = [])
+{
+    $variantJson = json_encode($variant);
+
+    // Check if item exists
+    $sql = "SELECT * FROM sales_order_product 
+            WHERE order_id = :order_id AND product_id = :product_id AND variant_data = :variant";
+    $existing = fetchOne($sql, [
+        ':order_id' => $orderId,
+        ':product_id' => $productId,
+        ':variant' => $variantJson
+    ]);
+
+    require_once __DIR__ . '/products.php';
+    $product = getProductByIdFromDB($productId);
+
+    if ($existing) {
+        $newQty = $existing['quantity'] + $quantity;
+        $newSubtotal = $newQty * $existing['unit_price'];
+        dbUpdate('sales_order_product', [
+            'quantity' => $newQty,
+            'subtotal' => $newSubtotal,
+            'updated_at' => date('Y-m-d H:i:s')
+        ], 'id = :id', [':id' => $existing['id']]);
+    } else {
+        addOrderItemDB($orderId, [
+            'product_id' => $productId,
+            'product_name' => $product['name'],
+            'quantity' => $quantity,
+            'unit_price' => $product['price'],
+            'variant' => $variant,
+            'subtotal' => $quantity * $product['price']
+        ]);
+    }
+
+    updateOrderTotalsDB($orderId);
+}
+
+/**
+ * Update item quantity in an order-based cart
+ */
+function updateOrderCartItemDB($orderId, $productId, $quantity, $variant = [])
+{
+    $variantJson = json_encode($variant);
+
+    if ($quantity <= 0) {
+        dbDelete(
+            'sales_order_product',
+            'order_id = :order_id AND product_id = :product_id AND variant_data = :variant',
+            [':order_id' => $orderId, ':product_id' => $productId, ':variant' => $variantJson]
+        );
+    } else {
+        $sql = "SELECT unit_price FROM sales_order_product 
+                WHERE order_id = :order_id AND product_id = :product_id AND variant_data = :variant";
+        $item = fetchOne($sql, [':order_id' => $orderId, ':product_id' => $productId, ':variant' => $variantJson]);
+
+        if ($item) {
+            dbUpdate(
+                'sales_order_product',
+                [
+                    'quantity' => $quantity,
+                    'subtotal' => $quantity * $item['unit_price'],
+                    'updated_at' => date('Y-m-d H:i:s')
+                ],
+                'order_id = :order_id AND product_id = :product_id AND variant_data = :variant',
+                [':order_id' => $orderId, ':product_id' => $productId, ':variant' => $variantJson]
+            );
+        }
+    }
+    updateOrderTotalsDB($orderId);
+}
+
+/**
+ * Remove item from an order-based cart
+ */
+function removeOrderCartItemDB($orderId, $productId, $variant = [])
+{
+    $variantJson = json_encode($variant);
+    dbDelete(
+        'sales_order_product',
+        'order_id = :order_id AND product_id = :product_id AND variant_data = :variant',
+        [':order_id' => $orderId, ':product_id' => $productId, ':variant' => $variantJson]
+    );
+    updateOrderTotalsDB($orderId);
+}
+
+/**
+ * Update order coupon info
+ */
+function updateOrderCartCouponDB($orderId, $couponCode, $discountAmount)
+{
+    // Update discount in main order table
+    dbUpdate('sales_order', [
+        'discount_amount' => $discountAmount,
+        'updated_at' => date('Y-m-d H:i:s')
+    ], 'order_id = :id', [':id' => $orderId]);
+
+    // Update coupon in billing table (ensure row exists first)
+    $sql = "SELECT id FROM sales_order_billing WHERE order_id = :id LIMIT 1";
+    $billing = fetchOne($sql, [':id' => $orderId]);
+
+    if ($billing) {
+        dbUpdate('sales_order_billing', [
+            'coupon_code' => $couponCode,
+            'updated_at' => date('Y-m-d H:i:s')
+        ], 'order_id = :id', [':id' => $orderId]);
+    } else {
+        addOrderBillingDB($orderId, [
+            'payment_method' => 'TBD',
+            'coupon_code' => $couponCode
+        ]);
+    }
+}
+
+/**
+ * Recalculate and update order totals
+ */
+function updateOrderTotalsDB($orderId)
+{
+    $sql = "SELECT SUM(subtotal) as total FROM sales_order_product WHERE order_id = :id";
+    $result = fetchOne($sql, [':id' => $orderId]);
+    $subtotal = $result['total'] ?? 0;
+
+    // Fetch existing discount if any
+    $sql = "SELECT discount_amount FROM sales_order WHERE order_id = :id";
+    $order = fetchOne($sql, [':id' => $orderId]);
+    $discount = $order['discount_amount'] ?? 0;
+
+    $finalAmount = $subtotal - $discount;
+    if ($finalAmount < 0)
+        $finalAmount = 0;
+
+    // Simple logic: final = subtotal - discount for cart state (tax/shipping calculated at checkout)
+    dbUpdate('sales_order', [
+        'subtotal' => $subtotal,
+        'final_amount' => $finalAmount,
+        'updated_at' => date('Y-m-d H:i:s')
+    ], 'order_id = :id', [':id' => $orderId]);
+}
+
+/**
  * Get order chart data (aggregated by date)
  */
 function getUserOrderChartDataDB($userId)
@@ -221,7 +389,7 @@ function getUserOrderChartDataDB($userId)
     // PostgreSQL uses CAST(x AS DATE) or x::DATE
     $sql = "SELECT CAST(created_at AS DATE) as date, SUM(final_amount) as total 
             FROM sales_order 
-            WHERE user_id = :user_id AND status != 'cancelled' 
+            WHERE user_id = :user_id AND status NOT IN ('cancelled', 'cart') 
             GROUP BY CAST(created_at AS DATE) 
             ORDER BY date ASC";
     return fetchAll($sql, [':user_id' => $userId]);

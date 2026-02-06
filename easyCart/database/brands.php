@@ -40,4 +40,16 @@ function insertBrand($brandData)
 {
     return dbInsert('catalog_brand_entity', $brandData);
 }
+
+/**
+ * Insert brand attribute
+ */
+function insertBrandAttribute($brandId, $attributeType, $attributeValue)
+{
+    return dbInsert('catalog_brand_attribute', [
+        'brand_id' => $brandId,
+        'attribute_type' => $attributeType,
+        'attribute_value' => $attributeValue
+    ]);
+}
 ?>

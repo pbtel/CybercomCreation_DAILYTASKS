@@ -11,13 +11,19 @@ header('Content-Type: application/json');
 require_once '../includes/session.php';
 require_once '../includes/products.php';
 
-// Clean any output that might have been generated
-ob_end_clean();
+// Helper to send clean JSON response
+function sendJson($data)
+{
+    if (ob_get_length())
+        ob_clean();
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+    sendJson(['success' => false, 'message' => 'Invalid request method']);
 }
 
 try {
@@ -28,19 +34,19 @@ try {
         // Get cart subtotal (without coupon)
         $subtotal = getCartSubtotal();
 
-        echo json_encode([
+        sendJson([
             'success' => true,
             'message' => 'Coupon removed successfully',
             'subtotal' => $subtotal
         ]);
     } else {
-        echo json_encode([
+        sendJson([
             'success' => false,
             'message' => 'No coupon to remove'
         ]);
     }
 } catch (Exception $e) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Failed to remove coupon'
     ]);

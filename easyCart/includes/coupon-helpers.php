@@ -36,7 +36,7 @@ function validateCouponCode($code)
 }
 
 /**
- * Apply coupon to session
+ * Apply coupon to session and database
  * 
  * @param string $code Coupon code to apply
  * @return array Result with success status and message
@@ -47,6 +47,31 @@ function applyCoupon($code)
 
     if ($couponData) {
         $_SESSION['applied_coupon'] = $couponData;
+
+        // Persist to DB
+        // Persist to DB (Quietly catch errors to allow session-based application)
+        try {
+            $subtotal = getCartSubtotal();
+            $discountAmount = calculateCouponDiscount($subtotal);
+            $cartId = getCurrentCartId();
+
+            if (isLoggedIn()) {
+                if (function_exists('updateOrderCartCouponDB')) {
+                    updateOrderCartCouponDB($cartId, $couponData['code'], $discountAmount);
+                    if (function_exists('updateOrderTotalsDB')) {
+                        updateOrderTotalsDB($cartId);
+                    }
+                }
+            } else {
+                if (function_exists('updateCartCouponDB')) {
+                    updateCartCouponDB($cartId, $couponData['code']);
+                }
+            }
+        } catch (Exception $e) {
+            // Log error but continue since session is updated
+            error_log("Failed to persist coupon to DB: " . $e->getMessage());
+        }
+
         return [
             'success' => true,
             'message' => "Coupon {$couponData['code']} applied successfully!",
@@ -61,7 +86,7 @@ function applyCoupon($code)
 }
 
 /**
- * Remove coupon from session
+ * Remove coupon from session and database
  * 
  * @return bool True if removed, false if no coupon was applied
  */
@@ -69,6 +94,27 @@ function removeCoupon()
 {
     if (isset($_SESSION['applied_coupon'])) {
         unset($_SESSION['applied_coupon']);
+
+        // Persist to DB
+        // Persist to DB (Quietly catch errors)
+        try {
+            $cartId = getCurrentCartId();
+            if (isLoggedIn()) {
+                if (function_exists('updateOrderCartCouponDB')) {
+                    updateOrderCartCouponDB($cartId, null, 0);
+                    if (function_exists('updateOrderTotalsDB')) {
+                        updateOrderTotalsDB($cartId);
+                    }
+                }
+            } else {
+                if (function_exists('updateCartCouponDB')) {
+                    updateCartCouponDB($cartId, null);
+                }
+            }
+        } catch (Exception $e) {
+            error_log("Failed to remove coupon from DB: " . $e->getMessage());
+        }
+
         return true;
     }
     return false;

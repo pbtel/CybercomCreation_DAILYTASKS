@@ -11,13 +11,19 @@ header('Content-Type: application/json');
 require_once '../includes/session.php';
 require_once '../includes/products.php';
 
-// Clean any output that might have been generated
-ob_end_clean();
+// Helper to send clean JSON response
+function sendJson($data)
+{
+    if (ob_get_length())
+        ob_clean();
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+    sendJson(['success' => false, 'message' => 'Invalid request method']);
 }
 
 // Get POST data
@@ -25,11 +31,10 @@ $couponCode = isset($_POST['coupon_code']) ? trim($_POST['coupon_code']) : '';
 
 // Validate coupon code
 if (empty($couponCode)) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Please enter a coupon code'
     ]);
-    exit;
 }
 
 try {
@@ -44,7 +49,7 @@ try {
         $discountAmount = calculateCouponDiscount($subtotal);
         $newSubtotal = $subtotal - $discountAmount;
 
-        echo json_encode([
+        sendJson([
             'success' => true,
             'message' => $result['message'],
             'coupon_code' => $result['coupon']['code'],
@@ -54,13 +59,13 @@ try {
             'new_subtotal' => $newSubtotal
         ]);
     } else {
-        echo json_encode([
+        sendJson([
             'success' => false,
             'message' => $result['message']
         ]);
     }
 } catch (Exception $e) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Failed to apply coupon. Please try again.'
     ]);
