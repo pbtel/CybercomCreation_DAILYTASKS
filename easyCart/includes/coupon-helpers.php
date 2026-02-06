@@ -18,19 +18,20 @@ $validCoupons = [
  * @param string $code Coupon code to validate
  * @return array|false Returns array with code and discount percent, or false if invalid
  */
-function validateCouponCode($code) {
+function validateCouponCode($code)
+{
     global $validCoupons;
-    
+
     // Convert to uppercase for case-insensitive comparison
     $code = strtoupper(trim($code));
-    
+
     if (isset($validCoupons[$code])) {
         return [
             'code' => $code,
             'discount_percent' => $validCoupons[$code]
         ];
     }
-    
+
     return false;
 }
 
@@ -40,9 +41,10 @@ function validateCouponCode($code) {
  * @param string $code Coupon code to apply
  * @return array Result with success status and message
  */
-function applyCoupon($code) {
+function applyCoupon($code)
+{
     $couponData = validateCouponCode($code);
-    
+
     if ($couponData) {
         $_SESSION['applied_coupon'] = $couponData;
         return [
@@ -51,7 +53,7 @@ function applyCoupon($code) {
             'coupon' => $couponData
         ];
     }
-    
+
     return [
         'success' => false,
         'message' => 'Invalid coupon code. Please try again.'
@@ -63,7 +65,8 @@ function applyCoupon($code) {
  * 
  * @return bool True if removed, false if no coupon was applied
  */
-function removeCoupon() {
+function removeCoupon()
+{
     if (isset($_SESSION['applied_coupon'])) {
         unset($_SESSION['applied_coupon']);
         return true;
@@ -76,7 +79,8 @@ function removeCoupon() {
  * 
  * @return array|null Coupon data or null if no coupon applied
  */
-function getAppliedCoupon() {
+function getAppliedCoupon()
+{
     return isset($_SESSION['applied_coupon']) ? $_SESSION['applied_coupon'] : null;
 }
 
@@ -86,13 +90,14 @@ function getAppliedCoupon() {
  * @param float $subtotal Subtotal amount to apply discount to
  * @return float Discount amount
  */
-function calculateCouponDiscount($subtotal) {
+function calculateCouponDiscount($subtotal)
+{
     $coupon = getAppliedCoupon();
-    
+
     if ($coupon && isset($coupon['discount_percent'])) {
         return round($subtotal * $coupon['discount_percent'] / 100);
     }
-    
+
     return 0;
 }
 
@@ -102,8 +107,9 @@ function calculateCouponDiscount($subtotal) {
  * @param float $subtotal Original subtotal
  * @return float Subtotal after coupon discount
  */
-function getSubtotalAfterCoupon($subtotal) {
+function getSubtotalAfterCoupon($subtotal)
+{
     $discount = calculateCouponDiscount($subtotal);
     return $subtotal - $discount;
 }
-?>
+

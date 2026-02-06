@@ -1,16 +1,32 @@
 <?php
 /**
- * Session Configuration - EasyCart Phase 2
- * Handles cart and user session management
+ * Session Configuration - EasyCart Phase 6
+ * Database-backed cart and user session management
  */
+
+// Set UTF-8 encoding for all pages
+header('Content-Type: text/html; charset=UTF-8');
+
+// Set PHP internal encoding to UTF-8
+mb_internal_encoding('UTF-8');
+mb_http_output('UTF-8');
+ini_set('default_charset', 'UTF-8');
 
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Include database helpers
+require_once __DIR__ . '/../database/db.php';
+require_once __DIR__ . '/../database/cart.php';
+require_once __DIR__ . '/../database/users.php';
+
 // Include discount helpers
 require_once __DIR__ . '/discount-helpers.php';
+
+// Include price formatting helpers
+require_once __DIR__ . '/price-helpers.php';
 
 // Include coupon helpers
 require_once __DIR__ . '/coupon-helpers.php';
@@ -18,48 +34,9 @@ require_once __DIR__ . '/coupon-helpers.php';
 // Include shipping type helpers
 require_once __DIR__ . '/shipping-type-helpers.php';
 
-// Define JSON file paths
-define('USERS_DB_FILE', __DIR__ . '/../data/users_db.json');
-define('CARTS_DB_FILE', __DIR__ . '/../data/carts_db.json');
-
-// Initialize user database (in session) if not exists
-if (!isset($_SESSION['users_db'])) {
-    // Try to load from JSON file
-    if (file_exists(USERS_DB_FILE)) {
-        $usersData = file_get_contents(USERS_DB_FILE);
-        $_SESSION['users_db'] = json_decode($usersData, true) ?: [];
-    } else {
-        $_SESSION['users_db'] = [
-            [
-                'user_id' => 1,
-                'email' => 'demo@easycart.com',
-                'password' => 'demo123',
-                'name' => 'Demo User'
-            ]
-        ];
-    }
-}
-
-// Initialize cart database for persistent user carts
-if (!isset($_SESSION['carts_db'])) {
-    // Try to load from JSON file
-    if (file_exists(CARTS_DB_FILE)) {
-        $cartsData = file_get_contents(CARTS_DB_FILE);
-        $_SESSION['carts_db'] = json_decode($cartsData, true) ?: [];
-    } else {
-        $_SESSION['carts_db'] = [];
-    }
-}
-
-// Initialize session type tracking
-if (!isset($_SESSION['session_type'])) {
-    $_SESSION['session_type'] = 'guest';
-    $_SESSION['guest_id'] = 'guest_' . session_id();
-}
-
-// Initialize guest cart if not exists
-if (!isset($_SESSION['guest_cart'])) {
-    $_SESSION['guest_cart'] = [];
+// Initialize session cart ID
+if (!isset($_SESSION['cart_id'])) {
+    $_SESSION['cart_id'] = null;
 }
 
 // Initialize user session data if not exists
@@ -74,241 +51,278 @@ if (!isset($_SESSION['user'])) {
 
 // Initialize selected shipping method if not exists
 if (!isset($_SESSION['selected_shipping_method'])) {
-    $_SESSION['selected_shipping_method'] = null; // Will be set based on cart contents
+    $_SESSION['selected_shipping_method'] = null;
 }
 
 // Helper Functions for Session Management
 
 /**
- * Initialize a new guest session
+ * Get or create cart for current session
  */
-function initGuestSession() {
-    $_SESSION['session_type'] = 'guest';
-    $_SESSION['guest_id'] = 'guest_' . session_id();
-    $_SESSION['guest_cart'] = [];
-}
-
-/**
- * Get the current active cart based on session type
- */
-function getCurrentCart() {
-    if ($_SESSION['session_type'] === 'user' && isset($_SESSION['user']['user_id'])) {
+function getOrCreateSessionCart()
+{
+    if (isLoggedIn()) {
         $userId = $_SESSION['user']['user_id'];
-        return getUserCart($userId);
+        $cart = getOrCreateCartDB($userId, null);
     } else {
-        return $_SESSION['guest_cart'];
+        $sessionId = session_id();
+        $cart = getOrCreateCartDB(null, $sessionId);
     }
+
+    $_SESSION['cart_id'] = $cart['cart_id'];
+    return $cart;
 }
 
 /**
- * Set the current active cart
+ * Get current cart ID
  */
-function setCurrentCart($cart) {
-    if ($_SESSION['session_type'] === 'user' && isset($_SESSION['user']['user_id'])) {
-        $userId = $_SESSION['user']['user_id'];
-        saveUserCart($userId, $cart);
-    } else {
-        $_SESSION['guest_cart'] = $cart;
+function getCurrentCartId()
+{
+    if (!isset($_SESSION['cart_id']) || $_SESSION['cart_id'] === null) {
+        $cart = getOrCreateSessionCart();
+        return $cart['cart_id'];
     }
+    return $_SESSION['cart_id'];
 }
 
-/**
- * Load user cart from database
- */
-function getUserCart($userId) {
-    if (isset($_SESSION['carts_db'][$userId])) {
-        return $_SESSION['carts_db'][$userId];
-    }
-    return [];
-}
 
 /**
- * Save user cart to database
+ * Generate consistent cart item key
  */
-function saveUserCart($userId, $cart) {
-    $_SESSION['carts_db'][$userId] = $cart;
-    // Persist to JSON files
-    persistToJSON();
-}
-
-/**
- * Merge guest cart into user cart when logging in
- */
-function mergeGuestCartWithUser($userId) {
-    $guestCart = $_SESSION['guest_cart'];
-    $userCart = getUserCart($userId);
-    
-    // Merge guest cart items into user cart
-    foreach ($guestCart as $key => $item) {
-        if (isset($userCart[$key])) {
-            // Item already exists, add quantities
-            $userCart[$key]['quantity'] += $item['quantity'];
-        } else {
-            // New item, add to user cart
-            $userCart[$key] = $item;
-        }
+function getCartItemKey($productId, $variant)
+{
+    // deep copy to avoid modifying original
+    $v = $variant;
+    // Sort by key to ensure consistency
+    if (is_array($v)) {
+        ksort($v);
     }
-    
-    // Save merged cart
-    saveUserCart($userId, $userCart);
-    
-    // Clear guest cart
-    $_SESSION['guest_cart'] = [];
-    
-    return $userCart;
-}
-
-/**
- * Persist data to JSON files
- */
-function persistToJSON() {
-    // Ensure data directory exists
-    $dataDir = __DIR__ . '/../data';
-    if (!is_dir($dataDir)) {
-        mkdir($dataDir, 0755, true);
-    }
-    
-    // Save users database to JSON file
-    $usersJson = json_encode($_SESSION['users_db'], JSON_PRETTY_PRINT);
-    file_put_contents(USERS_DB_FILE, $usersJson);
-    
-    // Save carts database to JSON file
-    $cartsJson = json_encode($_SESSION['carts_db'], JSON_PRETTY_PRINT);
-    file_put_contents(CARTS_DB_FILE, $cartsJson);
+    return $productId . '_' . md5(json_encode($v));
 }
 
 // Cart Functions
 
-
-
-function addToCart($productId, $quantity = 1, $variant = []) {
-    $cart = getCurrentCart();
-    $cartItemKey = $productId . '_' . md5(serialize($variant));
-    
-    if (isset($cart[$cartItemKey])) {
-        $cart[$cartItemKey]['quantity'] += $quantity;
-    } else {
-        $cart[$cartItemKey] = [
-            'product_id' => $productId,
-            'quantity' => $quantity,
-            'variant' => $variant,
-            'added_at' => time()
-        ];
-    }
-    
-    setCurrentCart($cart);
+/**
+ * Add to cart
+ */
+function addToCart($productId, $quantity = 1, $variant = [])
+{
+    $cartId = getCurrentCartId();
+    addCartItemDB($cartId, $productId, $quantity, $variant);
+    updateCartTimestampDB($cartId);
     return true;
 }
 
-function updateCartQuantity($cartItemKey, $quantity) {
-    $cart = getCurrentCart();
-    
-    if (isset($cart[$cartItemKey])) {
-        if ($quantity <= 0) {
-            unset($cart[$cartItemKey]);
-        } else {
-            $cart[$cartItemKey]['quantity'] = $quantity;
+/**
+ * Update cart quantity
+ */
+function updateCartQuantity($cartItemKey, $quantity)
+{
+    // For backward compatibility, we need to parse the cart item key
+    // Old format: productId_variantHash
+    // We'll update based on cart ID and product info
+
+    $cartId = getCurrentCartId();
+
+    error_log("updateCartQuantity - Looking for key: $cartItemKey in cart ID: $cartId");
+
+    // Get all cart items to find the matching one
+    $items = getCartItemsDB($cartId);
+
+    error_log("updateCartQuantity - Found " . count($items) . " items in cart");
+
+    foreach ($items as $item) {
+        $itemKey = getCartItemKey($item['product_id'], $item['variant']);
+        error_log("updateCartQuantity - Comparing: '$itemKey' with '$cartItemKey'");
+
+        if ($itemKey === $cartItemKey) {
+            error_log("updateCartQuantity - Match found! Updating product_id: {$item['product_id']}, quantity: $quantity");
+            updateCartItemDB($cartId, $item['product_id'], $quantity, $item['variant']);
+            updateCartTimestampDB($cartId);
+            return true;
         }
-        setCurrentCart($cart);
-        return true;
     }
+
+    error_log("updateCartQuantity - No match found for key: $cartItemKey");
     return false;
 }
 
-function removeFromCart($cartItemKey) {
-    $cart = getCurrentCart();
-    
-    if (isset($cart[$cartItemKey])) {
-        unset($cart[$cartItemKey]);
-        setCurrentCart($cart);
-        return true;
+/**
+ * Remove from cart
+ */
+function removeFromCart($cartItemKey)
+{
+    $cartId = getCurrentCartId();
+
+    // Get all cart items to find the matching one
+    $items = getCartItemsDB($cartId);
+
+    foreach ($items as $item) {
+        $itemKey = getCartItemKey($item['product_id'], $item['variant']);
+        if ($itemKey === $cartItemKey) {
+            removeCartItemDB($cartId, $item['product_id'], $item['variant']);
+            updateCartTimestampDB($cartId);
+            return true;
+        }
     }
+
     return false;
 }
 
-function clearCart() {
-    setCurrentCart([]);
+/**
+ * Clear cart
+ */
+function clearCart()
+{
+    $cartId = getCurrentCartId();
+    clearCartDB($cartId);
+    updateCartTimestampDB($cartId);
     return true;
 }
 
-function getCartItems() {
-    return getCurrentCart();
+/**
+ * Get current cart (for backward compatibility)
+ */
+function getCurrentCart()
+{
+    return getCartItemsWithDetails();
 }
 
-function getCartCount() {
-    $cart = getCurrentCart();
-    $count = 0;
-    foreach ($cart as $item) {
-        $count += $item['quantity'];
-    }
-    return $count;
+/**
+ * Get cart items
+ */
+function getCartItems()
+{
+    $cartId = getCurrentCartId();
+    return getCartItemsDB($cartId);
 }
 
-function getCartTotal() {
-    global $products;
-    $cart = getCurrentCart();
+/**
+ * Get cart count
+ */
+function getCartCount()
+{
+    $cartId = getCurrentCartId();
+    return getCartCountDB($cartId);
+}
+
+/**
+ * Get cart total
+ */
+function getCartTotal()
+{
+    $cart = getCartItemsWithDetails();
     $total = 0;
-    
+
     foreach ($cart as $item) {
-        $product = getProductById($item['product_id']);
-        if ($product) {
-            // Calculate with first-unit discount
-            $discountInfo = calculateItemTotalWithDiscount($product['price'], $item['quantity']);
-            $total += $discountInfo['total'];
-        }
+        $total += $item['subtotal'];
     }
-    
+
     return $total;
 }
 
-function getCartSubtotal() {
+/**
+ * Get cart subtotal
+ */
+function getCartSubtotal()
+{
     return getCartTotal();
 }
 
-function getCartItemsWithDetails() {
-    global $products;
-    $cart = getCurrentCart();
+/**
+ * Get cart items with details
+ */
+function getCartItemsWithDetails()
+{
+    require_once __DIR__ . '/products.php';
+
+    $cartId = getCurrentCartId();
+    $items = getCartItemsDB($cartId);
     $cartDetails = [];
-    
-    foreach ($cart as $key => $item) {
-        $product = getProductById($item['product_id']);
-        if ($product) {
-            // Calculate first-unit discount
-            $discountInfo = calculateItemTotalWithDiscount($product['price'], $item['quantity']);
-            
-            $cartDetails[$key] = [
-                'product' => $product,
-                'quantity' => $item['quantity'],
-                'variant' => $item['variant'],
-                'subtotal' => $discountInfo['total'],
-                'discount_percent' => $discountInfo['discount_percent'],
-                'unit_price_original' => $discountInfo['unit_price_original'],
-                'unit_price_discounted' => $discountInfo['unit_price_discounted'],
-                'first_unit_savings' => $discountInfo['first_unit_savings'],
-                'total_savings' => $discountInfo['total_savings'],
-                'full_price_total' => $discountInfo['full_price_total']
-            ];
+
+    foreach ($items as $item) {
+        // Create cart item key for backward compatibility
+        $key = getCartItemKey($item['product_id'], $item['variant']);
+
+        // Calculate discount info
+        $discountInfo = calculateItemTotalWithDiscount($item['price'], $item['quantity']);
+
+        // Get primary image
+        $image = '📦';
+        if (!empty($item['images'])) {
+            foreach ($item['images'] as $img) {
+                if ($img['is_primary'] === 't' || $img['is_primary'] === true) {
+                    $image = $img['image_emoji'];
+                    break;
+                }
+            }
+            if ($image === '📦' && !empty($item['images'])) {
+                $image = $item['images'][0]['image_emoji'];
+            }
         }
+
+        // Get category
+        $category = 'general';
+        if (!empty($item['categories'])) {
+            $category = $item['categories'][0]['category_slug'];
+        }
+
+        $cartDetails[$key] = [
+            'product' => [
+                'id' => $item['product_id'],
+                'name' => $item['name'],
+                'price' => (float) $item['price'],
+                'original_price' => (float) $item['original_price'],
+                'discount_percent' => (int) $item['discount_percent'],
+                'rating' => (float) $item['rating'],
+                'reviews_count' => (int) $item['reviews_count'],
+                'stock' => (int) $item['stock'],
+                'shipping_type' => $item['shipping_type'],
+                'brand' => $item['brand_name'] ?? '',
+                'category' => $category,
+                'image' => $image
+            ],
+            'quantity' => $item['quantity'],
+            'variant' => $item['variant'],
+            'subtotal' => $discountInfo['total'],
+            'discount_percent' => $discountInfo['discount_percent'],
+            'unit_price_original' => $discountInfo['unit_price_original'],
+            'unit_price_discounted' => $discountInfo['unit_price_discounted'],
+            'first_unit_savings' => $discountInfo['first_unit_savings'],
+            'total_savings' => $discountInfo['total_savings'],
+            'full_price_total' => $discountInfo['full_price_total']
+        ];
     }
-    
+
     return $cartDetails;
 }
 
-
 // User Session Functions
 
-function isLoggedIn() {
+/**
+ * Check if user is logged in
+ */
+function isLoggedIn()
+{
     return isset($_SESSION['user']['logged_in']) && $_SESSION['user']['logged_in'] === true;
 }
 
-function getUserData() {
+/**
+ * Get user data
+ */
+function getUserData()
+{
     return $_SESSION['user'];
 }
 
-function loginUser($userId, $name, $email) {
-    // Merge guest cart into user cart before logging in
-    mergeGuestCartWithUser($userId);
-    
+/**
+ * Login user
+ */
+function loginUser($userId, $name, $email)
+{
+    // Get guest cart ID before logging in
+    $guestCartId = isset($_SESSION['cart_id']) ? $_SESSION['cart_id'] : null;
+
     // Set user session
     $_SESSION['user'] = [
         'logged_in' => true,
@@ -316,16 +330,26 @@ function loginUser($userId, $name, $email) {
         'name' => $name,
         'email' => $email
     ];
-    
-    // Switch to user session type
-    $_SESSION['session_type'] = 'user';
-    
+
+    // Get or create user cart
+    $userCart = getOrCreateCartDB($userId, null);
+
+    // Merge guest cart into user cart if guest cart exists
+    if ($guestCartId) {
+        mergeGuestCartToUserDB($guestCartId, $userCart['cart_id']);
+    }
+
+    // Update session cart ID
+    $_SESSION['cart_id'] = $userCart['cart_id'];
+
     return true;
 }
 
-function logoutUser() {
-    // User cart is already saved in carts_db, no need to do anything
-    
+/**
+ * Logout user
+ */
+function logoutUser()
+{
     // Clear user session
     $_SESSION['user'] = [
         'logged_in' => false,
@@ -333,72 +357,62 @@ function logoutUser() {
         'name' => null,
         'email' => null
     ];
-    
-    // Initialize new guest session
-    initGuestSession();
-    
+
+    // Create new guest cart
+    $_SESSION['cart_id'] = null;
+    getOrCreateSessionCart();
+
     return true;
 }
 
-// User Registration Function
-function registerUser($firstName, $lastName, $email, $password) {
-    global $_SESSION;
-    
+/**
+ * Register user
+ */
+function registerUser($firstName, $lastName, $email, $password)
+{
     // Check if user already exists
-    foreach ($_SESSION['users_db'] as $user) {
-        if ($user['email'] === $email) {
-            return ['success' => false, 'message' => 'Email already registered'];
-        }
+    $existing = getUserByEmailDB($email);
+    if ($existing) {
+        return ['success' => false, 'message' => 'Email already registered'];
     }
-    
+
     // Create new user
-    // Handle empty users_db array to avoid max() error
-    if (empty($_SESSION['users_db'])) {
-        $userId = 1;
-    } else {
-        $userId = max(array_column($_SESSION['users_db'], 'user_id')) + 1;
-    }
     $fullName = $firstName . ' ' . $lastName;
-    
-    $_SESSION['users_db'][] = [
-        'user_id' => $userId,
-        'email' => $email,
-        'password' => $password,
+    $user = createUserDB($email, $password, $fullName);
+
+    return [
+        'success' => true,
+        'user_id' => $user['entity_id'],
         'name' => $fullName
     ];
-    
-    // Initialize empty cart for new user
-    $_SESSION['carts_db'][$userId] = [];
-    
-    // Persist to JSON files
-    persistToJSON();
-    
-    return ['success' => true, 'user_id' => $userId, 'name' => $fullName];
 }
 
-// User Login Verification Function
-function verifyUserLogin($email, $password) {
-    global $_SESSION;
-    
-    foreach ($_SESSION['users_db'] as $user) {
-        if ($user['email'] === $email && $user['password'] === $password) {
-            return ['success' => true, 'user_id' => $user['user_id'], 'name' => $user['name']];
-        }
-    }
-    
-    return ['success' => false, 'message' => 'Invalid email or password'];
+/**
+ * Verify user login
+ */
+function verifyUserLogin($email, $password)
+{
+    return verifyUserCredentialsDB($email, $password);
 }
 
 // Flash Messages
 
-function setFlashMessage($type, $message) {
+/**
+ * Set flash message
+ */
+function setFlashMessage($type, $message)
+{
     $_SESSION['flash'] = [
         'type' => $type,
         'message' => $message
     ];
 }
 
-function getFlashMessage() {
+/**
+ * Get flash message
+ */
+function getFlashMessage()
+{
     if (isset($_SESSION['flash'])) {
         $flash = $_SESSION['flash'];
         unset($_SESSION['flash']);
@@ -407,7 +421,11 @@ function getFlashMessage() {
     return null;
 }
 
-function hasFlashMessage() {
+/**
+ * Check if flash message exists
+ */
+function hasFlashMessage()
+{
     return isset($_SESSION['flash']);
 }
 
@@ -415,61 +433,60 @@ function hasFlashMessage() {
 
 /**
  * Get the currently selected shipping method
- * Returns null if not set or auto-determines based on cart
  */
-function getSelectedShippingMethod() {
+function getSelectedShippingMethod()
+{
     return $_SESSION['selected_shipping_method'] ?? null;
 }
 
 /**
  * Set the selected shipping method
- * Validates that the method is available for current cart
  */
-function setSelectedShippingMethod($method) {
+function setSelectedShippingMethod($method)
+{
     $cartItems = getCartItemsWithDetails();
     $subtotal = getCartSubtotal();
-    
+
     // Calculate subtotal after coupon discount
     $appliedCoupon = getAppliedCoupon();
     if ($appliedCoupon) {
         $couponDiscount = calculateCouponDiscount($subtotal);
         $subtotal = $subtotal - $couponDiscount;
     }
-    
+
     // Validate method is available
     if (isShippingMethodAvailable($method, $cartItems, $subtotal)) {
         $_SESSION['selected_shipping_method'] = $method;
         return true;
     }
-    
+
     return false;
 }
 
 /**
  * Get or auto-determine shipping method based on cart
- * If no method is selected or selected method is invalid, auto-select default
  */
-function getOrSetDefaultShippingMethod() {
+function getOrSetDefaultShippingMethod()
+{
     $cartItems = getCartItemsWithDetails();
     $subtotal = getCartSubtotal();
-    
+
     // Calculate subtotal after coupon discount
     $appliedCoupon = getAppliedCoupon();
     if ($appliedCoupon) {
         $couponDiscount = calculateCouponDiscount($subtotal);
         $subtotal = $subtotal - $couponDiscount;
     }
-    
+
     $currentMethod = getSelectedShippingMethod();
-    
+
     // If current method is valid, return it
     if ($currentMethod && isShippingMethodAvailable($currentMethod, $cartItems, $subtotal)) {
         return $currentMethod;
     }
-    
+
     // Otherwise, auto-select default and save it
     $defaultMethod = getDefaultShippingMethod($cartItems, $subtotal);
     $_SESSION['selected_shipping_method'] = $defaultMethod;
     return $defaultMethod;
 }
-?>

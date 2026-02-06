@@ -4,14 +4,25 @@
  * Handles removing items from cart via AJAX
  */
 
-header('Content-Type: application/json');
+// Start output buffering to catch any stray output
+ob_start();
+
 require_once '../includes/session.php';
 require_once '../includes/products.php';
 
+// Helper to send clean JSON response
+function sendJson($data)
+{
+    if (ob_get_length())
+        ob_clean();
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+    sendJson(['success' => false, 'message' => 'Invalid request method']);
 }
 
 // Get POST data
@@ -19,32 +30,30 @@ $cartKey = isset($_POST['cart_key']) ? $_POST['cart_key'] : '';
 
 // Validate cart key
 if (empty($cartKey)) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Invalid cart item'
     ]);
-    exit;
 }
 
 // Remove from cart
 try {
     $removed = removeFromCart($cartKey);
-    
+
     if (!$removed) {
-        echo json_encode([
+        sendJson([
             'success' => false,
             'message' => 'Cart item not found'
         ]);
-        exit;
     }
-    
+
     // Get updated cart data
     $cartCount = getCartCount();
     $cartSubtotal = getCartSubtotal();
     $cartItems = getCartItems();
     $isEmpty = empty($cartItems);
-    
-    echo json_encode([
+
+    sendJson([
         'success' => true,
         'message' => 'Item removed from cart',
         'cart_count' => $cartCount,
@@ -52,9 +61,8 @@ try {
         'is_empty' => $isEmpty
     ]);
 } catch (Exception $e) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Failed to remove item from cart'
     ]);
 }
-?>

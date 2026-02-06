@@ -4,9 +4,15 @@
  * Fetches current cart summary data
  */
 
+// Start output buffering to catch any stray output
+ob_start();
+
 header('Content-Type: application/json');
 require_once '../includes/session.php';
 require_once '../includes/products.php';
+
+// Clean any output that might have been generated
+ob_end_clean();
 
 // Only accept GET or POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -19,7 +25,7 @@ try {
     $cartItems = getCartItemsWithDetails();
     $cartCount = getCartCount();
     $cartSubtotal = getCartSubtotal();
-    
+
     // Format cart items for response
     $formattedItems = [];
     foreach ($cartItems as $key => $item) {
@@ -34,17 +40,17 @@ try {
             'subtotal' => $item['subtotal']
         ];
     }
-    
+
     // Get coupon discount if applied
     $appliedCoupon = getAppliedCoupon();
     $couponDiscount = 0;
     $subtotalAfterCoupon = $cartSubtotal;
-    
+
     if ($appliedCoupon) {
         $couponDiscount = calculateCouponDiscount($cartSubtotal);
         $subtotalAfterCoupon = $cartSubtotal - $couponDiscount;
     }
-    
+
     echo json_encode([
         'success' => true,
         'cart_count' => $cartCount,
@@ -62,4 +68,4 @@ try {
         'message' => 'Failed to fetch cart summary'
     ]);
 }
-?>
+

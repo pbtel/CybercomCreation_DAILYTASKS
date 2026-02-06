@@ -10,7 +10,8 @@
  * @param float $price The product price
  * @return string 'express' or 'freight'
  */
-function getProductShippingType($price) {
+function getProductShippingType($price)
+{
     return ($price < 300) ? 'express' : 'freight';
 }
 
@@ -21,19 +22,20 @@ function getProductShippingType($price) {
  * @param array $cartItems Cart items with product details
  * @return array ['type' => 'express'|'freight', 'hasFreight' => bool]
  */
-function getCartShippingType($cartItems) {
+function getCartShippingType($cartItems)
+{
     $hasFreight = false;
-    
+
     foreach ($cartItems as $item) {
         $productPrice = $item['product']['price'];
         $shippingType = getProductShippingType($productPrice);
-        
+
         if ($shippingType === 'freight') {
             $hasFreight = true;
             break; // Freight takes precedence
         }
     }
-    
+
     return [
         'type' => $hasFreight ? 'freight' : 'express',
         'hasFreight' => $hasFreight
@@ -47,16 +49,17 @@ function getCartShippingType($cartItems) {
  * @param float $subtotal Cart subtotal after applying coupon discount
  * @return array Array of available shipping method codes
  */
-function getAvailableShippingMethods($cartItems, $subtotal) {
-    // New logic: Based solely on subtotal after coupon discount
-    // Ignore individual product prices
-    
-    if ($subtotal >= 300) {
-        // High-value cart (>= ₹300): Only Freight and White Glove available
+function getAvailableShippingMethods($cartItems, $subtotal)
+{
+    // Check if any item in the cart requires Freight shipping
+    $cartShippingInfo = getCartShippingType($cartItems);
+
+    if ($cartShippingInfo['hasFreight']) {
+        // Cart contains heavy/oversized items: Only Freight and White Glove available
         return ['freight', 'whiteglove'];
     } else {
-        // Low-value cart (< ₹300): Only Express and Standard available
-        return ['express', 'standard'];
+        // Cart only contains standard items: Standard and Express available
+        return ['standard', 'express'];
     }
 }
 
@@ -67,14 +70,15 @@ function getAvailableShippingMethods($cartItems, $subtotal) {
  * @param float $subtotal Cart subtotal after applying coupon discount
  * @return string Default shipping method code
  */
-function getDefaultShippingMethod($cartItems, $subtotal) {
-    // New logic: Based solely on subtotal after coupon discount
-    
-    if ($subtotal >= 300) {
-        // High-value cart (>= ₹300): Default to Freight
+function getDefaultShippingMethod($cartItems, $subtotal)
+{
+    $cartShippingInfo = getCartShippingType($cartItems);
+
+    if ($cartShippingInfo['hasFreight']) {
+        // Heavy items default to Freight
         return 'freight';
     } else {
-        // Low-value cart (< ₹300): Default to Express
+        // Standard items default to Express
         return 'express';
     }
 }
@@ -87,10 +91,11 @@ function getDefaultShippingMethod($cartItems, $subtotal) {
  * @param float $subtotal Cart subtotal
  * @return bool True if method is available
  */
-function isShippingMethodAvailable($method, $cartItems, $subtotal) {
+function isShippingMethodAvailable($method, $cartItems, $subtotal)
+{
     $availableMethods = getAvailableShippingMethods($cartItems, $subtotal);
     return in_array($method, $availableMethods);
 }
 
 
-?>
+

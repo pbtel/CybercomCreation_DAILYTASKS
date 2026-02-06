@@ -4,14 +4,25 @@
  * Handles adding products to cart via AJAX
  */
 
-header('Content-Type: application/json');
+// Start output buffering to catch any stray output
+ob_start();
+
 require_once '../includes/session.php';
 require_once '../includes/products.php';
 
+// Helper to send clean JSON response
+function sendJson($data)
+{
+    if (ob_get_length())
+        ob_clean();
+    header('Content-Type: application/json');
+    echo json_encode($data);
+    exit;
+}
+
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request method']);
-    exit;
+    sendJson(['success' => false, 'message' => 'Invalid request method']);
 }
 
 // Get POST data
@@ -34,48 +45,45 @@ if (isset($_POST['variant_size'])) {
 $product = getProductById($productId);
 
 if (!$product) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Product not found'
     ]);
-    exit;
 }
 
 // Check stock availability
 if ($product['stock'] <= 0) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Product is out of stock'
     ]);
-    exit;
 }
 
 // Validate quantity
 if ($quantity <= 0) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Invalid quantity'
     ]);
-    exit;
 }
 
 if ($quantity > $product['stock']) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Requested quantity exceeds available stock'
     ]);
-    exit;
 }
 
 // Add to cart
 try {
     addToCart($productId, $quantity, $variant);
-    
+
     // Get updated cart count
     $cartCount = getCartCount();
     $cartSubtotal = getCartSubtotal();
     $product['stock'] -= $quantity; // Update stock for response
-    echo json_encode([
+
+    sendJson([
         'success' => true,
         'message' => 'Product added to cart successfully!',
         'cart_count' => $cartCount,
@@ -83,9 +91,8 @@ try {
         'product_name' => $product['name']
     ]);
 } catch (Exception $e) {
-    echo json_encode([
+    sendJson([
         'success' => false,
         'message' => 'Failed to add product to cart'
     ]);
 }
-?>

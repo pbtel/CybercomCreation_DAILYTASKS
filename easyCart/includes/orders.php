@@ -1,64 +1,75 @@
 <?php
 /**
- * Orders Data - EasyCart Phase 2
- * Load orders from database file
+ * Orders Data - EasyCart Phase 6
+ * Database-backed order management
  */
 
-// Define orders database file path
-define('ORDERS_DB_FILE', __DIR__ . '/../data/orders_db.json');
+// Include database order functions
+require_once __DIR__ . '/../database/orders.php';
 
-// Load orders from file
-function loadOrders() {
-    if (file_exists(ORDERS_DB_FILE)) {
-        $ordersData = file_get_contents(ORDERS_DB_FILE);
-        $orders = json_decode($ordersData, true);
-        return is_array($orders) ? $orders : [];
-    }
-    return [];
+/**
+ * Load orders from database
+ */
+function loadOrders()
+{
+    // Get all orders - for admin view
+    // In production, this should be paginated
+    $sql = "SELECT * FROM sales_order ORDER BY created_at DESC LIMIT 100";
+    return fetchAll($sql);
 }
 
-function getOrderById($orderId) {
-    $orders = loadOrders();
-    foreach ($orders as $order) {
-        if ($order['order_id'] === $orderId) {
-            return $order;
-        }
-    }
-    return null;
+/**
+ * Get order by ID
+ */
+function getOrderById($orderId)
+{
+    return getOrderByIdDB($orderId);
 }
 
-function getUserOrders($userId) {
-    $orders = loadOrders();
-    return array_filter($orders, function($order) use ($userId) {
-        return $order['user_id'] == $userId;
-    });
+/**
+ * Get user orders
+ */
+function getUserOrders($userId)
+{
+    return getUserOrdersDB($userId);
 }
 
-function getOrdersByStatus($status) {
-    $orders = loadOrders();
-    return array_filter($orders, function($order) use ($status) {
-        return $order['status'] === $status;
-    });
+/**
+ * Get orders by status
+ */
+function getOrdersByStatus($status)
+{
+    $sql = "SELECT * FROM sales_order WHERE status = :status ORDER BY created_at DESC";
+    return fetchAll($sql, [':status' => $status]);
 }
 
-function getOrderStats($userId) {
+/**
+ * Get order stats for a user
+ */
+function getOrderStats($userId)
+{
     $userOrders = getUserOrders($userId);
-    
+
     $stats = [
         'total' => count($userOrders),
+        'total_spent' => 0,
         'pending' => 0,
         'processing' => 0,
         'shipped' => 0,
         'delivered' => 0,
         'cancelled' => 0
     ];
-    
+
     foreach ($userOrders as $order) {
         if (isset($stats[$order['status']])) {
             $stats[$order['status']]++;
         }
+        // Only count valid orders towards total spent (exclude cancelled if desired, but user asked for "Total amount spent", usually implies net or gross. Let's exclude cancelled for accuracy)
+        if ($order['status'] !== 'cancelled') {
+            $stats['total_spent'] += $order['final_amount'];
+        }
     }
-    
+
     return $stats;
 }
 ?>

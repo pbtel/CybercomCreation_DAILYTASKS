@@ -4,10 +4,12 @@
  * Calculates shipping cost, tax, and total based on shipping method
  */
 
-header('Content-Type: application/json');
 require_once '../includes/session.php';
 require_once '../includes/shipping.php';
 require_once '../includes/products.php';
+require_once '../includes/coupon-helpers.php';
+
+header('Content-Type: application/json');
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -42,22 +44,22 @@ try {
         $couponDiscount = calculateCouponDiscount($subtotal);
     }
     $subtotalAfterCoupon = $subtotal - $couponDiscount;
-    
+
     // Calculate shipping cost on coupon-discounted subtotal
     $shippingCost = calculateShippingCost($subtotalAfterCoupon, $shippingMethod);
-    
+
     // Calculate tax (18% GST on Subtotal + Shipping)
     $tax = calculateTax($subtotalAfterCoupon, $shippingCost);
-    
+
     // Calculate total
     $total = calculateOrderTotal($subtotalAfterCoupon, $shippingCost, $tax);
-    
+
     // Get shipping method description
     $description = getShippingMethodDescription($shippingMethod, $subtotalAfterCoupon);
-    
+
     // Store selected shipping method in session for persistence
     $_SESSION['selected_shipping_method'] = $shippingMethod;
-    
+
     echo json_encode([
         'success' => true,
         'subtotal' => $subtotal,
@@ -68,9 +70,10 @@ try {
         'shipping_description' => $description
     ]);
 } catch (Exception $e) {
+    error_log("Shipping Calculation Error: " . $e->getMessage() . "\n" . $e->getTraceAsString());
     echo json_encode([
         'success' => false,
-        'message' => 'Failed to calculate shipping'
+        'message' => 'Failed to calculate shipping: ' . $e->getMessage()
     ]);
 }
 ?>

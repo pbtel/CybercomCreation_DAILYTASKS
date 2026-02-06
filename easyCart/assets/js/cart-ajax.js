@@ -7,13 +7,21 @@
 // 1. ADD TO CART - AJAX
 // ============================================
 
-function addToCartAjax(productId, quantity = 1, variant = {}) {
+
+function addToCartAjax(productId, quantity = 1, variant = {}, buttonElement = null) {
     // Show loading state
-    const addButton = event ? event.target : null;
-    if (addButton) {
-        addButton.disabled = true;
-        addButton.dataset.originalText = addButton.textContent;
-        addButton.textContent = 'Adding...';
+    const addButton = buttonElement || (typeof event !== 'undefined' && event ? event.target : null);
+
+    // Safety check - if event.target is a form, try to find the submit button
+    let validButton = addButton;
+    if (addButton && addButton.tagName === 'FORM') {
+        validButton = addButton.querySelector('button[type="submit"]');
+    }
+
+    if (validButton) {
+        validButton.disabled = true;
+        validButton.dataset.originalText = validButton.textContent;
+        validButton.textContent = 'Adding...';
     }
 
     // Prepare form data
@@ -31,28 +39,36 @@ function addToCartAjax(productId, quantity = 1, variant = {}) {
         method: 'POST',
         body: formData
     })
-        .then(response => response.json())
+        .then(response => response.text())
+        .then(text => {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Server invalid JSON response:', text);
+                throw new Error('Server returned invalid JSON');
+            }
+        })
         .then(data => {
             if (data.success) {
                 // Update cart badge
-                updateCartBadge(data.cart_count);
+                try { updateCartBadge(data.cart_count); } catch (e) { console.error(e); }
 
                 // Show success toast
                 showCartToast(data.message, 'success');
 
                 // Reset button
-                if (addButton) {
-                    addButton.textContent = addButton.dataset.originalText;
-                    addButton.disabled = false;
+                if (validButton) {
+                    validButton.textContent = validButton.dataset.originalText;
+                    validButton.disabled = false;
                 }
             } else {
                 // Show error toast
                 showCartToast(data.message, 'error');
 
                 // Reset button
-                if (addButton) {
-                    addButton.textContent = addButton.dataset.originalText;
-                    addButton.disabled = false;
+                if (validButton) {
+                    validButton.textContent = validButton.dataset.originalText;
+                    validButton.disabled = false;
                 }
             }
         })
@@ -61,9 +77,9 @@ function addToCartAjax(productId, quantity = 1, variant = {}) {
             showCartToast('Failed to add item to cart. Please try again.', 'error');
 
             // Reset button
-            if (addButton) {
-                addButton.textContent = addButton.dataset.originalText;
-                addButton.disabled = false;
+            if (validButton) {
+                validButton.textContent = validButton.dataset.originalText;
+                validButton.disabled = false;
             }
         });
 }
@@ -73,6 +89,7 @@ function addToCartAjax(productId, quantity = 1, variant = {}) {
 // ============================================
 
 function updateCartQuantityAjax(cartKey, quantity, itemElement) {
+    console.log('updateCartQuantityAjax called:', { cartKey, quantity, itemElement });
     // Show loading state
     if (itemElement) {
         itemElement.style.opacity = '0.6';
@@ -89,7 +106,15 @@ function updateCartQuantityAjax(cartKey, quantity, itemElement) {
         method: 'POST',
         body: formData
     })
-        .then(response => response.json())
+        .then(response => response.text())
+        .then(text => {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('Server invalid JSON response:', text);
+                throw new Error('Server returned invalid JSON');
+            }
+        })
         .then(data => {
             if (data.success) {
                 // Update cart badge
@@ -149,9 +174,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 
     // Add fade-out animation
     if (itemElement) {
-        itemElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-        itemElement.style.opacity = '0';
-        itemElement.style.transform = 'translateX(-20px)';
+        itemElement.classList.add('fade-out');
     }
 
     // Prepare form data
@@ -191,8 +214,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 
                     // Reset item appearance
                     if (itemElement) {
-                        itemElement.style.opacity = '1';
-                        itemElement.style.transform = 'translateX(0)';
+                        itemElement.classList.remove('fade-out');
                     }
                 }
             })
@@ -202,8 +224,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 
                 // Reset item appearance
                 if (itemElement) {
-                    itemElement.style.opacity = '1';
-                    itemElement.style.transform = 'translateX(0)';
+                    itemElement.classList.remove('fade-out');
                 }
             });
     }, 300);
@@ -275,10 +296,11 @@ function updateShippingCalculation(shippingMethod) {
                 // Add animation effect
                 [summaryShipping, summaryTax, summaryTotal].forEach(element => {
                     if (element) {
-                        element.style.transition = 'all 0.3s ease';
-                        element.style.transform = 'scale(1.05)';
+                        element.classList.remove('scale-pulse');
+                        void element.offsetWidth; // trigger reflow
+                        element.classList.add('scale-pulse');
                         setTimeout(() => {
-                            element.style.transform = 'scale(1)';
+                            element.classList.remove('scale-pulse');
                         }, 300);
                     }
                 });
@@ -303,6 +325,7 @@ function updateCartBadge(count) {
 
         // Show badge if count > 0, hide if count = 0
         if (count > 0) {
+            cartBadge.classList.remove('hidden');
             cartBadge.style.display = 'inline-block';
 
             // Add pulse animation
@@ -311,6 +334,7 @@ function updateCartBadge(count) {
                 cartBadge.classList.remove('updating');
             }, 300);
         } else {
+            cartBadge.classList.add('hidden');
             cartBadge.style.display = 'none';
         }
     }
@@ -327,10 +351,11 @@ function updateCartSummaryDisplay(subtotal) {
         summarySubtotal.textContent = '₹' + subtotal.toLocaleString('en-IN');
 
         // Add animation effect
-        summarySubtotal.style.transition = 'all 0.3s ease';
-        summarySubtotal.style.transform = 'scale(1.05)';
+        summarySubtotal.classList.remove('scale-pulse');
+        void summarySubtotal.offsetWidth; // trigger reflow
+        summarySubtotal.classList.add('scale-pulse');
         setTimeout(() => {
-            summarySubtotal.style.transform = 'scale(1)';
+            summarySubtotal.classList.remove('scale-pulse');
         }, 300);
     }
 
@@ -364,10 +389,11 @@ function updateCartSummaryDisplay(subtotal) {
                     estimatedTotalElement.textContent = '₹' + finalSubtotal.toLocaleString('en-IN') + '+';
 
                     // Add animation
-                    estimatedTotalElement.style.transition = 'all 0.3s ease';
-                    estimatedTotalElement.style.transform = 'scale(1.05)';
+                    estimatedTotalElement.classList.remove('scale-pulse');
+                    void estimatedTotalElement.offsetWidth; // trigger reflow
+                    estimatedTotalElement.classList.add('scale-pulse');
                     setTimeout(() => {
-                        estimatedTotalElement.style.transform = 'scale(1)';
+                        estimatedTotalElement.classList.remove('scale-pulse');
                     }, 300);
                 }
             }
@@ -385,11 +411,11 @@ function showEmptyCartMessage() {
     const cartLayout = document.querySelector('.cart-layout');
     if (cartLayout) {
         cartLayout.innerHTML = `
-            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: white; border-radius: 16px;">
-                <div style="font-size: 5rem; margin-bottom: 1rem;">🛒</div>
-                <h2 style="font-size: 1.5rem; margin-bottom: 1rem;">Your cart is empty</h2>
-                <p style="color: var(--text-secondary); margin-bottom: 2rem;">Start shopping to add items to your cart</p>
-                <a href="products.php" style="display: inline-block; padding: 1rem 2.5rem; background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; text-decoration: none; border-radius: 12px; font-weight: 700;">
+            <div class="empty-cart-message">
+                <div class="empty-icon">&#128722;</div>
+                <h2 class="empty-title">Your cart is empty</h2>
+                <p class="empty-text">Start shopping to add items to your cart</p>
+                <a href="products.php" class="btn-gradient">
                     Continue Shopping
                 </a>
             </div>
@@ -413,62 +439,25 @@ function showCartToast(message, type = 'info') {
     if (!container) {
         container = document.createElement('div');
         container.id = 'toastContainer';
-        container.style.cssText = `
-            position: fixed;
-            top: 6rem;
-            right: 2rem;
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        `;
-        document.body.appendChild(container);
+        container.className = 'toast-container';
+        document.body.appendChild(container); // Append manually if creating
+    }
+
+    if (!container.classList.contains('toast-container')) {
+        container.className = 'toast-container'; // Ensure class is present
     }
 
     // Create toast element
     const toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
 
-    // Set colors based on type
-    let bgColor, borderColor, icon;
+    // determine icon
+    let icon = '•';
     switch (type) {
-        case 'success':
-            bgColor = '#d4edda';
-            borderColor = '#28a745';
-            icon = '✓';
-            break;
-        case 'error':
-            bgColor = '#f8d7da';
-            borderColor = '#dc3545';
-            icon = '✗';
-            break;
-        case 'info':
-            bgColor = '#d1ecf1';
-            borderColor = '#17a2b8';
-            icon = 'ℹ';
-            break;
-        default:
-            bgColor = '#f8f9fa';
-            borderColor = '#6c757d';
-            icon = '•';
+        case 'success': icon = '✓'; break;
+        case 'error': icon = '✗'; break;
+        case 'info': icon = 'ℹ'; break;
     }
-
-    // Style the toast
-    toast.style.cssText = `
-        background: ${bgColor};
-        border-left: 4px solid ${borderColor};
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        min-width: 300px;
-        max-width: 400px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        animation: slideIn 0.3s ease-out;
-        cursor: pointer;
-        transition: transform 0.2s, opacity 0.3s;
-    `;
 
     // Create content
     toast.innerHTML = `
@@ -519,11 +508,11 @@ function initAjaxCartHandlers() {
             const variantStorage = form.querySelector('input[name="variant_storage"]');
             const variantSize = form.querySelector('input[name="variant_size"]');
 
-            if (variantColor) variant.color = variantColor.value;
-            if (variantStorage) variant.storage = variantStorage.value;
             if (variantSize) variant.size = variantSize.value;
 
-            addToCartAjax(productId, quantity, variant);
+            // Find the submit button to pass it for loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            addToCartAjax(productId, quantity, variant, submitBtn);
         });
     });
 
@@ -575,14 +564,16 @@ function applyCouponCode() {
 
     if (!couponCode) {
         if (messageDiv) {
-            messageDiv.innerHTML = '<span style="color: #ef4444;">Please enter a coupon code</span>';
+            if (messageDiv) {
+                messageDiv.innerHTML = '<span class="text-danger">Please enter a coupon code</span>';
+            }
         }
         return;
     }
 
     // Show loading state
     if (messageDiv) {
-        messageDiv.innerHTML = '<span style="color: var(--text-secondary);">Applying...</span>';
+        messageDiv.innerHTML = '<span class="text-secondary">Applying...</span>';
     }
 
     // Prepare form data
@@ -605,14 +596,14 @@ function applyCouponCode() {
             } else {
                 // Show error message
                 if (messageDiv) {
-                    messageDiv.innerHTML = `<span style="color: #ef4444;">${data.message}</span>`;
+                    messageDiv.innerHTML = `<span class="text-danger">${data.message}</span>`;
                 }
             }
         })
         .catch(error => {
             console.error('Error applying coupon:', error);
             if (messageDiv) {
-                messageDiv.innerHTML = '<span style="color: #ef4444;">Failed to apply coupon. Please try again.</span>';
+                messageDiv.innerHTML = '<span class="text-danger">Failed to apply coupon. Please try again.</span>';
             }
         });
 }

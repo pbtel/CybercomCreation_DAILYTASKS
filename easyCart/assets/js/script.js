@@ -342,8 +342,7 @@ function initShippingMethodHighlight() {
 
         // Set initial state
         if (radio.checked && label) {
-            label.style.borderColor = 'var(--primary)';
-            label.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+            label.classList.add('selected');
         }
 
         // Add change listener
@@ -352,11 +351,9 @@ function initShippingMethodHighlight() {
                 const lbl = r.closest('label');
                 if (lbl) {
                     if (r.checked) {
-                        lbl.style.borderColor = 'var(--primary)';
-                        lbl.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                        lbl.classList.add('selected');
                     } else {
-                        lbl.style.borderColor = 'var(--border)';
-                        lbl.style.backgroundColor = 'transparent';
+                        lbl.classList.remove('selected');
                     }
                 }
             });
@@ -373,8 +370,7 @@ function initPaymentMethodHighlight() {
 
         // Set initial state
         if (radio.checked && label) {
-            label.style.borderColor = 'var(--primary)';
-            label.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+            label.classList.add('selected');
         }
 
         // Add change listener
@@ -383,11 +379,9 @@ function initPaymentMethodHighlight() {
                 const lbl = r.closest('label');
                 if (lbl) {
                     if (r.checked) {
-                        lbl.style.borderColor = 'var(--primary)';
-                        lbl.style.backgroundColor = 'rgba(59, 130, 246, 0.05)';
+                        lbl.classList.add('selected');
                     } else {
-                        lbl.style.borderColor = 'var(--border)';
-                        lbl.style.backgroundColor = 'transparent';
+                        lbl.classList.remove('selected');
                     }
                 }
             });
@@ -415,13 +409,6 @@ function initProductCountDisplay() {
     if (!countContainer) {
         countContainer = document.createElement('div');
         countContainer.className = 'product-count-info';
-        countContainer.style.cssText = `
-            text-align: right;
-            margin-top: 2rem;
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-            font-weight: 500;
-        `;
 
         // Insert after products container
         productsContainer.parentNode.insertBefore(countContainer, productsContainer.nextSibling);
@@ -461,16 +448,9 @@ function showFieldError(field, message) {
     // Create and show error message
     const errorDiv = document.createElement('div');
     errorDiv.className = 'field-error';
-    errorDiv.style.cssText = `
-        color: #ef4444;
-        font-size: 0.875rem;
-        margin-top: 0.25rem;
-        display: block;
-    `;
     errorDiv.textContent = message;
 
-    field.style.borderColor = '#ef4444';
-    field.style.borderWidth = '2px';
+    field.classList.add('input-error');
     field.parentNode.appendChild(errorDiv);
 }
 
@@ -482,8 +462,7 @@ function clearFormErrors(form) {
     // Clear error styling
     const inputs = form.querySelectorAll('input, select, textarea');
     inputs.forEach(input => {
-        input.style.borderColor = 'var(--border)';
-        input.style.borderWidth = '2px';
+        input.classList.remove('input-error');
     });
 }
 
@@ -574,86 +553,77 @@ function initProductVariants() {
 // ============================================
 // 10. TOAST NOTIFICATIONS
 // ============================================
+
+// Variable to keep track of active toasts
+const activeToasts = {};
+
 function showToast(message, type = 'info') {
     const container = document.getElementById('toastContainer');
     if (!container) return;
+
+    // Use type and message as a key to detect duplicates
+    const toastId = `${type}:${message}`;
+
+    if (activeToasts[toastId]) {
+        // Update existing toast counter
+        const toastData = activeToasts[toastId];
+        toastData.count++;
+
+        // Find or create counter element
+        let counterSpan = toastData.element.querySelector('.toast-counter');
+        if (!counterSpan) {
+            counterSpan = document.createElement('span');
+            counterSpan.className = 'toast-counter';
+            // Insert before close button
+            const closeBtn = toastData.element.querySelector('.toast-close');
+            toastData.element.insertBefore(counterSpan, closeBtn);
+        }
+
+        counterSpan.textContent = `(${toastData.count})`;
+
+        // Visual feedback for update (brief pulse)
+        toastData.element.classList.remove('scale-pulse');
+        void toastData.element.offsetWidth; // Trigger reflow
+        toastData.element.classList.add('scale-pulse');
+
+        // Reset auto dismiss timer
+        clearTimeout(toastData.timer);
+        toastData.timer = setTimeout(() => {
+            removeToast(toastData.element, toastId);
+        }, 4000);
+
+        return;
+    }
 
     // Create toast element
     const toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
 
-    // Set colors based on type
-    let bgColor, borderColor, icon;
+    // determine icon
+    let icon = '•';
     switch (type) {
-        case 'success':
-            bgColor = '#d4edda';
-            borderColor = '#28a745';
-            icon = '✓';
-            break;
-        case 'error':
-            bgColor = '#f8d7da';
-            borderColor = '#dc3545';
-            icon = '✗';
-            break;
-        case 'info':
-            bgColor = '#d1ecf1';
-            borderColor = '#17a2b8';
-            icon = 'ℹ';
-            break;
-        default:
-            bgColor = '#f8f9fa';
-            borderColor = '#6c757d';
-            icon = '•';
+        case 'success': icon = '✓'; break;
+        case 'error': icon = '✗'; break;
+        case 'info': icon = 'ℹ'; break;
     }
-
-    // Style the toast
-    toast.style.cssText = `
-        background: ${bgColor};
-        border-left: 4px solid ${borderColor};
-        padding: 1rem 1.5rem;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        min-width: 300px;
-        max-width: 400px;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        animation: slideIn 0.3s ease-out;
-        cursor: pointer;
-        transition: transform 0.2s, opacity 0.3s;
-    `;
 
     // Create icon
     const iconSpan = document.createElement('span');
     iconSpan.textContent = icon;
-    iconSpan.style.cssText = `
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: ${borderColor};
-    `;
+    iconSpan.className = 'toast-icon';
 
     // Create message
     const messageSpan = document.createElement('span');
     messageSpan.textContent = message;
-    messageSpan.style.cssText = `
-        flex: 1;
-        color: #333;
-        font-weight: 500;
-    `;
+    messageSpan.className = 'toast-message';
 
     // Create close button
     const closeBtn = document.createElement('span');
     closeBtn.innerHTML = '×';
-    closeBtn.style.cssText = `
-        font-size: 1.5rem;
-        color: #666;
-        cursor: pointer;
-        line-height: 1;
-        padding: 0 4px;
-    `;
+    closeBtn.className = 'toast-close';
     closeBtn.onclick = (e) => {
         e.stopPropagation();
-        removeToast(toast);
+        removeToast(toast, toastId);
     };
 
     // Assemble toast
@@ -664,16 +634,24 @@ function showToast(message, type = 'info') {
     // Add to container
     container.appendChild(toast);
 
-    // Auto dismiss after 4 seconds
-    setTimeout(() => {
-        removeToast(toast);
-    }, 4000);
+    // Track this toast
+    activeToasts[toastId] = {
+        element: toast,
+        count: 1,
+        timer: setTimeout(() => {
+            removeToast(toast, toastId);
+        }, 4000)
+    };
 
     // Click to dismiss
-    toast.onclick = () => removeToast(toast);
+    toast.onclick = () => removeToast(toast, toastId);
 }
 
-function removeToast(toast) {
+function removeToast(toast, toastId) {
+    if (toastId && activeToasts[toastId]) {
+        delete activeToasts[toastId];
+    }
+
     toast.style.opacity = '0';
     toast.style.transform = 'translateX(400px)';
     setTimeout(() => {
@@ -684,26 +662,7 @@ function removeToast(toast) {
 }
 
 // Add CSS animation
-if (!document.getElementById('toastStyles')) {
-    const style = document.createElement('style');
-    style.id = 'toastStyles';
-    style.textContent = `
-        @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-        .toast:hover {
-            transform: translateX(-5px);
-        }
-    `;
-    document.head.appendChild(style);
-}
+// CSS Animation moved to style.css (@keyframes slideIn)
 
 // ============================================
 // INITIALIZATION - RUN WHEN DOM IS READY

@@ -7,15 +7,16 @@
 /**
  * Calculate discount percentage based on product price
  * Tiered discount structure:
- * - Price > ₹1500: 15% off
- * - Price > ₹1000: 10% off
- * - Price > ₹500: 5% off
- * - Price <= ₹500: No discount
+ * - Price > &#8377;1500: 15% off
+ * - Price > &#8377;1000: 10% off
+ * - Price > &#8377;500: 5% off
+ * - Price <= &#8377;500: No discount
  * 
  * @param float $price Product price
  * @return int Discount percentage (0, 5, 10, or 15)
  */
-function calculateFirstUnitDiscount($price) {
+function calculateFirstUnitDiscount($price)
+{
     if ($price > 1500) {
         return 15;
     } elseif ($price > 1000) {
@@ -32,7 +33,8 @@ function calculateFirstUnitDiscount($price) {
  * @param float $price Original product price
  * @return float Discounted price
  */
-function getDiscountedPrice($price) {
+function getDiscountedPrice($price)
+{
     $discountPercent = calculateFirstUnitDiscount($price);
     if ($discountPercent > 0) {
         return $price - ($price * $discountPercent / 100);
@@ -48,21 +50,22 @@ function getDiscountedPrice($price) {
  * @param int $quantity Quantity of items
  * @return array Array with total, discount info, and breakdown
  */
-function calculateItemTotalWithDiscount($price, $quantity) {
+function calculateItemTotalWithDiscount($price, $quantity)
+{
     $discountPercent = calculateFirstUnitDiscount($price);
     $discountedPrice = getDiscountedPrice($price);
-    
+
     // First unit at discounted price, rest at full price
     if ($quantity > 1) {
         $total = $discountedPrice + ($price * ($quantity - 1));
     } else {
         $total = $discountedPrice;
     }
-    
+
     // Calculate savings
     $fullPriceTotal = $price * $quantity;
     $savings = $fullPriceTotal - $total;
-    
+
     return [
         'total' => $total,
         'discount_percent' => $discountPercent,
@@ -81,10 +84,11 @@ function calculateItemTotalWithDiscount($price, $quantity) {
  * @param int $discountPercent Discount percentage
  * @return string Formatted savings text
  */
-function formatDiscountText($savings, $discountPercent) {
+function formatDiscountText($savings, $discountPercent)
+{
     if ($savings > 0 && $discountPercent > 0) {
-        return "Save ₹" . number_format($savings) . " ({$discountPercent}% off)";
+        return "Save &#8377;" . number_format($savings) . " ({$discountPercent}% off)";
     }
     return "";
 }
-?>
+

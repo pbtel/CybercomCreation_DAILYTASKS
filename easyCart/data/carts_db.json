@@ -8,6 +8,14 @@
                 "size": "S"
             },
             "added_at": 1769753901
+        },
+        "7_103a6e109648594b4a2ddba7b94ae7ef": {
+            "product_id": 7,
+            "quantity": 1,
+            "variant": {
+                "color": "Black"
+            },
+            "added_at": 1770317264
         }
     }
 }

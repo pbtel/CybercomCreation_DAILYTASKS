@@ -4,9 +4,15 @@
  * Validates and applies coupon code to session
  */
 
+// Start output buffering to catch any stray output
+ob_start();
+
 header('Content-Type: application/json');
 require_once '../includes/session.php';
 require_once '../includes/products.php';
+
+// Clean any output that might have been generated
+ob_end_clean();
 
 // Only accept POST requests
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -29,15 +35,15 @@ if (empty($couponCode)) {
 try {
     // Apply coupon
     $result = applyCoupon($couponCode);
-    
+
     if ($result['success']) {
         // Get cart subtotal
         $subtotal = getCartSubtotal();
-        
+
         // Calculate coupon discount
         $discountAmount = calculateCouponDiscount($subtotal);
         $newSubtotal = $subtotal - $discountAmount;
-        
+
         echo json_encode([
             'success' => true,
             'message' => $result['message'],
@@ -59,4 +65,4 @@ try {
         'message' => 'Failed to apply coupon. Please try again.'
     ]);
 }
-?>
+

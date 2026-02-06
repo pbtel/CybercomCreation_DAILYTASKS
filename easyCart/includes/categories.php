@@ -1,76 +1,64 @@
 <?php
 /**
- * Categories Data - EasyCart Phase 2
+ * Categories Data - EasyCart Phase 6
+ * Database-backed category management
  */
 
-$categories = [
-    [
-        'id' => 'electronics',
-        'name' => 'Electronics',
-        'icon' => '📱',
-        'description' => 'Smartphones, Laptops, and Tech Gadgets',
-        'product_count' => 0 // Will be calculated dynamically
-    ],
-    [
-        'id' => 'fashion',
-        'name' => 'Fashion',
-        'icon' => '👕',
-        'description' => 'Clothing, Footwear, and Accessories',
-        'product_count' => 0
-    ],
-    [
-        'id' => 'home',
-        'name' => 'Home & Garden',
-        'icon' => '🏠',
-        'description' => 'Furniture, Decor, and Home Essentials',
-        'product_count' => 0
-    ],
-    [
-        'id' => 'sports',
-        'name' => 'Sports',
-        'icon' => '⚽',
-        'description' => 'Sports Equipment and Fitness Gear',
-        'product_count' => 0
-    ],
-    [
-        'id' => 'books',
-        'name' => 'Books',
-        'icon' => '📚',
-        'description' => 'Fiction, Non-Fiction, and Educational Books',
-        'product_count' => 0
-    ],
-    [
-        'id' => 'toys',
-        'name' => 'Toys',
-        'icon' => '🧸',
-        'description' => 'Toys and Games for Kids',
-        'product_count' => 0
-    ]
-];
+// Include database category functions
+require_once __DIR__ . '/../database/categories.php';
 
-function getCategoryById($id) {
+// Keep global $categories for backward compatibility
+$categories = [];
+
+/**
+ * Initialize categories from database
+ */
+function initializeCategories()
+{
     global $categories;
-    foreach ($categories as $category) {
-        if ($category['id'] === $id) {
-            return $category;
-        }
+    if (empty($categories)) {
+        $dbCategories = getAllCategoriesFromDB();
+        $categories = array_map(function ($c) {
+            return [
+                'id' => $c['category_slug'],
+                'name' => $c['name'],
+                'icon' => $c['icon'],
+                'description' => $c['description'],
+                'product_count' => (int) $c['product_count']
+            ];
+        }, $dbCategories);
+    }
+}
+
+/**
+ * Get category by ID (slug)
+ */
+function getCategoryById($id)
+{
+    $dbCategory = getCategoryBySlugFromDB($id);
+    if ($dbCategory) {
+        return [
+            'id' => $dbCategory['category_slug'],
+            'name' => $dbCategory['name'],
+            'icon' => $dbCategory['icon'],
+            'description' => $dbCategory['description'],
+            'product_count' => (int) $dbCategory['product_count']
+        ];
     }
     return null;
 }
 
-function getAllCategories() {
-    global $categories, $products;
-    // Calculate product count for each category
-    $categoriesWithCount = $categories;
-    foreach ($categoriesWithCount as &$category) {
-        $count = 0;
-        foreach ($products as $product) {
-            if ($product['category'] === $category['id']) {
-                $count++;
-            }
-        }
-        $category['product_count'] = $count;
-    }
-    return $categoriesWithCount;
+/**
+ * Get all categories with product counts
+ */
+function getAllCategories()
+{
+    global $products;
+    initializeCategories();
+    global $categories;
+    return $categories;
 }
+
+// Initialize categories on file include
+initializeCategories();
 ?>

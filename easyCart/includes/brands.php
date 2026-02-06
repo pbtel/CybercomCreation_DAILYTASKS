@@ -1,78 +1,76 @@
 <?php
 /**
- * Brands Data - EasyCart Phase 2
+ * Brands Data - EasyCart Phase 6
+ * Database-backed brand management
  */
 
-$brands = [
-    [
-        'id' => 'technogear',
-        'name' => 'TechnoGear',
-        'logo' => '⚙️',
-        'description' => 'Premium Technology Products'
-    ],
-    [
-        'id' => 'audiomax',
-        'name' => 'AudioMax',
-        'logo' => '🎵',
-        'description' => 'High-Quality Audio Equipment'
-    ],
-    [
-        'id' => 'smartlife',
-        'name' => 'SmartLife',
-        'logo' => '🏠',
-        'description' => 'Smart Home and Wearables'
-    ],
-    [
-        'id' => 'fashionhub',
-        'name' => 'FashionHub',
-        'logo' => '👔',
-        'description' => 'Trendy Fashion and Apparel'
-    ],
-    [
-        'id' => 'sportspro',
-        'name' => 'SportsPro',
-        'logo' => '⚽',
-        'description' => 'Professional Sports Equipment'
-    ],
-    [
-        'id' => 'homeessentials',
-        'name' => 'HomeEssentials',
-        'logo' => '🛋️',
-        'description' => 'Quality Home Products'
-    ],
-    [
-        'id' => 'bookworld',
-        'name' => 'BookWorld',
-        'logo' => '📖',
-        'description' => 'Books and Literature'
-    ],
-    [
-        'id' => 'toyland',
-        'name' => 'ToyLand',
-        'logo' => '🎮',
-        'description' => 'Fun Toys for All Ages'
-    ]
-];
+// Include database brand functions
+require_once __DIR__ . '/../database/brands.php';
 
-function getBrandById($id) {
+// Keep global $brands for backward compatibility
+$brands = [];
+
+/**
+ * Initialize brands from database
+ */
+function initializeBrands()
+{
     global $brands;
-    foreach ($brands as $brand) {
-        if ($brand['id'] === $id) {
-            return $brand;
-        }
+    if (empty($brands)) {
+        $dbBrands = getAllBrandsFromDB();
+        $brands = array_map(function ($b) {
+            return [
+                'id' => $b['brand_slug'],
+                'name' => $b['name'],
+                'logo' => $b['logo'],
+                'description' => $b['description']
+            ];
+        }, $dbBrands);
+    }
+}
+
+/**
+ * Get brand by ID (slug)
+ */
+function getBrandById($id)
+{
+    $dbBrand = getBrandBySlugFromDB($id);
+    if ($dbBrand) {
+        return [
+            'id' => $dbBrand['brand_slug'],
+            'name' => $dbBrand['name'],
+            'logo' => $dbBrand['logo'],
+            'description' => $dbBrand['description']
+        ];
     }
     return null;
 }
 
-function getAllBrands() {
+/**
+ * Get all brands
+ */
+function getAllBrands()
+{
+    initializeBrands();
     global $brands;
     return $brands;
 }
 
-function getProductsByBrand($brandId) {
-    global $products;
-    return array_filter($products, function($product) use ($brandId) {
-        return strtolower($product['brand']) === strtolower($brandId);
-    });
+/**
+ * Get products by brand
+ */
+function getProductsByBrand($brandId)
+{
+    require_once __DIR__ . '/../database/products.php';
+    $dbProducts = getProductsByBrandFromDB($brandId);
+
+    // Transform to legacy format
+    require_once __DIR__ . '/products.php';
+    return array_map(function ($p) {
+        return transformProductFromDB($p);
+    }, $dbProducts);
 }
+
+// Initialize brands on file include
+initializeBrands();
 ?>
