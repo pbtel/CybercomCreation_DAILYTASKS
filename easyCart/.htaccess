@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Block direct access to .php files
+RewriteCond %{THE_REQUEST} \.php [NC]
+RewriteRule ^ - [F,L]
+
+# Redirect everything to public directory
+RewriteCond %{REQUEST_URI} !public/
+RewriteRule ^(.*)$ public/$1 [L]

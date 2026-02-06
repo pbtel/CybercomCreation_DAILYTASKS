@@ -24,7 +24,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlashMessage('success', 'Account created successfully! Welcome to EasyCart.');
         
         // Redirect to original page if specified
-        $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
+        $redirect = !empty($_GET['redirect']) ? $_GET['redirect'] : 'index.php';
         header('Location: ' . $redirect);
         exit;
     } else {
