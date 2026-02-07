@@ -9,7 +9,7 @@
             <div class="empty-cart-icon">&#128722;</div>
             <h2 class="empty-cart-text">Your cart is empty</h2>
             <p class="empty-cart-subtext">Start shopping to add items to your cart</p>
-            <a href="../../products.php" class="btn-gradient">
+            <a href="<?= BASE_URL ?>/products" class="btn-gradient">
                 Continue Shopping
             </a>
         </div>
@@ -27,7 +27,7 @@
                         <!-- Product Info -->
                         <div>
                             <h3 class="cart-item-title">
-                                <a href="product-detail.php?id=<?php echo $item['product']['id']; ?>" class="cart-item-link">
+                                <a href="<?= BASE_URL ?>/product/<?php echo $item['product']['id']; ?>" class="cart-item-link">
                                     <?php echo htmlspecialchars($item['product']['name']); ?>
                                 </a>
                             </h3>
@@ -97,11 +97,11 @@
                 <?php endforeach; ?>
 
                 <div class="cart-actions">
-                    <a href="../../products.php"
+                    <a href="<?= BASE_URL ?>/products"
                         class="btn-continue-shopping">
                         Continue Shopping
                     </a>
-                    <form action="cart-clear.php" method="POST" style="display: inline-block;">
+                    <form action="<?= BASE_URL ?>/cart/clear" method="POST" style="display: inline-block;">
                         <button type="submit" onclick="return confirm('Are you sure you want to clear your cart?');"
                             class="btn-clear-cart">
                             Clear Cart
@@ -218,7 +218,7 @@
                             data-estimated-total>&#8377;<?php echo number_format($finalSubtotal); ?>+</span>
                     </div>
 
-                    <a href="../../checkout.php" class="checkout-btn">
+                    <a href="<?= BASE_URL ?>/checkout" class="checkout-btn">
                         Proceed to Checkout
                     </a>
 

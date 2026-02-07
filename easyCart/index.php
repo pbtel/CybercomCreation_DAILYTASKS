@@ -1,20 +1,18 @@
 <?php
-// Homepage Controller
-// This file handles the homepage logic and includes the view
+/**
+ * Root Entry Point / Router
+ * This file routes requests to the public/ directory or handles them as an MVC entry point.
+ */
 
-require_once 'includes/session.php';
-require_once 'includes/products.php';
-require_once 'includes/categories.php';
-require_once 'includes/brands.php';
+// If we're using the PHP built-in server, handle static files in public/
+if (php_sapi_name() === 'cli-server') {
+    $uri = urldecode(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH));
+    if ($uri !== '/' && file_exists(__DIR__ . '/public' . $uri) && !is_dir(__DIR__ . '/public' . $uri)) {
+        return false;
+    }
+}
 
-$pageTitle = "Home";
-
-// Get featured products
-$featuredProducts = getFeaturedProducts();
-// Get all categories with product counts
-$allCategories = getAllCategories();
-// Get all brands
-$allBrands = getAllBrands();
-
-// Include the view
-require_once 'views/index.view.php';
+// Redirect root index to public/index.php for MVC processing
+// We want to keep the clean URL if possible, or just let public/index.php handle it.
+// To ensure BASE_URL and other paths work correctly, we'll route everything to public/index.php.
+require_once __DIR__ . '/public/index.php';

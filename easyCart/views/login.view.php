@@ -13,7 +13,7 @@ require_once __DIR__ . '/includes/header.php';
         </p>
 
         <form
-            action="../../login-process.php<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>"
+            action="<?= BASE_URL ?>/auth/loginProcess<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>"
             method="POST">
             <div class="form-group">
                 <label class="form-label">Email Address</label>
@@ -41,7 +41,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="auth-footer">
             <p style="color: var(--text-secondary);">
                 Don't have an account?
-                <a href="../../signup.php" class="link-primary bold">Sign Up</a>
+                <a href="<?= BASE_URL ?>/signup" class="link-primary bold">Sign Up</a>
             </p>
         </div>
 

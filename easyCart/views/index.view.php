@@ -9,17 +9,17 @@ require_once __DIR__ . '/includes/header.php';
         <div class="banner-panel banner-panel-1">
             <h1 class="banner-headline">New Collection</h1>
             <p class="banner-tagline">Discover the Latest Trends</p>
-            <a href="../../products.php" class="banner-cta">Shop Now</a>
+            <a href="<?= BASE_URL ?>/products" class="banner-cta">Shop Now</a>
         </div>
         <div class="banner-panel banner-panel-2">
             <h1 class="banner-headline">50% OFF Sale</h1>
             <p class="banner-tagline">Limited Time Offer</p>
-            <a href="../../products.php?filter=sale" class="banner-cta">Grab Deals</a>
+            <a href="<?= BASE_URL ?>/products?filter=sale" class="banner-cta">Grab Deals</a>
         </div>
         <div class="banner-panel banner-panel-3">
             <h1 class="banner-headline">Free Delivery</h1>
             <p class="banner-tagline">On Orders Above &#8377;999</p>
-            <a href="../../products.php" class="banner-cta">Learn More</a>
+            <a href="<?= BASE_URL ?>/products" class="banner-cta">Learn More</a>
         </div>
     </div>
 </section>
@@ -30,7 +30,7 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="products-container">
         <?php foreach ($featuredProducts as $product): ?>
-            <a href="../../product-detail.php?id=<?php echo $product['id']; ?>" class="product-item">
+            <a href="<?= BASE_URL ?>/product/<?php echo $product['id']; ?>" class="product-item">
                 <div class="product-image-wrapper">
                     <?php if (!empty($product['tags'])): ?>
                         <div class="product-tag">
@@ -83,7 +83,7 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="products-container">
         <?php foreach ($allCategories as $category): ?>
-            <a href="../../products.php?category=<?php echo $category['id']; ?>" class="product-item">
+            <a href="<?= BASE_URL ?>/products?category=<?php echo $category['id']; ?>" class="product-item">
                 <div class="product-image-wrapper category-card-image">
                     <span class="category-icon">
                         <?php echo $category['icon']; ?>
@@ -108,7 +108,7 @@ require_once __DIR__ . '/includes/header.php';
 
     <div class="products-container">
         <?php foreach ($allBrands as $brand): ?>
-            <a href="../../products.php?brand=<?php echo strtolower($brand['id']); ?>" class="product-item">
+            <a href="<?= BASE_URL ?>/products?brand=<?php echo strtolower($brand['id']); ?>" class="product-item">
                 <div class="product-image-wrapper brand-card-image">
                     <span class="brand-logo">
                         <?php echo $brand['logo']; ?>

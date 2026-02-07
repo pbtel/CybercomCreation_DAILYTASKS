@@ -7,7 +7,7 @@ $product = getProductById($productId);
 
 // If product not found, redirect to products page
 if (!$product) {
-    header('Location: products.php');
+    header('Location: ' . BASE_URL . '/products');
     exit;
 }
 
@@ -18,9 +18,9 @@ $category = getCategoryById($product['category']);
 <div class="container" style="margin-top: 2rem;">
     <!-- BREADCRUMB -->
     <div class="breadcrumb">
-        <a href="index.php" class="breadcrumb-link">Home</a> /
-        <a href="products.php" class="breadcrumb-link">Products</a> /
-        <a href="products.php?category=<?php echo $product['category']; ?>" class="breadcrumb-link">
+        <a href="<?= BASE_URL ?>/index" class="breadcrumb-link">Home</a> /
+        <a href="<?= BASE_URL ?>/products" class="breadcrumb-link">Products</a> /
+        <a href="<?= BASE_URL ?>/products?category=<?php echo $product['category']; ?>" class="breadcrumb-link">
             <?php echo htmlspecialchars($category['name']); ?>
         </a> /
         <span><?php echo htmlspecialchars($product['name']); ?></span>
@@ -127,7 +127,7 @@ $category = getCategoryById($product['category']);
             <?php endif; ?>
 
             <!-- QUANTITY & ADD TO CART -->
-            <form action="../../cart-add.php" method="POST" id="addToCartForm">
+            <form action="<?= BASE_URL ?>/cart/add" method="POST" id="addToCartForm">
                 <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
                 <!-- Variant inputs will be added dynamically by JavaScript -->
 
@@ -203,7 +203,7 @@ $category = getCategoryById($product['category']);
             <div class="products-container">
                 <?php foreach ($recommendedProducts as $recProduct): ?>
                     <?php if ($recProduct['id'] !== $product['id']): ?>
-                        <a href="../../product-detail.php?id=<?php echo $recProduct['id']; ?>" class="product-item">
+                        <a href="<?= BASE_URL ?>/product/<?php echo $recProduct['id']; ?>" class="product-item">
                             <div class="product-image-wrapper">
                                 <span><?php echo $recProduct['image']; ?></span>
                             </div>

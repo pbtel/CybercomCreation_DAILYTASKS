@@ -12,6 +12,24 @@ mb_internal_encoding('UTF-8');
 mb_http_output('UTF-8');
 ini_set('default_charset', 'UTF-8');
 
+// Define BASE_URL if not already defined (for legacy root scripts)
+if (!defined('BASE_URL')) {
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
+    $host = $_SERVER['HTTP_HOST'];
+    $scriptName = $_SERVER['SCRIPT_NAME'];
+    $scriptPath = dirname($scriptName);
+
+    // If scriptPath is effectively root (windows \ or linux /), make it empty
+    if ($scriptPath === '\\' || $scriptPath === '/') {
+        $scriptPath = '';
+    }
+
+    $baseUrl = $protocol . '://' . $host . str_replace('\\', '/', $scriptPath);
+    // Remove /public if it's at the end
+    $baseUrl = preg_replace('/\/public$/', '', $baseUrl);
+    define('BASE_URL', rtrim($baseUrl, '/'));
+}
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();

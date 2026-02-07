@@ -46,7 +46,7 @@
             <div class="empty-icon">&#128230;</div>
             <h2 class="empty-text">No orders yet</h2>
             <p class="empty-subtext">Start shopping to see your orders here</p>
-            <a href="products.php" class="btn-gradient">
+            <a href="<?= BASE_URL ?>/products" class="btn-gradient">
                 Start Shopping
             </a>
         </div>
@@ -244,7 +244,7 @@
         const ctx = document.getElementById('spendingChart');
         if (!ctx) return;
 
-        fetch('api/chart-data-ajax.php')
+        fetch(BASE_URL + '/api/chart-data-ajax.php')
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.labels.length > 0) {

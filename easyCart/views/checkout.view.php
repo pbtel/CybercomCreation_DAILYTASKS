@@ -7,7 +7,7 @@
     <div class="checkout-grid">
         <!-- CHECKOUT FORM -->
         <div>
-            <form action="../../order-place.php" method="POST">
+            <form action="<?= BASE_URL ?>/order/place" method="POST">
                 <!-- SHIPPING INFO -->
                 <div class="checkout-section">
                     <h2 class="checkout-section-title">Shipping Information</h2>
@@ -337,7 +337,7 @@
         const selectedMethod = document.querySelector('input[name="shipping_method"]:checked').value;
 
         // Save shipping method to session via AJAX
-        fetch('api/shipping-method-update.php', {
+        fetch(BASE_URL + '/api/shipping-method-update', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -457,7 +457,7 @@
     });
 
     // Clear localStorage when order is successfully placed
-    const checkoutForm = document.querySelector('form[action="../../order-place.php"]');
+    const checkoutForm = document.querySelector('form[action="<?= BASE_URL ?>/order/place"]');
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', function () {
             // Clear all checkout data from localStorage

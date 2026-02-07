@@ -13,7 +13,7 @@ require_once __DIR__ . '/includes/header.php';
         </p>
 
         <form
-            action="../../signup-process.php<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>"
+            action="<?= BASE_URL ?>/auth/signupProcess<?php echo isset($_GET['redirect']) ? '?redirect=' . urlencode($_GET['redirect']) : ''; ?>"
             method="POST">
             <div class="form-grid">
                 <div>
@@ -74,7 +74,7 @@ require_once __DIR__ . '/includes/header.php';
         <div class="auth-footer">
             <p style="color: var(--text-secondary);">
                 Already have an account?
-                <a href="../../login.php" class="link-primary bold">Login</a>
+                <a href="<?= BASE_URL ?>/login" class="link-primary bold">Login</a>
             </p>
         </div>
 

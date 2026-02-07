@@ -4,12 +4,14 @@
  * Api Controller
  * Handles all AJAX requests
  */
-class ApiController extends Controller {
+class ApiController extends Controller
+{
 
     /**
      * Add to cart AJAX
      */
-    public function cartAdd() {
+    public function cartAdd()
+    {
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -18,9 +20,12 @@ class ApiController extends Controller {
         $quantity = intval($this->post('quantity', 1));
 
         $variant = [];
-        if ($this->post('variant_color')) $variant['color'] = $this->post('variant_color');
-        if ($this->post('variant_storage')) $variant['storage'] = $this->post('variant_storage');
-        if ($this->post('variant_size')) $variant['size'] = $this->post('variant_size');
+        if ($this->post('variant_color'))
+            $variant['color'] = $this->post('variant_color');
+        if ($this->post('variant_storage'))
+            $variant['storage'] = $this->post('variant_storage');
+        if ($this->post('variant_size'))
+            $variant['size'] = $this->post('variant_size');
 
         $productModel = $this->model('ProductModel');
         $product = $productModel->getById($productId);
@@ -44,7 +49,7 @@ class ApiController extends Controller {
         try {
             $cartModel = $this->model('CartModel');
             $cartModel->addToCart($productId, $quantity, $variant);
-            
+
             return $this->json([
                 'success' => true,
                 'message' => 'Product added to cart successfully!',
@@ -60,7 +65,8 @@ class ApiController extends Controller {
     /**
      * Update cart quantity AJAX
      */
-    public function cartUpdate() {
+    public function cartUpdate()
+    {
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -103,7 +109,8 @@ class ApiController extends Controller {
     /**
      * Remove from cart AJAX
      */
-    public function cartRemove() {
+    public function cartRemove()
+    {
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -122,7 +129,7 @@ class ApiController extends Controller {
                 $subtotal = $cartModel->getSubtotal();
                 $couponModel = $this->model('CouponModel');
                 $discount = $couponModel->calculateDiscount($subtotal);
-                
+
                 return $this->json([
                     'success' => true,
                     'message' => 'Item removed',
@@ -143,7 +150,8 @@ class ApiController extends Controller {
     /**
      * Get cart summary AJAX
      */
-    public function cartSummary() {
+    public function cartSummary()
+    {
         $cartModel = $this->model('CartModel');
         $couponModel = $this->model('CouponModel');
         $shippingModel = $this->model('ShippingModel');
@@ -176,7 +184,8 @@ class ApiController extends Controller {
     /**
      * Apply coupon AJAX
      */
-    public function couponApply() {
+    public function couponApply()
+    {
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -209,7 +218,8 @@ class ApiController extends Controller {
     /**
      * Remove coupon AJAX
      */
-    public function couponRemove() {
+    public function couponRemove()
+    {
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -230,7 +240,8 @@ class ApiController extends Controller {
     /**
      * Calculate shipping AJAX
      */
-    public function shippingCalculate() {
+    public function shippingCalculate()
+    {
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -264,7 +275,8 @@ class ApiController extends Controller {
     /**
      * Update shipping method AJAX
      */
-    public function shippingMethodUpdate() {
+    public function shippingMethodUpdate()
+    {
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -278,5 +290,37 @@ class ApiController extends Controller {
         $shippingModel->setSelected($method);
 
         return $this->json(['success' => true, 'message' => 'Shipping method updated']);
+    }
+
+    /**
+     * Get chart data for orders visualization
+     */
+    public function chartData()
+    {
+        if (!isset($_SESSION['user'])) {
+            return $this->json(['success' => false, 'message' => 'Unauthorized']);
+        }
+
+        try {
+            $orderModel = $this->model('OrderModel');
+            $chartData = $orderModel->getChartData();
+
+            // Format for Chart.js
+            $labels = [];
+            $amounts = [];
+
+            foreach ($chartData as $row) {
+                $labels[] = date('M d', strtotime($row['date']));
+                $amounts[] = (float) $row['total'];
+            }
+
+            return $this->json([
+                'success' => true,
+                'labels' => $labels,
+                'data' => $amounts
+            ]);
+        } catch (Exception $e) {
+            return $this->json(['success' => false, 'message' => $e->getMessage()]);
+        }
     }
 }

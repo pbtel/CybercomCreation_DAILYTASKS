@@ -28,21 +28,21 @@ $user = getUserData();
     <header>
         <div class="header-wrapper">
             <div class="logo">
-                <a href="index.php" class="logo-link">EasyCart</a>
+                <a href="index" class="logo-link">EasyCart</a>
             </div>
             <nav class="header-nav">
-                <a href="index.php">Home</a>
-                <a href="products.php">Products</a>
-                <a href="cart.php">Cart<span class="cart-badge <?php echo $cartCount > 0 ? '' : 'hidden'; ?>"
+                <a href="index">Home</a>
+                <a href="products">Products</a>
+                <a href="cart">Cart<span class="cart-badge <?php echo $cartCount > 0 ? '' : 'hidden'; ?>"
                         id="cartBadge"><?php echo $cartCount > 0 ? $cartCount : '0'; ?></span></a>
-                <a href="orders.php">Orders</a>
+                <a href="orders">Orders</a>
                 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
                     <span class="theme-icon">🌙</span>
                 </button>
                 <?php if ($user['logged_in']): ?>
-                    <a href="logout.php">Logout (<?php echo htmlspecialchars($user['name']); ?>)</a>
+                    <a href="logout">Logout (<?php echo htmlspecialchars($user['name']); ?>)</a>
                 <?php else: ?>
-                    <a href="login.php">Login</a>
+                    <a href="login">Login</a>
                 <?php endif; ?>
             </nav>
         </div>

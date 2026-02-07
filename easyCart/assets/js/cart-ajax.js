@@ -35,7 +35,7 @@ function addToCartAjax(productId, quantity = 1, variant = {}, buttonElement = nu
     if (variant.size) formData.append('variant_size', variant.size);
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/cart-add', {
+    fetch(BASE_URL + '/api/cart-add-ajax.php', {
         method: 'POST',
         body: formData
     })
@@ -102,7 +102,7 @@ function updateCartQuantityAjax(cartKey, quantity, itemElement) {
     formData.append('quantity', quantity);
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/cart-update', {
+    fetch(BASE_URL + '/api/cart-update-ajax.php', {
         method: 'POST',
         body: formData
     })
@@ -183,7 +183,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 
     // Send AJAX request after animation
     setTimeout(() => {
-        fetch(BASE_URL + '/api/cart-remove', {
+        fetch(BASE_URL + '/api/cart-remove-ajax.php', {
             method: 'POST',
             body: formData
         })
@@ -235,7 +235,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 // ============================================
 
 function fetchCartSummary() {
-    return fetch(BASE_URL + '/api/cart-summary', {
+    return fetch(BASE_URL + '/api/cart-summary-ajax.php', {
         method: 'GET'
     })
         .then(response => response.json())
@@ -271,7 +271,7 @@ function updateShippingCalculation(shippingMethod) {
     formData.append('shipping_method', shippingMethod);
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/shipping-calculate', {
+    fetch(BASE_URL + '/api/shipping-calculate-ajax.php', {
         method: 'POST',
         body: formData
     })
@@ -360,7 +360,7 @@ function updateCartSummaryDisplay(subtotal) {
     }
 
     // Fetch updated cart summary to get coupon discount
-    fetch(BASE_URL + '/api/cart-summary', {
+    fetch(BASE_URL + '/api/cart-summary-ajax.php', {
         method: 'GET'
     })
         .then(response => response.json())
@@ -581,7 +581,7 @@ function applyCouponCode() {
     formData.append('coupon_code', couponCode);
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/coupon-apply', {
+    fetch(BASE_URL + '/api/coupon-apply-ajax.php', {
         method: 'POST',
         body: formData
     })
@@ -618,7 +618,7 @@ function removeCouponCode() {
     }
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/coupon-remove', {
+    fetch(BASE_URL + '/api/coupon-remove-ajax.php', {
         method: 'POST'
     })
         .then(response => response.json())

@@ -673,24 +673,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Attach validation to login form
     const loginForm = document.querySelector('form[action="login-process.php"]') ||
-        document.querySelector('form[action*="login-process.php"]') ||
-        document.querySelector('form[action*="auth/loginProcess"]');
+        document.querySelector('form[action*="login-process.php"]');
     if (loginForm) {
         loginForm.addEventListener('submit', validateLoginForm);
     }
 
     // Attach validation to signup form
     const signupForm = document.querySelector('form[action="signup-process.php"]') ||
-        document.querySelector('form[action*="signup-process.php"]') ||
-        document.querySelector('form[action*="auth/signupProcess"]');
+        document.querySelector('form[action*="signup-process.php"]');
     if (signupForm) {
         signupForm.addEventListener('submit', validateSignupForm);
     }
 
     // Attach validation to checkout form
     const checkoutForm = document.querySelector('form[action="order-place.php"]') ||
-        document.querySelector('form[action*="order-place.php"]') ||
-        document.querySelector('form[action*="order/place"]');
+        document.querySelector('form[action*="order-place.php"]');
     if (checkoutForm) {
         checkoutForm.addEventListener('submit', validateCheckoutForm);
     }
