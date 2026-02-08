@@ -1,211 +1,214 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
-    <div class="container">
-        <h1 class="section-title-lg mb-1">Checkout</h1>
-        <p class="text-muted-sm mb-2rem">Complete your order</p>
+    <div class="container mt-2">
+    <div class="checkout-header">
+        <h1 class="checkout-title">Finalize Your Order</h1>
+        <p class="checkout-subtitle">Secure encrypted checkout process</p>
+    </div>
 
-        <div class="checkout-grid">
-            <!-- CHECKOUT FORM -->
-            <div>
-                <form action="<?php echo BASE_URL; ?>/checkout/place" method="POST">
-                    <!-- SHIPPING INFO -->
-                    <div class="card mb-2">
-                        <h2 class="card-title-lg mb-1-5">Shipping Information</h2>
-                        
-                        <div class="form-row">
-                            <div>
-                                <label class="form-label">First Name *</label>
-                                <input type="text" name="first_name" required class="input-text">
-                            </div>
-                            <div>
-                                <label class="form-label">Last Name *</label>
-                                <input type="text" name="last_name" required class="input-text">
-                            </div>
+    <div class="checkout-grid">
+        <!-- CHECKOUT FORM -->
+        <div>
+            <form action="<?php echo BASE_URL; ?>/checkout/place" method="POST">
+                <!-- SHIPPING INFO -->
+                <div class="checkout-section">
+                    <h2 class="checkout-section-title">📦 Shipping Information</h2>
+                    
+                    <div class="form-row">
+                        <div>
+                            <label class="form-label">First Name *</label>
+                            <input type="text" name="first_name" required class="form-input">
                         </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Email *</label>
-                            <input type="email" name="email" required class="input-text" value="<?php echo Session::get('user')['email'] ?? ''; ?>">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Phone *</label>
-                            <input type="tel" name="phone" required class="input-text">
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Address *</label>
-                            <input type="text" name="address" required class="input-text">
-                        </div>
-
-                        <div class="form-row form-group">
-                            <div>
-                                <label class="form-label">City *</label>
-                                <input type="text" name="city" required class="input-text">
-                            </div>
-                            <div>
-                                <label class="form-label">State *</label>
-                                <input type="text" name="state" required class="input-text">
-                            </div>
-                        </div>
-
-                        <div class="form-row form-group">
-                            <div>
-                                <label class="form-label">PIN Code *</label>
-                                <input type="text" name="pincode" required class="input-text">
-                            </div>
-                            <div>
-                                <label class="form-label">Country *</label>
-                                <select name="country" required class="input-select">
-                                    <option value="">Select Country</option>
-                                    <option value="IN" selected>India</option>
-                                    <option value="US">United States</option>
-                                    <option value="UK">United Kingdom</option>
-                                </select>
-                            </div>
+                        <div>
+                            <label class="form-label">Last Name *</label>
+                            <input type="text" name="last_name" required class="form-input">
                         </div>
                     </div>
 
-                    <!-- SHIPPING METHOD -->
-                    <div class="card mb-2">
-                        <h2 class="card-title-lg mb-1-5">Shipping Method</h2>
-                        
-                        <?php 
-                        $shippingModel = new ShippingModel();
-                        $methods = ['standard', 'express', 'whiteglove', 'freight'];
-                        foreach ($methods as $method): 
-                            $available = in_array($method, $availableShippingMethods);
-                        ?>
-                        <label class="shipping-option <?php echo !$available ? 'disabled' : ''; ?>" id="label-<?php echo $method; ?>">
-                            <div class="flex-start-gap-0-75">
-                                <input type="radio" name="shipping_method" value="<?php echo $method; ?>" 
-                                       <?php echo ($selectedShippingMethod === $method) ? 'checked' : ''; ?> 
-                                       <?php echo !$available ? 'disabled' : ''; ?> 
-                                       class="mt-0-25" onchange="updateOrderSummary()">
-                                <div class="flex-1">
-                                    <div class="flex-center-gap-0-5 mb-0-5">
-                                        <span class="fs-1-25">
+                    <div class="form-row">
+                        <div>
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" name="email" required class="form-input" value="<?php echo Session::get('user')['email'] ?? ''; ?>">
+                        </div>
+                        <div>
+                            <label class="form-label">Phone Number *</label>
+                            <input type="tel" name="phone" required class="form-input" placeholder="+91">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Delivery Address *</label>
+                        <input type="text" name="address" required class="form-input" placeholder="House No, Street, Area">
+                    </div>
+
+                    <div class="form-row form-group">
+                        <div>
+                            <label class="form-label">City *</label>
+                            <input type="text" name="city" required class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">State / Region *</label>
+                            <input type="text" name="state" required class="form-input">
+                        </div>
+                    </div>
+
+                    <div class="form-row form-group">
+                        <div>
+                            <label class="form-label">Postal Code (PIN) *</label>
+                            <input type="text" name="pincode" required class="form-input">
+                        </div>
+                        <div>
+                            <label class="form-label">Country *</label>
+                            <select name="country" required class="form-input" style="height: auto;">
+                                <option value="IN" selected>India</option>
+                                <option value="US">United States</option>
+                                <option value="UK">United Kingdom</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SHIPPING METHOD -->
+                <div class="checkout-section">
+                    <h2 class="checkout-section-title">🚚 Delivery Method</h2>
+                    
+                    <?php 
+                    $shippingModel = new ShippingModel();
+                    $methods = ['standard', 'express', 'whiteglove', 'freight'];
+                    foreach ($methods as $method): 
+                        $available = in_array($method, $availableShippingMethods);
+                        $isSelected = ($selectedShippingMethod === $method);
+                    ?>
+                    <label class="shipping-option <?php echo !$available ? 'disabled' : ''; ?> <?php echo $isSelected ? 'selected' : ''; ?>" id="label-<?php echo $method; ?>">
+                        <div class="shipping-option-row">
+                            <input type="radio" name="shipping_method" value="<?php echo $method; ?>" 
+                                   <?php echo $isSelected ? 'checked' : ''; ?> 
+                                   <?php echo !$available ? 'disabled' : ''; ?> 
+                                   style="width: 20px; height: 20px; margin-top: 5px;"
+                                   onchange="updateOrderSummary()">
+                            <div class="shipping-option-details">
+                                <div class="shipping-option-title-row">
+                                    <span class="shipping-icon">
+                                        <?php 
+                                        if ($method === 'standard') echo '📦';
+                                        elseif ($method === 'express') echo '⚡';
+                                        elseif ($method === 'whiteglove') echo '🏆';
+                                        elseif ($method === 'freight') echo '🚛';
+                                        ?>
+                                    </span>
+                                    <span class="shipping-name"><?php echo ucfirst($method); ?> Shipping</span>
+                                    <?php if ($available): ?>
+                                        <span class="shipping-badge badge-green-gradient">
                                             <?php 
-                                            if ($method === 'standard') echo '📦';
-                                            elseif ($method === 'express') echo '⚡';
-                                            elseif ($method === 'whiteglove') echo '🏆';
-                                            elseif ($method === 'freight') echo '🚚';
+                                            if ($method === 'standard') echo 'RELIABLE';
+                                            elseif ($method === 'express') echo 'FAST';
+                                            elseif ($method === 'whiteglove') echo 'PREMIUM';
+                                            elseif ($method === 'freight') echo 'FOR BULK';
                                             ?>
                                         </span>
-                                        <strong class="fs-1-0625"><?php echo ucfirst($method); ?> Shipping</strong>
-                                        <?php if ($available): ?>
-                                            <span class="shipping-badge bg-primary-soft color-primary">
-                                                <?php 
-                                                if ($method === 'standard') echo 'MOST POPULAR';
-                                                elseif ($method === 'express') echo 'FAST';
-                                                elseif ($method === 'whiteglove') echo 'PREMIUM';
-                                                elseif ($method === 'freight') echo 'HEAVY ITEMS';
-                                                ?>
-                                            </span>
-                                        <?php else: ?>
-                                            <span class="shipping-badge badge-grey-soft">NOT AVAILABLE</span>
-                                        <?php endif; ?>
-                                    </div>
-                                    <span class="db color-text-secondary fs-0-875 mb-0-5">
-                                        <?php echo $shippingModel->getMethodDescription($method, $subtotalAfterCoupon); ?>
-                                    </span>
-                                </div>
-                            </div>
-                        </label>
-                        <?php endforeach; ?>
-
-                        <div class="alert-info-soft mt-1">
-                            <p class="fs-0-875 color-text-secondary m-0">
-                                <strong class="color-primary">ℹ️ Note:</strong> All delivery times are estimated and may vary based on your location. Tracking information will be provided once your order ships.
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- PAYMENT METHOD -->
-                    <div class="card mb-2">
-                        <h2 class="card-title-lg mb-1-5">Payment Method</h2>
-                        
-                        <label class="payment-option">
-                            <input type="radio" name="payment_method" value="cod" checked class="mr-0-75">
-                            <strong>Cash on Delivery</strong>
-                        </label>
-
-                        <label class="payment-option">
-                            <input type="radio" name="payment_method" value="upi" class="mr-0-75">
-                            <strong>UPI / QR Code</strong>
-                        </label>
-
-                        <label class="payment-option last">
-                            <input type="radio" name="payment_method" value="card" class="mr-0-75">
-                            <strong>Credit / Debit Card</strong>
-                        </label>
-                    </div>
-
-                    <button type="submit" class="action-button">Place Order</button>
-                </form>
-            </div>
-
-            <!-- ORDER SUMMARY -->
-            <div class="sticky-summary">
-                <div class="card">
-                    <h2 class="card-title-lg mb-1-5">Order Summary</h2>
-
-                    <div class="scroll-summary">
-                        <?php foreach ($cartItems as $item): ?>
-                        <div class="product-summary-item">
-                            <div class="product-summary-image">
-                                <?php if (strpos($item['product']['image'], 'assets/images') === 0): ?>
-                                    <img src="<?php echo BASE_URL . '/public/' . $item['product']['image']; ?>" alt="<?php echo htmlspecialchars($item['product']['name']); ?>">
-                                <?php else: ?>
-                                    <?php echo $item['product']['image']; ?>
-                                <?php endif; ?>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-600 fs-0-9375"><?php echo htmlspecialchars($item['product']['name']); ?></p>
-                                <p class="color-text-secondary fs-0-8125">Qty: <?php echo $item['quantity']; ?></p>
-                                
-                                <p class="font-600 color-primary fs-0-875 mt-0-25">
-                                    ₹<?php echo number_format($item['unit_price_discounted']); ?> 
-                                    <?php if ($item['discount_percent'] > 0): ?>
-                                        <span class="text-muted-sm td-lt fs-0-75">
-                                            ₹<?php echo number_format($item['unit_price_original']); ?>
-                                        </span>
                                     <?php endif; ?>
-                                </p>
-                                
-                                <p class="font-600 color-primary mt-0-25">₹<?php echo number_format($item['subtotal']); ?></p>
+                                </div>
+                                <span class="db text-secondary fs-0-85 mb-0-5">
+                                    <?php echo $shippingModel->getMethodDescription($method, $subtotalAfterCoupon); ?>
+                                </span>
                             </div>
                         </div>
-                        <?php endforeach; ?>
-                    </div>
+                    </label>
+                    <?php endforeach; ?>
 
-                    <div class="summary-divider">
-                        <div class="summary-row">
-                            <span class="summary-label">Subtotal:</span>
-                            <span class="summary-value" id="summary-subtotal">₹<?php echo number_format($subtotal); ?></span>
-                        </div>
-                        
-                        <?php if ($appliedCoupon && $couponDiscount > 0): ?>
-                        <div class="summary-row">
-                            <span class="font-600 color-accent">Coupon (<?php echo $appliedCoupon['code']; ?>):</span>
-                            <span class="font-600 color-accent">-₹<?php echo number_format($couponDiscount); ?></span>
-                        </div>
-                        <?php endif; ?>
-                        
-                        <div class="summary-row">
-                            <span class="summary-label">Shipping:</span>
-                            <span class="summary-value" id="summary-shipping">₹<?php echo number_format($shipping); ?></span>
-                        </div>
-                        <div class="summary-row">
-                            <span class="summary-label">Tax (18% GST):</span>
-                            <span class="summary-value" id="summary-tax">₹<?php echo number_format($tax); ?></span>
-                        </div>
+                    <div class="info-note">
+                        <p class="fs-0-85 m-0 color-primary">
+                            <strong>⚡ Pro Tip:</strong> Express shipping usually arrives within 48 hours for metro cities.
+                        </p>
                     </div>
+                </div>
 
-                    <div class="total-row">
-                        <span>Total:</span>
-                        <span class="color-primary" id="summary-total">₹<?php echo number_format($total); ?></span>
+                <!-- PAYMENT METHOD -->
+                <div class="checkout-section">
+                    <h2 class="checkout-section-title">💳 Payment Selection</h2>
+                    
+                    <label class="payment-option">
+                        <input type="radio" name="payment_method" value="cod" checked>
+                        <span><strong>Cash on Delivery</strong> (Pay when you receive)</span>
+                    </label>
+
+                    <label class="payment-option">
+                        <input type="radio" name="payment_method" value="upi">
+                        <span><strong>UPI / Digital Wallets</strong> (Instant & Safe)</span>
+                    </label>
+
+                    <label class="payment-option last">
+                        <input type="radio" name="payment_method" value="card">
+                        <span><strong>Credit / Debit Card</strong> (Powered by Razorpay)</span>
+                    </label>
+                </div>
+
+                <div class="mb-5">
+                    <button type="submit" class="checkout-btn">Confirm & Place Order</button>
+                    <p class="text-center text-secondary fs-0-8 mt-1">By clicking "Place Order", you agree to EasyCart's Terms of Service.</p>
+                </div>
+            </form>
+        </div>
+
+        <!-- ORDER SUMMARY -->
+        <div class="sticky-sidebar">
+            <div class="summary-card">
+                <h2 class="summary-title">Order Recap</h2>
+
+                <div class="checkout-summary-scroll">
+                    <?php foreach ($cartItems as $item): ?>
+                    <div class="checkout-item">
+                        <div class="checkout-item-image">
+                            <?php if (strpos($item['product']['image'], 'assets/images') === 0): ?>
+                                <img src="<?php echo BASE_URL . '/' . ltrim($item['product']['image'], '/'); ?>" 
+                                     alt="<?php echo htmlspecialchars($item['product']['name']); ?>"
+                                     style="max-width: 40px; max-height: 40px;">
+                            <?php else: ?>
+                                <span style="font-size: 1.5rem;"><?php echo $item['product']['image']; ?></span>
+                            <?php endif; ?>
+                        </div>
+                        <div class="flex-1">
+                            <p class="font-700 fs-0-9 mb-0-25"><?php echo htmlspecialchars($item['product']['name']); ?></p>
+                            <div class="flex-between">
+                                <span class="text-secondary fs-0-8">Qty: <?php echo $item['quantity']; ?></span>
+                                <span class="font-700 color-primary fs-0-85">₹<?php echo number_format($item['subtotal']); ?></span>
+                            </div>
+                        </div>
                     </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <div class="border-b pb-1 mb-1 mt-1">
+                    <div class="summary-row">
+                        <span class="summary-text-secondary">Subtotal Items:</span>
+                        <span class="summary-value">₹<?php echo number_format($subtotal); ?></span>
+                    </div>
+                    
+                    <?php if ($appliedCoupon && $couponDiscount > 0): ?>
+                    <div class="summary-row">
+                        <span class="font-700 text-success">Coupon Savings:</span>
+                        <span class="font-700 text-success">-₹<?php echo number_format($couponDiscount); ?></span>
+                    </div>
+                    <?php endif; ?>
+                    
+                    <div class="summary-row">
+                        <span class="summary-text-secondary">Shipping Fee:</span>
+                        <span class="summary-value" id="summary-shipping">₹<?php echo number_format($shipping); ?></span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="summary-text-secondary">GST (18% Included):</span>
+                        <span class="summary-value" id="summary-tax">₹<?php echo number_format($tax); ?></span>
+                    </div>
+                </div>
+
+                <div class="summary-row fs-1-25 font-800 mb-2">
+                    <span>Payable Amount:</span>
+                    <span class="color-primary" id="summary-total">₹<?php echo number_format($total); ?></span>
+                </div>
+
+                <div class="secure-info">
+                    <p class="fs-0-8 m-0 opacity-70">🔒 Trusted & Encrypted Checkout</p>
+                    <p class="fs-0-75 text-secondary mt-0-25">Your payment info is never stored on our servers.</p>
                 </div>
             </div>
         </div>

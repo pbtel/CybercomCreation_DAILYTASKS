@@ -1,6 +1,6 @@
 <?php
 /**
- * Database Configuration - EasyCart Phase 6
+ * Database Configuration - EasyCart
  * PostgreSQL Database Connection
  */
 
@@ -15,9 +15,10 @@ define('DB_PASS', 'root');
  * Get database connection
  * @return PDO|null
  */
-function getDbConnection() {
+function getDbConnection()
+{
     static $pdo = null;
-    
+
     if ($pdo === null) {
         try {
             $dsn = "pgsql:host=" . DB_HOST . ";port=" . DB_PORT . ";dbname=" . DB_NAME;
@@ -31,7 +32,7 @@ function getDbConnection() {
             return null;
         }
     }
-    
+
     return $pdo;
 }
 
@@ -39,7 +40,8 @@ function getDbConnection() {
  * Test database connection
  * @return bool
  */
-function testDbConnection() {
+function testDbConnection()
+{
     $pdo = getDbConnection();
     return $pdo !== null;
 }

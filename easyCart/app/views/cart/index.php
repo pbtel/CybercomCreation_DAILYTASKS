@@ -1,110 +1,98 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
-<div class="container">
-    <h1 class="section-title-lg">Shopping Cart</h1>
+<div class="container mt-2">
+    <h1 class="cart-title">Your Shopping Cart</h1>
 
     <?php if (empty($cartItems)): ?>
         <!-- EMPTY CART -->
-        <div class="empty-state">
-            <div class="empty-state-icon">🛒</div>
-            <h2 class="fs-1-5 mb-1">Your cart is empty</h2>
-            <p class="text-muted-sm mb-2rem">Start shopping to add items to your cart</p>
+        <div class="empty-cart-container">
+            <div class="empty-cart-icon">🛒</div>
+            <h2 class="empty-cart-text">Your cart is empty</h2>
+            <p class="empty-cart-subtext">Start shopping to add items to your cart</p>
             <a href="<?php echo BASE_URL; ?>/products" class="btn-primary-lg">
                 Continue Shopping
             </a>
         </div>
     <?php else: ?>
-        <div class="cart-layout">
+        <div class="cart-grid cart-layout">
             <!-- CART ITEMS -->
             <div>
                 <?php foreach ($cartItems as $key => $item): ?>
                     <div data-cart-item data-cart-key="<?php echo $key; ?>" class="cart-item-card">
-                        <!-- Product Image -->
                         <div class="cart-item-image">
-                            <?php if (strpos($item['product']['image'], 'assets/images') === 0): ?>
-                                <img src="<?php echo BASE_URL . '/public/' . $item['product']['image']; ?>"
+                            <?php if (isset($item['product']['image']) && (strpos($item['product']['image'], 'assets/images') === 0 || strpos($item['product']['image'], '/') === 0 || strpos($item['product']['image'], 'http') === 0)): ?>
+                                <img src="<?php echo (strpos($item['product']['image'], 'http') === 0) ? $item['product']['image'] : BASE_URL . '/' . ltrim($item['product']['image'], '/'); ?>"
                                     alt="<?php echo htmlspecialchars($item['product']['name']); ?>">
                             <?php else: ?>
-                                <?php echo $item['product']['image']; ?>
+                                <div class="cart-item-emoji"><?php echo $item['product']['image'] ?? '📦'; ?></div>
                             <?php endif; ?>
                         </div>
 
                         <!-- Product Info -->
                         <div>
-                            <h3 class="fs-1-125 font-600 mb-0-5">
+                            <h3 class="cart-item-title">
                                 <a href="<?php echo BASE_URL; ?>/product/<?php echo $item['product']['id']; ?>"
-                                    class="color-inherit td-n">
+                                    class="cart-item-link">
                                     <?php echo htmlspecialchars($item['product']['name']); ?>
                                 </a>
                             </h3>
-                            <p class="text-muted-sm mb-0-5">
+                            <p class="cart-item-meta">
                                 <?php echo ucfirst($item['product']['category']); ?> / <?php echo $item['product']['brand']; ?>
                             </p>
                             <?php if (!empty($item['variant'])): ?>
-                                <p class="color-text-secondary fs-0-875">
+                                <p class="color-text-secondary fs-0-875 mb-0-5">
                                     <?php foreach ($item['variant'] as $type => $value): ?>
-                                        <?php echo ucfirst($type); ?>: <?php echo $value; ?>&nbsp;
+                                        <span class="chip"><?php echo ucfirst($type); ?>: <?php echo $value; ?></span>
                                     <?php endforeach; ?>
                                 </p>
                             <?php endif; ?>
 
-                            <!-- Price Display with Discount -->
+                            <!-- Price Display -->
                             <div class="mt-0-75">
                                 <?php if ($item['discount_percent'] > 0): ?>
-                                    <!-- Discounted Price (Large, Bold) -->
-                                    <p class="price-large mb-0-25">
-                                        ₹<?php echo number_format($item['unit_price_discounted']); ?>
-                                    </p>
-                                    <!-- Original Price (Strikethrough) -->
-                                    <p class="price-old mb-0-25">
-                                        ₹<?php echo number_format($item['unit_price_original']); ?>
-                                    </p>
-                                    <!-- Savings -->
-                                    <p class="price-savings">
-                                        Save ₹<?php echo number_format($item['first_unit_savings']); ?>
-                                        (<?php echo $item['discount_percent']; ?>% off)
-                                    </p>
+                                    <p class="cart-price-large">₹<?php echo number_format($item['unit_price_discounted']); ?></p>
+                                    <p class="cart-price-old">₹<?php echo number_format($item['unit_price_original']); ?></p>
+                                    <p class="cart-savings">Save ₹<?php echo number_format($item['first_unit_savings']); ?>
+                                        (<?php echo $item['discount_percent']; ?>%)</p>
                                 <?php else: ?>
-                                    <!-- No Discount - Regular Price -->
-                                    <p class="price-large">
-                                        ₹<?php echo number_format($item['product']['price']); ?>
-                                    </p>
+                                    <p class="cart-price-large">₹<?php echo number_format($item['product']['price']); ?></p>
                                 <?php endif; ?>
                             </div>
                         </div>
 
                         <!-- Quantity & Remove -->
                         <div class="text-right">
-                            <div class="dib mb-0-5">
-                                <div class="quantity-wrapper">
-                                    <input type="number" class="cart-quantity-input input-text w-70 ta-center font-600"
-                                        data-cart-key="<?php echo $key; ?>" value="<?php echo $item['quantity']; ?>" min="1"
+                            <div class="dib mb-1">
+                                <div class="coupon-input-group" style="width: 150px;">
+                                    <input type="number" class="cart-qty-input" data-cart-key="<?php echo $key; ?>"
+                                        value="<?php echo $item['quantity']; ?>" min="1"
                                         max="<?php echo $item['product']['stock']; ?>">
                                     <button
                                         onclick="updateCartQuantityAjax('<?php echo $key; ?>', this.previousElementSibling.value, this.closest('[data-cart-item]'))"
-                                        class="btn-update">
+                                        class="btn-update-qty">
                                         Update
                                     </button>
                                 </div>
                             </div>
+                            <br>
                             <button onclick="removeCartItemAjax('<?php echo $key; ?>', this.closest('[data-cart-item]'))"
-                                class="btn-danger dib">
-                                Remove
+                                class="btn-remove-item">
+                                Remove Item
                             </button>
-                            <p class="item-subtotal text-muted-sm mt-0-5">
+                            <p class="item-subtotal">
                                 Subtotal: ₹<?php echo number_format($item['subtotal']); ?>
                             </p>
                         </div>
                     </div>
                 <?php endforeach; ?>
 
-                <div class="mt-1">
-                    <a href="<?php echo BASE_URL; ?>/products" class="btn-outline-primary mr-0-75">
-                        Continue Shopping
+                <div class="cart-actions">
+                    <a href="<?php echo BASE_URL; ?>/products" class="btn-continue-shopping">
+                        ← Continue Shopping
                     </a>
                     <form action="<?php echo BASE_URL; ?>/cart/clear" method="POST" class="dib">
                         <button type="submit" onclick="return confirm('Are you sure you want to clear your cart?');"
-                            class="btn-outline-danger">
+                            class="btn-clear-cart">
                             Clear Cart
                         </button>
                     </form>
@@ -112,97 +100,87 @@
             </div>
 
             <!-- ORDER SUMMARY -->
-            <div class="sticky-summary">
-                <div class="card">
-                    <h2 class="fs-1-5 font-700 mb-1-5">Order Summary</h2>
+            <div class="sticky-sidebar">
+                <div class="summary-card">
+                    <h2 class="summary-title">Order Summary</h2>
 
                     <div class="border-b pb-1 mb-1">
                         <div class="summary-row">
-                            <span class="summary-label">Subtotal (<?php echo count($cartItems); ?> unique items):</span>
+                            <span class="summary-text-secondary">Subtotal (<?php echo count($cartItems); ?> unique
+                                items):</span>
                             <span class="summary-value"
                                 id="summary-subtotal">₹<?php echo number_format($subtotal); ?></span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Shipping:</span>
-                            <span class="summary-value-italic">
-                                <?php echo $shippingNote; ?>
-                            </span>
+                            <span class="summary-text-secondary">Estimated Shipping:</span>
+                            <span class="summary-value-italic"><?php echo $shippingNote; ?></span>
                         </div>
                         <div class="summary-row">
-                            <span class="summary-label">Tax (18% GST):</span>
-                            <span class="summary-value-italic">
-                                <?php echo $taxNote; ?>
-                            </span>
+                            <span class="summary-text-secondary">Estimated Tax (GST):</span>
+                            <span class="summary-value-italic"><?php echo $taxNote; ?></span>
                         </div>
                     </div>
 
-                    <!-- COUPON CODE SECTION -->
+                    <!-- COUPON SECTION -->
                     <div class="coupon-section">
-                        <label class="coupon-label">Have a coupon code?</label>
+                        <label class="coupon-label">Promo Code</label>
 
                         <?php if (!$appliedCoupon): ?>
-                            <!-- Coupon Input Form -->
-                            <div class="quantity-wrapper mb-0-5">
-                                <input type="text" id="couponCode" placeholder="Enter code (e.g., SAVE10)"
-                                    class="input-text fs-0-875">
-                                <button onclick="applyCouponCode()" class="btn-update fs-0-875">
-                                    Apply
-                                </button>
+                            <div class="coupon-input-group">
+                                <input type="text" id="couponCode" placeholder="Enter Code" class="coupon-input">
+                                <button onclick="applyCouponCode()" class="btn-apply-coupon">Apply</button>
                             </div>
-                            <div id="couponMessage" class="fs-0-8125 mt-0-5"></div>
-                        <?php else: ?>
-                            <!-- Applied Coupon Display -->
-                            <div class="applied-coupon">
-                                <div>
-                                    <span class="font-600 text-success fs-0-9375">
-                                        ✓ <?php echo $appliedCoupon['code']; ?> Applied
-                                    </span>
-                                    <span class="text-muted-sm ml-0-5">
-                                        (<?php echo $appliedCoupon['discount_percent']; ?>% off)
-                                    </span>
+
+                            <?php if (!empty($availableCoupons)): ?>
+                                <div class="available-coupons-list mt-1">
+                                    <p class="text-secondary fs-0-75 font-700 uppercase mb-0-5">Available Offers:</p>
+                                    <div class="flex-wrap gap-0-5">
+                                        <?php foreach ($availableCoupons as $code => $percent): ?>
+                                            <div class="coupon-tag" title="Apply <?php echo $code; ?>"
+                                                onclick="document.getElementById('couponCode').value = '<?php echo $code; ?>'">
+                                                <span class="font-800"><?php echo $code; ?></span>
+                                                <span class="fs-0-7 opacity-0-8">(<?php echo $percent; ?>% OFF)</span>
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
                                 </div>
-                                <button onclick="removeCouponCode()" class="btn-danger p-0-5-1 border-radius-6 fs-0-8125">
-                                    Remove
-                                </button>
+                            <?php endif; ?>
+
+                            <div id="couponMessage" class="fs-0-8 mt-0-5"></div>
+                        <?php else: ?>
+                            <div class="applied-coupon-box">
+                                <div>
+                                    <div class="font-700 text-success fs-0-9">✓ <?php echo $appliedCoupon['code']; ?></div>
+                                    <div class="text-secondary fs-0-8"><?php echo $appliedCoupon['discount_percent']; ?>%
+                                        discount applied</div>
+                                </div>
+                                <button onclick="removeCouponCode()" class="btn-remove-coupon">Remove</button>
                             </div>
                         <?php endif; ?>
                     </div>
 
-                    <!-- Show Coupon Discount if Applied -->
                     <?php if ($appliedCoupon && $couponDiscount > 0): ?>
-                        <div class="border-b pb-1 mb-1">
-                            <div class="summary-row">
-                                <span class="text-success font-600">Coupon Discount
-                                    (<?php echo $appliedCoupon['code']; ?>):</span>
-                                <span class="font-600 text-success"
-                                    data-coupon-discount>-₹<?php echo number_format($couponDiscount); ?></span>
-                            </div>
+                        <div class="summary-row mb-1">
+                            <span class="text-success font-700">Coupon Savings:</span>
+                            <span class="text-success font-700">-₹<?php echo number_format($couponDiscount); ?></span>
                         </div>
                     <?php endif; ?>
 
-                    <div class="info-note">
-                        <p class="fs-0-875 color-primary font-600">
-                            ℹ️ Shipping cost and final tax will be calculated based on your selected shipping method at
-                            checkout
-                        </p>
+                    <div class="summary-row fs-1-25 font-800 mb-2">
+                        <span>Grand Total:</span>
+                        <span class="color-primary">₹<?php echo number_format($subtotalAfterCoupon); ?>*</span>
                     </div>
 
-                    <div class="summary-row fs-1-25 font-700 mb-2">
-                        <span>Estimated Total:</span>
-                        <span class="color-primary"
-                            data-estimated-total>₹<?php echo number_format($subtotalAfterCoupon); ?>+</span>
-                    </div>
+                    <p class="fs-0-8 text-secondary mb-1-5">
+                        * Shipping and final taxes will be calculated at the final step of checkout.
+                    </p>
 
-                    <a href="<?php echo BASE_URL; ?>/checkout" class="btn-primary-lg db w-100">
-                        Proceed to Checkout
+                    <a href="<?php echo BASE_URL; ?>/checkout" class="checkout-btn">
+                        Checkout Now
                     </a>
 
-                    <div class="security-note">
-                        <p class="text-muted-sm">
-                            🔒 Secure Checkout<br>
-                            💳 Multiple Payment Options<br>
-                            📦 Fast Delivery
-                        </p>
+                    <div class="secure-info">
+                        <p class="fs-0-85 mb-0">🔒 256-bit SSL Secure Checkout</p>
                     </div>
                 </div>
             </div>

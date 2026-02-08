@@ -4,7 +4,8 @@
  * Coupon Model
  * Handles coupon validation and discount calculations
  */
-class CouponModel {
+class CouponModel
+{
     private $validCoupons = [
         'SAVE5' => 5,
         'SAVE10' => 10,
@@ -13,27 +14,37 @@ class CouponModel {
     ];
 
     /**
+     * Get all currently valid coupons
+     */
+    public function getAllCoupons()
+    {
+        return $this->validCoupons;
+    }
+
+    /**
      * Validate coupon code
      */
-    public function validate($code) {
+    public function validate($code)
+    {
         $code = strtoupper(trim($code));
-        
+
         if (isset($this->validCoupons[$code])) {
             return [
                 'code' => $code,
                 'discount_percent' => $this->validCoupons[$code]
             ];
         }
-        
+
         return false;
     }
 
     /**
      * Apply coupon to session
      */
-    public function apply($code) {
+    public function apply($code)
+    {
         $couponData = $this->validate($code);
-        
+
         if ($couponData) {
             Session::set('applied_coupon', $couponData);
             return [
@@ -42,7 +53,7 @@ class CouponModel {
                 'coupon' => $couponData
             ];
         }
-        
+
         return [
             'success' => false,
             'message' => 'Invalid coupon code. Please try again.'
@@ -52,7 +63,8 @@ class CouponModel {
     /**
      * Remove coupon from session
      */
-    public function remove() {
+    public function remove()
+    {
         if (Session::has('applied_coupon')) {
             Session::remove('applied_coupon');
             return true;
@@ -63,27 +75,30 @@ class CouponModel {
     /**
      * Get currently applied coupon
      */
-    public function getApplied() {
+    public function getApplied()
+    {
         return Session::get('applied_coupon', null);
     }
 
     /**
      * Calculate coupon discount amount
      */
-    public function calculateDiscount($subtotal) {
+    public function calculateDiscount($subtotal)
+    {
         $coupon = $this->getApplied();
-        
+
         if ($coupon && isset($coupon['discount_percent'])) {
             return ($subtotal * $coupon['discount_percent'] / 100);
         }
-        
+
         return 0;
     }
 
     /**
      * Get subtotal after coupon discount
      */
-    public function getSubtotalAfterDiscount($subtotal) {
+    public function getSubtotalAfterDiscount($subtotal)
+    {
         $discount = $this->calculateDiscount($subtotal);
         return $subtotal - $discount;
     }

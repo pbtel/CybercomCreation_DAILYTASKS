@@ -8,15 +8,9 @@
 // ============================================
 
 
-function addToCartAjax(productId, quantity = 1, variant = {}, buttonElement = null) {
-    // Show loading state
-    const addButton = buttonElement || (typeof event !== 'undefined' && event ? event.target : null);
-
-    // Safety check - if event.target is a form, try to find the submit button
-    let validButton = addButton;
-    if (addButton && addButton.tagName === 'FORM') {
-        validButton = addButton.querySelector('button[type="submit"]');
-    }
+function addToCartAjax(formElement, buttonElement = null) {
+    const formData = new FormData(formElement);
+    const validButton = buttonElement || formElement.querySelector('button[type="submit"]');
 
     if (validButton) {
         validButton.disabled = true;
@@ -24,59 +18,37 @@ function addToCartAjax(productId, quantity = 1, variant = {}, buttonElement = nu
         validButton.textContent = 'Adding...';
     }
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append('product_id', productId);
-    formData.append('quantity', quantity);
-
-    // Add variant data if provided
-    if (variant.color) formData.append('variant_color', variant.color);
-    if (variant.storage) formData.append('variant_storage', variant.storage);
-    if (variant.size) formData.append('variant_size', variant.size);
-
-    // Send AJAX request
-    fetch(BASE_URL + '/api/cart-add-ajax.php', {
+    fetch(BASE_URL + '/api/cart-add', {
         method: 'POST',
         body: formData
     })
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.text();
+        })
         .then(text => {
             try {
                 return JSON.parse(text);
             } catch (e) {
-                console.error('Server invalid JSON response:', text);
-                throw new Error('Server returned invalid JSON');
+                console.error('Server returned invalid JSON:', text);
+                throw new Error('Invalid server response (not JSON)');
             }
         })
         .then(data => {
             if (data.success) {
-                // Update cart badge
-                try { updateCartBadge(data.cart_count); } catch (e) { console.error(e); }
-
-                // Show success toast
+                updateCartBadge(data.cart_count);
                 showCartToast(data.message, 'success');
-
-                // Reset button
-                if (validButton) {
-                    validButton.textContent = validButton.dataset.originalText;
-                    validButton.disabled = false;
-                }
             } else {
-                // Show error toast
-                showCartToast(data.message, 'error');
-
-                // Reset button
-                if (validButton) {
-                    validButton.textContent = validButton.dataset.originalText;
-                    validButton.disabled = false;
-                }
+                showCartToast(data.message || 'Failed to add product', 'error');
+            }
+            if (validButton) {
+                validButton.textContent = validButton.dataset.originalText;
+                validButton.disabled = false;
             }
         })
         .catch(error => {
             console.error('Error adding to cart:', error);
-            showCartToast('Failed to add item to cart. Please try again.', 'error');
-
-            // Reset button
+            showCartToast('Error: ' + error.message, 'error');
             if (validButton) {
                 validButton.textContent = validButton.dataset.originalText;
                 validButton.disabled = false;
@@ -102,11 +74,14 @@ function updateCartQuantityAjax(cartKey, quantity, itemElement) {
     formData.append('quantity', quantity);
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/cart-update-ajax.php', {
+    fetch(BASE_URL + '/api/cart-update', {
         method: 'POST',
         body: formData
     })
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.text();
+        })
         .then(text => {
             try {
                 return JSON.parse(text);
@@ -124,37 +99,29 @@ function updateCartQuantityAjax(cartKey, quantity, itemElement) {
                 if (itemElement) {
                     const subtotalElement = itemElement.querySelector('.item-subtotal');
                     if (subtotalElement) {
-                        subtotalElement.textContent = '₹' + data.item_subtotal.toLocaleString('en-IN');
+                        subtotalElement.textContent = '₹' + (data.item_subtotal || 0).toLocaleString('en-IN');
                     }
                 }
 
                 // Update cart summary
-                updateCartSummaryDisplay(data.cart_subtotal);
+                updateCartSummaryDisplay(data.cart_subtotal || data.subtotal);
 
                 // Show success toast
                 showCartToast(data.message, 'success');
-
-                // Reset loading state
-                if (itemElement) {
-                    itemElement.style.opacity = '1';
-                    itemElement.style.pointerEvents = 'auto';
-                }
             } else {
-                // Show error toast
-                showCartToast(data.message, 'error');
+                showCartToast(data.message || 'Failed to update cart', 'error');
+            }
 
-                // Reset loading state
-                if (itemElement) {
-                    itemElement.style.opacity = '1';
-                    itemElement.style.pointerEvents = 'auto';
-                }
+            // Reset loading state
+            if (itemElement) {
+                itemElement.style.opacity = '1';
+                itemElement.style.pointerEvents = 'auto';
             }
         })
         .catch(error => {
             console.error('Error updating cart:', error);
-            showCartToast('Failed to update cart. Please try again.', 'error');
+            showCartToast('Error: ' + error.message, 'error');
 
-            // Reset loading state
             if (itemElement) {
                 itemElement.style.opacity = '1';
                 itemElement.style.pointerEvents = 'auto';
@@ -183,11 +150,14 @@ function removeCartItemAjax(cartKey, itemElement) {
 
     // Send AJAX request after animation
     setTimeout(() => {
-        fetch(BASE_URL + '/api/cart-remove-ajax.php', {
+        fetch(BASE_URL + '/api/cart-remove', {
             method: 'POST',
             body: formData
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
             .then(data => {
                 if (data.success) {
                     // Remove item from DOM
@@ -199,33 +169,24 @@ function removeCartItemAjax(cartKey, itemElement) {
                     updateCartBadge(data.cart_count);
 
                     // Update cart summary
-                    updateCartSummaryDisplay(data.cart_subtotal);
+                    updateCartSummaryDisplay(data.cart_subtotal || data.subtotal);
 
                     // Show success toast
                     showCartToast(data.message, 'success');
 
                     // If cart is empty, show empty cart message
-                    if (data.is_empty) {
+                    if (data.is_empty || data.cart_count === 0) {
                         showEmptyCartMessage();
                     }
                 } else {
-                    // Show error toast
-                    showCartToast(data.message, 'error');
-
-                    // Reset item appearance
-                    if (itemElement) {
-                        itemElement.classList.remove('fade-out');
-                    }
+                    showCartToast(data.message || 'Failed to remove item', 'error');
+                    if (itemElement) itemElement.classList.remove('fade-out');
                 }
             })
             .catch(error => {
                 console.error('Error removing item:', error);
-                showCartToast('Failed to remove item. Please try again.', 'error');
-
-                // Reset item appearance
-                if (itemElement) {
-                    itemElement.classList.remove('fade-out');
-                }
+                showCartToast('Error: ' + error.message, 'error');
+                if (itemElement) itemElement.classList.remove('fade-out');
             });
     }, 300);
 }
@@ -235,7 +196,7 @@ function removeCartItemAjax(cartKey, itemElement) {
 // ============================================
 
 function fetchCartSummary() {
-    return fetch(BASE_URL + '/api/cart-summary-ajax.php', {
+    return fetch(BASE_URL + '/api/cart-summary', {
         method: 'GET'
     })
         .then(response => response.json())
@@ -271,7 +232,7 @@ function updateShippingCalculation(shippingMethod) {
     formData.append('shipping_method', shippingMethod);
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/shipping-calculate-ajax.php', {
+    fetch(BASE_URL + '/api/shipping-calculate', {
         method: 'POST',
         body: formData
     })
@@ -360,7 +321,7 @@ function updateCartSummaryDisplay(subtotal) {
     }
 
     // Fetch updated cart summary to get coupon discount
-    fetch(BASE_URL + '/api/cart-summary-ajax.php', {
+    fetch(BASE_URL + '/api/cart-summary', {
         method: 'GET'
     })
         .then(response => response.json())
@@ -451,19 +412,29 @@ function showCartToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = 'toast toast-' + type;
 
-    // determine icon
+    // determine icon and colors
     let icon = '•';
+    let color = '#3b82f6';
     switch (type) {
-        case 'success': icon = '✓'; break;
-        case 'error': icon = '✗'; break;
-        case 'info': icon = 'ℹ'; break;
+        case 'success':
+            icon = '✓';
+            color = '#10b981';
+            break;
+        case 'error':
+            icon = '✗';
+            color = '#ef4444';
+            break;
+        case 'info':
+            icon = 'ℹ';
+            color = '#3b82f6';
+            break;
     }
 
     // Create content
     toast.innerHTML = `
-        <span style="font-size: 1.5rem; font-weight: bold; color: ${borderColor};">${icon}</span>
+        <span style="font-size: 1.5rem; font-weight: bold; color: ${color};">${icon}</span>
         <span style="flex: 1; color: #333; font-weight: 500;">${message}</span>
-        <span style="font-size: 1.5rem; color: #666; cursor: pointer; line-height: 1; padding: 0 4px;">×</span>
+        <span class="toast-close" style="font-size: 1.5rem; color: #666; cursor: pointer; line-height: 1; padding: 0 4px;">&times;</span>
     `;
 
     // Add to container
@@ -493,26 +464,12 @@ function showCartToast(message, type = 'info') {
 // ============================================
 
 function initAjaxCartHandlers() {
-    // Initialize Add to Cart buttons on product pages
-    const addToCartForms = document.querySelectorAll('form#addToCartForm, form[action="cart-add.php"]');
+    // Initialize Add to Cart forms
+    const addToCartForms = document.querySelectorAll('form#addToCartForm');
     addToCartForms.forEach(form => {
         form.addEventListener('submit', function (e) {
             e.preventDefault();
-
-            const productId = form.querySelector('input[name="product_id"]').value;
-            const quantity = form.querySelector('input[name="quantity"]')?.value || 1;
-
-            // Get variant data
-            const variant = {};
-            const variantColor = form.querySelector('input[name="variant_color"]');
-            const variantStorage = form.querySelector('input[name="variant_storage"]');
-            const variantSize = form.querySelector('input[name="variant_size"]');
-
-            if (variantSize) variant.size = variantSize.value;
-
-            // Find the submit button to pass it for loading state
-            const submitBtn = form.querySelector('button[type="submit"]');
-            addToCartAjax(productId, quantity, variant, submitBtn);
+            addToCartAjax(this);
         });
     });
 
@@ -581,7 +538,7 @@ function applyCouponCode() {
     formData.append('coupon_code', couponCode);
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/coupon-apply-ajax.php', {
+    fetch(BASE_URL + '/api/coupon-apply', {
         method: 'POST',
         body: formData
     })
@@ -618,7 +575,7 @@ function removeCouponCode() {
     }
 
     // Send AJAX request
-    fetch(BASE_URL + '/api/coupon-remove-ajax.php', {
+    fetch(BASE_URL + '/api/coupon-remove', {
         method: 'POST'
     })
         .then(response => response.json())

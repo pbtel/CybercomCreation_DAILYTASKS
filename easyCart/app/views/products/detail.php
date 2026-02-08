@@ -6,21 +6,7 @@
         <a href="<?php echo BASE_URL; ?>">Home</a> /
         <a href="<?php echo BASE_URL; ?>/products">Products</a> /
         <a href="<?php echo BASE_URL; ?>/products?category=<?php echo $product['category']; ?>">
-            <?php
-            // Find category name from the ID (optimally this should be passed from controller or lookup)
-            // For now we will use the ID or look it up if available in a global way, but typically 
-            // the controller should pass the category name or object.
-            // In ProductController.php, we see it passes 'product', 'relatedProducts'.
-            // We might want to update the controller to pass 'category' name if possible.
-            // But for now, let's display the category ID formatted or capitalised if it's a slug.
-            // Looking at ProductModel, 'category' is a category_id.
-            // Wait, in root product-detail.php: $category = getCategoryById($product['category']);
-            // The controller didn't pass $category explicitly, but maybe we can just use the ID/Slug for now 
-            // or assume $product['category_name'] if the model joined it?
-            // ProductModel fetch does: pa.category_id as category. No join for name.
-            // Let's just output the category ID for now or update Controller.
-            echo ucfirst($product['category']);
-            ?>
+            <?php echo ucfirst($product['category']); ?>
         </a> /
         <span><?php echo htmlspecialchars($product['name']); ?></span>
     </div>
@@ -30,7 +16,7 @@
         <div class="image-showcase">
             <div class="showcase-main">
                 <?php if (isset($product['image']) && (strpos($product['image'], 'assets/images') === 0 || strpos($product['image'], '/') === 0 || strpos($product['image'], 'http') === 0)): ?>
-                    <img src="<?php echo (strpos($product['image'], 'http') === 0) ? $product['image'] : BASE_URL . '/public/' . ltrim($product['image'], '/'); ?>"
+                    <img src="<?php echo (strpos($product['image'], 'http') === 0) ? $product['image'] : BASE_URL . '/' . ltrim($product['image'], '/'); ?>"
                         alt="<?php echo htmlspecialchars($product['name']); ?>">
                 <?php else: ?>
                     <div class="detail-emoji"><?php echo $product['image'] ?? '📦'; ?></div>
@@ -43,26 +29,33 @@
                             <?php
                             $imgUrl = $img['image'] ?? $img['image_url'] ?? '';
                             ?>
-                            <img src="<?php echo (strpos($imgUrl, 'http') === 0) ? $imgUrl : BASE_URL . '/public/' . ltrim($imgUrl, '/'); ?>"
+                            <img src="<?php echo (strpos($imgUrl, 'http') === 0) ? $imgUrl : BASE_URL . '/' . ltrim($imgUrl, '/'); ?>"
                                 alt="Thumb <?php echo $index + 1; ?>">
                         </div>
                     <?php endforeach; ?>
 
                     <!-- Ensure we have 4 slots if less than 4 images -->
                     <?php for ($i = count($product['images']); $i < 4; $i++): ?>
-                        <div class="showcase-thumb">📷</div>
+                        <div class="showcase-thumb">
+                            <?php if (isset($product['image']) && (strpos($product['image'], 'assets/images') === 0 || strpos($product['image'], '/') === 0 || strpos($product['image'], 'http') === 0)): ?>
+                                <img src="<?php echo (strpos($product['image'], 'http') === 0) ? $product['image'] : BASE_URL . '/' . ltrim($product['image'], '/'); ?>"
+                                    alt="Filler Thumb">
+                            <?php else: ?>
+                                <div class="detail-emoji-thumb"><?php echo $product['image'] ?? '📦'; ?></div>
+                            <?php endif; ?>
+                        </div>
                     <?php endfor; ?>
                 <?php else: ?>
-                    <div class="showcase-thumb active">
-                        <?php if (strpos($product['image'], 'assets/images') === 0): ?>
-                            <img src="<?php echo BASE_URL; ?>/public/<?php echo $product['image']; ?>" alt="Thumb">
-                        <?php else: ?>
-                            <?php echo $product['image']; ?>
-                        <?php endif; ?>
-                    </div>
-                    <div class="showcase-thumb">📷</div>
-                    <div class="showcase-thumb">🔍</div>
-                    <div class="showcase-thumb">📐</div>
+                    <?php for ($i = 0; $i < 4; $i++): ?>
+                        <div class="showcase-thumb <?php echo $i === 0 ? 'active' : ''; ?>">
+                            <?php if (isset($product['image']) && strpos($product['image'], 'assets/images') === 0): ?>
+                                <img src="<?php echo BASE_URL . '/' . ltrim($product['image'], '/'); ?>"
+                                    alt="Thumb <?php echo $i + 1; ?>">
+                            <?php else: ?>
+                                <div class="detail-emoji-thumb"><?php echo $product['image'] ?? '📦'; ?></div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endfor; ?>
                 <?php endif; ?>
             </div>
         </div>
@@ -185,6 +178,44 @@
                         <div class="spec-val"><?php echo htmlspecialchars($value); ?></div>
                     </div>
                 <?php endforeach; ?>
+            <?php else: ?>
+                <!-- Default Static Specs -->
+                <div class="spec-entry">
+                    <div class="spec-key">Model Year</div>
+                    <div class="spec-val">2024 Edition</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">Warranty</div>
+                    <div class="spec-val">1 Year Brand Warranty</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">Shipping Weight</div>
+                    <div class="spec-val">1.2 kg</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">Material</div>
+                    <div class="spec-val">Premium Polymer & Alloy</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">Country of Origin</div>
+                    <div class="spec-val">Imported</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">Battery Life</div>
+                    <div class="spec-val">Up to 12 Hours</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">Connectivity</div>
+                    <div class="spec-val">Bluetooth 5.3, Wi-Fi 6E</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">Dimensions</div>
+                    <div class="spec-val">32.5 x 22.7 x 1.8 cm</div>
+                </div>
+                <div class="spec-entry">
+                    <div class="spec-key">In the Box</div>
+                    <div class="spec-val">Device, Charger, Manual</div>
+                </div>
             <?php endif; ?>
         </div>
     </div>
@@ -192,13 +223,41 @@
     <!-- CUSTOMER REVIEWS (Static) -->
     <div class="reviews-wrapper">
         <h2 class="reviews-title">Customer Reviews</h2>
-        <div class="review-box">
-            <div class="review-top">
-                <div class="review-author">John Smith</div>
-                <div class="review-rating">★★★★★</div>
+        <div class="reviews-grid">
+            <div class="review-box">
+                <div class="review-top">
+                    <div class="review-author">John Smith</div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <p class="review-text">This product exceeded my expectations. Great quality and fast delivery. Highly
+                    recommended!</p>
             </div>
-            <p class="review-text">This product exceeded my expectations. Great quality and fast delivery. Highly
-                recommended!</p>
+            <div class="review-box">
+                <div class="review-top">
+                    <div class="review-author">Sarah Wilson</div>
+                    <div class="review-rating">★★★★☆</div>
+                </div>
+                <p class="review-text">Excellent value for money. The design is sleek and modern. Shipping was a bit
+                    slow
+                    but definitely worth the wait.</p>
+            </div>
+            <div class="review-box">
+                <div class="review-top">
+                    <div class="review-author">Michael Brown</div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <p class="review-text">Absolutely fantastic! I've been using this for a week now and it works perfectly.
+                    Best in its class!</p>
+            </div>
+            <div class="review-box">
+                <div class="review-top">
+                    <div class="review-author">Emily Davis</div>
+                    <div class="review-rating">★★★★★</div>
+                </div>
+                <p class="review-text">Perfect gift for my brother. He loves it! The packaging was secure and premium.
+                    Five
+                    stars!</p>
+            </div>
         </div>
         <!-- Additional static reviews can remain... -->
     </div>
@@ -211,19 +270,46 @@
                 <?php foreach ($relatedProducts as $recProduct): ?>
                     <a href="<?php echo BASE_URL; ?>/product/<?php echo $recProduct['id']; ?>" class="product-item">
                         <div class="product-image-wrapper">
-                            <?php if (strpos($recProduct['image'], 'assets/images') === 0): ?>
-                                <img src="<?php echo BASE_URL; ?>/public/<?php echo $recProduct['image']; ?>"
+                            <?php if (!empty($recProduct['tags'])): ?>
+                                <div class="product-tag"><?php echo ucfirst($recProduct['tags'][0]); ?></div>
+                            <?php endif; ?>
+                            <?php if (isset($recProduct['image']) && (strpos($recProduct['image'], 'assets/images') === 0 || strpos($recProduct['image'], '/') === 0 || strpos($recProduct['image'], 'http') === 0)): ?>
+                                <img src="<?php echo (strpos($recProduct['image'], 'http') === 0) ? $recProduct['image'] : BASE_URL . '/' . ltrim($recProduct['image'], '/'); ?>"
                                     alt="<?php echo htmlspecialchars($recProduct['name']); ?>" class="product-img">
                             <?php else: ?>
-                                <span><?php echo $recProduct['image']; ?></span>
+                                <div class="product-emoji"><?php echo $recProduct['image'] ?? '📦'; ?></div>
                             <?php endif; ?>
                         </div>
                         <div class="product-details">
                             <div class="product-meta"><?php echo ucfirst($recProduct['category']); ?></div>
                             <h3 class="product-title"><?php echo htmlspecialchars($recProduct['name']); ?></h3>
+                            <div class="product-stars">
+                                <?php
+                                $fullStars = floor($recProduct['rating']);
+                                $hasHalfStar = ($recProduct['rating'] - $fullStars) >= 0.5;
+                                for ($i = 0; $i < $fullStars; $i++)
+                                    echo '★';
+                                if ($hasHalfStar)
+                                    echo '★';
+                                for ($i = 0; $i < (5 - ceil($recProduct['rating'])); $i++)
+                                    echo '☆';
+                                ?>
+                                <span><?php echo $recProduct['rating']; ?></span>
+                            </div>
                             <div class="product-pricing">
                                 <span class="product-current-price">₹<?php echo number_format($recProduct['price']); ?></span>
+                                <?php if ($recProduct['original_price'] > $recProduct['price']): ?>
+                                    <span
+                                        class="product-old-price">₹<?php echo number_format($recProduct['original_price']); ?></span>
+                                <?php endif; ?>
                             </div>
+                            <?php if (isset($recProduct['shipping_type'])): ?>
+                                <div
+                                    class="badge <?php echo $recProduct['shipping_type'] === 'Express' ? 'badge-express' : 'badge-freight'; ?> mt-0-5">
+                                    <?php echo $recProduct['shipping_type'] === 'Express' ? '⚡' : '🚚'; ?>
+                                    <?php echo $recProduct['shipping_type']; ?>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </a>
                 <?php endforeach; ?>
@@ -231,5 +317,51 @@
         </div>
     <?php endif; ?>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // THUMBNAIL INTERACTION
+        const thumbs = document.querySelectorAll('.showcase-thumb');
+        const mainImageContainer = document.querySelector('.showcase-main');
+
+        thumbs.forEach(thumb => {
+            thumb.addEventListener('click', function () {
+                // Remove active class from all
+                thumbs.forEach(t => t.classList.remove('active'));
+                // Add to current
+                this.classList.add('active');
+
+                // Swap Content
+                const img = this.querySelector('img');
+                const emoji = this.querySelector('.detail-emoji-thumb');
+
+                // Fade out effect could be added here
+                mainImageContainer.innerHTML = '';
+
+                if (img) {
+                    const newImg = document.createElement('img');
+                    newImg.src = img.src;
+                    newImg.alt = img.alt;
+                    mainImageContainer.appendChild(newImg);
+                } else if (emoji) {
+                    const newDiv = document.createElement('div');
+                    newDiv.className = 'detail-emoji';
+                    newDiv.textContent = emoji.textContent;
+                    mainImageContainer.appendChild(newDiv);
+                }
+            });
+        });
+
+        // VARIANT SELECTION (Visual only for now)
+        const variantButtons = document.querySelectorAll('.variant-choice');
+        variantButtons.forEach(btn => {
+            btn.addEventListener('click', function () {
+                const siblings = this.parentElement.querySelectorAll('.variant-choice');
+                siblings.forEach(s => s.classList.remove('selected'));
+                this.classList.add('selected');
+            });
+        });
+    });
+</script>
 
 <?php require_once __DIR__ . '/../layouts/footer.php'; ?>

@@ -46,8 +46,8 @@
                 </span>
             </div>
 
-            <div class="form-flex flex-start-gap-0-75">
-                <input type="checkbox" name="newsletter">
+            <div class="form-flex flex-start-gap-0-75 mb-2">
+                <input type="checkbox" name="newsletter" class="mt-0-25">
                 <span class="form-checkbox-text">
                     Subscribe to newsletter for exclusive deals
                 </span>

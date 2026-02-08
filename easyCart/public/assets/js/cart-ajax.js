@@ -411,11 +411,11 @@ function showEmptyCartMessage() {
     const cartLayout = document.querySelector('.cart-layout');
     if (cartLayout) {
         cartLayout.innerHTML = `
-            <div class="empty-cart-message">
-                <div class="empty-icon">&#128722;</div>
-                <h2 class="empty-title">Your cart is empty</h2>
-                <p class="empty-text">Start shopping to add items to your cart</p>
-                <a href="${BASE_URL}/products" class="btn-gradient">
+            <div class="empty-cart-container">
+                <div class="empty-cart-icon">🛒</div>
+                <h2 class="empty-cart-text">Your cart is empty</h2>
+                <p class="empty-cart-subtext">Start shopping to add items to your cart</p>
+                <a href="${BASE_URL}/products" class="btn-primary-lg">
                     Continue Shopping
                 </a>
             </div>

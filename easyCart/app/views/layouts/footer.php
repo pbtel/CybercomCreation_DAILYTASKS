@@ -5,8 +5,8 @@
             <!-- Brand Section -->
             <div class="footer-brand">
                 <a href="<?php echo BASE_URL; ?>" class="footer-logo">Easy<span>Cart</span></a>
-                <p class="footer-tagline">Experience the future of shopping with our curated collections and
-                    lightning-fast delivery.</p>
+                <p class="footer-tagline">Premium shopping experience with curated collections and lightning-fast
+                    delivery.</p>
                 <div class="footer-socials">
                     <a href="#" class="social-link" title="Facebook">𝕗</a>
                     <a href="#" class="social-link" title="Twitter">𝕥</a>
@@ -39,10 +39,10 @@
 
             <!-- Newsletter -->
             <div class="footer-newsletter">
-                <h4 class="footer-heading">Join Our Newsletter</h4>
-                <p class="text-muted-sm mb-1">Subscribe to get special offers and once-in-a-lifetime deals.</p>
+                <h4 class="footer-heading">Newsletter</h4>
+                <p class="footer-tagline">Subscribe for exclusive offers and deals.</p>
                 <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Thank you for subscribing!');">
-                    <input type="email" placeholder="Enter your email" required class="newsletter-input">
+                    <input type="email" placeholder="Email address" required class="newsletter-input">
                     <button type="submit" class="newsletter-btn">Join</button>
                 </form>
             </div>
@@ -51,13 +51,13 @@
         <!-- Bottom Bar -->
         <div class="footer-bottom">
             <div class="footer-copyright">
-                &copy; <?php echo date('Y'); ?> <span class="text-primary font-700">EasyCart</span>. Crafted with ❤️ for
-                a better shopping experience.
+                &copy; <?php echo date('Y'); ?> <span class="text-primary font-700">EasyCart</span>. All rights
+                reserved.
             </div>
             <div class="footer-legal">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Cookie Settings</a>
+                <a href="#">Privacy</a>
+                <a href="#">Terms</a>
+                <a href="#">Cookies</a>
             </div>
         </div>
     </div>

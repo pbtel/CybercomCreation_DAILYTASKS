@@ -1,121 +1,141 @@
 <?php require_once __DIR__ . '/../layouts/header.php'; ?>
 
-<div class="container">
-    <h1 class="section-title-lg">My Orders</h1>
+<div class="container orders-container">
+    <div class="flex-between mb-2">
+        <div>
+            <h1 class="orders-title">My Orders</h1>
+            <p class="text-secondary">Track and manage your recent purchases</p>
+        </div>
+        <a href="<?php echo BASE_URL; ?>/products" class="btn-continue-shopping">
+            🛍️ Continue Shopping
+        </a>
+    </div>
 
-    <!-- ORDER STATS -->
-    <div class="stat-container">
-        <div class="stat-card">
-            <div class="stat-value"><?php echo $stats['total']; ?></div>
-            <div class="stat-label">Total Orders</div>
+    <!-- ORDER STATS GRID -->
+    <div class="order-stats-grid">
+        <div class="stat-card-premium">
+            <span class="stat-icon">📦</span>
+            <div class="stat-number"><?php echo $stats['total']; ?></div>
+            <div class="stat-label-modern">Total Orders</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value color-warning"><?php echo $stats['processing']; ?></div>
-            <div class="stat-label">Processing</div>
+        <div class="stat-card-premium">
+            <span class="stat-icon">⏳</span>
+            <div class="stat-number color-primary"><?php echo $stats['processing']; ?></div>
+            <div class="stat-label-modern">In Progress</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value color-info"><?php echo $stats['shipped']; ?></div>
-            <div class="stat-label">Shipped</div>
+        <div class="stat-card-premium">
+            <span class="stat-icon">🚛</span>
+            <div class="stat-number color-accent"><?php echo $stats['shipped']; ?></div>
+            <div class="stat-label-modern">In Transit</div>
         </div>
-        <div class="stat-card">
-            <div class="stat-value color-accent"><?php echo $stats['delivered']; ?></div>
-            <div class="stat-label">Delivered</div>
+        <div class="stat-card-premium">
+            <span class="stat-icon">✅</span>
+            <div class="stat-number text-success"><?php echo $stats['delivered']; ?></div>
+            <div class="stat-label-modern">Delivered</div>
         </div>
     </div>
 
     <!-- ORDERS LIST -->
     <?php if (empty($orders)): ?>
-        <div class="empty-state">
-            <div class="empty-state-icon">📦</div>
-            <h2 class="fs-1-5 mb-1">No orders yet</h2>
-            <p class="text-muted-sm mb-2rem">Start shopping to see your orders here</p>
-            <a href="<?php echo BASE_URL; ?>/products" class="btn-primary-lg">
-                Start Shopping
+        <div class="empty-cart-container">
+            <div class="empty-cart-icon">🔎</div>
+            <h2 class="empty-cart-text">No orders found</h2>
+            <p class="empty-cart-subtext">Looks like you haven't placed any orders yet. Try our latest electronics!</p>
+            <a href="<?php echo BASE_URL; ?>/products" class="checkout-btn"
+                style="max-width: 300px; margin: 0 auto; display: block;">
+                Browse Products
             </a>
         </div>
     <?php else: ?>
-        <?php foreach ($orders as $order): ?>
-            <div class="card mb-1-5">
-                <!-- Order Header -->
-                <div class="order-header">
-                    <div>
-                        <h3 class="mb-0-5">
-                            Order #<?php echo $order['order_number']; ?>
-                        </h3>
-                        <p class="text-muted-sm">
-                            Placed on <?php echo date('d M, Y', strtotime($order['created_at'])); ?>
-                        </p>
-                    </div>
-                    <div class="text-right">
-                        <div class="order-status-badge <?php
-                        $statusClasses = [
-                            'pending' => 'status-pending',
-                            'processing' => 'status-processing',
-                            'shipped' => 'status-shipped',
-                            'delivered' => 'status-delivered'
-                        ];
-                        echo $statusClasses[$order['status']] ?? 'status-pending';
-                        ?>">
-                            <?php echo ucfirst($order['status']); ?>
+        <div class="mb-2rem">
+            <?php require __DIR__ . '/../partials/pagination.php'; ?>
+        </div>
+
+        <?php foreach ($orders as $order):
+            $orderDate = date('M d, Y', strtotime($order['created_at']));
+            $discount = $order['discount_amount'] ?? $order['discount'] ?? 0;
+            ?>
+            <div class="order-card-modern">
+                <!-- Premium Header -->
+                <div class="order-header-modern">
+                    <div class="order-meta-info">
+                        <div class="meta-group">
+                            <label>Order ID</label>
+                            <span>#<?php echo substr($order['order_number'], -8); ?></span>
                         </div>
-                        <p class="product-current-price mt-0-5">
-                            ₹<?php echo number_format($order['final_amount']); ?>
-                        </p>
-                        <?php if ($order['discount'] > 0): ?>
-                            <p class="text-success-sm font-500 fs-0-875">
-                                <?php if (!empty($order['applied_coupon'])): ?>
-                                    <span class="badge badge-success-soft fs-0-75">
-                                        <?php echo htmlspecialchars($order['applied_coupon']); ?>
-                                    </span>
-                                <?php endif; ?>
-                                Discount: -₹<?php echo number_format($order['discount']); ?>
-                            </p>
+                        <div class="meta-group">
+                            <label>Date Placed</label>
+                            <span><?php echo $orderDate; ?></span>
+                        </div>
+                        <div class="meta-group">
+                            <label>Ship To</label>
+                            <span><?php echo Session::get('user')['name'] ?? 'Customer'; ?></span>
+                        </div>
+                    </div>
+
+                    <div class="status-badge-modern badge-<?php echo strtolower($order['status']); ?>">
+                        <?php echo ucfirst($order['status']); ?>
+                    </div>
+                </div>
+
+                <!-- Order Content -->
+                <div class="order-body-modern">
+                    <div class="order-items-preview">
+                        <?php
+                        $previewItems = array_slice($order['items'], 0, 2);
+                        foreach ($previewItems as $item):
+                            ?>
+                            <div class="order-item-modern">
+                                <div class="order-item-img-box">
+                                    <?php if (isset($item['image']) && (strpos($item['image'], 'assets/images') === 0 || strpos($item['image'], '/') === 0 || strpos($item['image'], 'http') === 0)): ?>
+                                        <img src="<?php echo (strpos($item['image'], 'http') === 0) ? $item['image'] : BASE_URL . '/' . ltrim($item['image'], '/'); ?>"
+                                            alt="<?php echo htmlspecialchars($item['product_name']); ?>">
+                                    <?php else: ?>
+                                        <div class="order-item-emoji"><?php echo $item['image'] ?? '📦'; ?></div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="order-item-info-modern">
+                                    <div class="order-item-name"><?php echo htmlspecialchars($item['product_name']); ?></div>
+                                    <div class="order-item-qty">Quantity: <?php echo $item['quantity']; ?></div>
+                                </div>
+                                <div class="order-item-price">
+                                    ₹<?php echo number_format($item['price'] * $item['quantity']); ?>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+
+                        <?php if (count($order['items']) > 2): ?>
+                            <div class="text-center py-0-5 border-t mt-0-5">
+                                <span class="text-secondary fs-0-85 font-600">
+                                    + <?php echo count($order['items']) - 2; ?> more items in this order
+                                </span>
+                            </div>
                         <?php endif; ?>
                     </div>
                 </div>
 
-                <!-- Order Items (Limited Preview) -->
-                <div class="order-item-list">
-                    <?php
-                    $previewItems = array_slice($order['items'], 0, 2);
-                    foreach ($previewItems as $item):
-                        ?>
-                        <div class="order-item-row">
-                            <div class="order-item-thumb">
-                                <?php if (isset($item['image']) && strpos($item['image'], 'assets/images') === 0): ?>
-                                    <img src="<?php echo BASE_URL . '/public/' . $item['image']; ?>"
-                                        alt="<?php echo htmlspecialchars($item['product_name']); ?>">
-                                <?php else: ?>
-                                    <span class="fs-1-5">📦</span>
-                                <?php endif; ?>
-                            </div>
-                            <div class="flex-1">
-                                <h4 class="font-600 mb-0-25"><?php echo htmlspecialchars($item['product_name']); ?></h4>
-                                <p class="text-muted-sm">Quantity: <?php echo $item['quantity']; ?></p>
-                            </div>
-                            <div class="text-right">
-                                <p class="font-700 color-primary">₹<?php echo number_format($item['price'] * $item['quantity']); ?>
-                                </p>
-                            </div>
-                        </div>
-                    <?php endforeach; ?>
+                <!-- Premium Footer -->
+                <div class="order-footer-modern">
+                    <div class="total-amount-box">
+                        <label>Order Total:</label>
+                        <span class="amount">₹<?php echo number_format($order['final_amount']); ?></span>
+                        <?php if ($discount > 0): ?>
+                            <span class="text-success fs-0-8 font-700 ml-0-5">
+                                (Saved ₹<?php echo number_format($discount); ?>)
+                            </span>
+                        <?php endif; ?>
+                    </div>
 
-                    <?php if (count($order['items']) > 2): ?>
-                        <p class="text-center text-muted-sm mt-0-5">
-                            and <?php echo count($order['items']) - 2; ?> more items...
-                        </p>
-                    <?php endif; ?>
-                </div>
-
-                <!-- Order Actions -->
-                <div class="card-footer border-t mt-1-5 pt-1-5 flex-end">
-                    <a href="<?php echo BASE_URL; ?>/order/<?php echo $order['order_id']; ?>"
-                        class="btn-outline-primary btn-padding-lg font-600">
-                        View Details
-                    </a>
+                    <div class="flex-gap-1">
+                        <a href="<?php echo BASE_URL; ?>/order/<?php echo $order['order_id']; ?>" class="btn-view-order">
+                            View Order Details
+                        </a>
+                    </div>
                 </div>
             </div>
         <?php endforeach; ?>
+
+        <?php require __DIR__ . '/../partials/pagination.php'; ?>
     <?php endif; ?>
 </div>
 

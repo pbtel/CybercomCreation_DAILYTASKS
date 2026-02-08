@@ -33,7 +33,7 @@
                         <div class="product-tag"><?php echo ucfirst($product['tags'][0]); ?></div>
                     <?php endif; ?>
                     <?php if (isset($product['image']) && (strpos($product['image'], 'assets/images') === 0 || strpos($product['image'], '/') === 0 || strpos($product['image'], 'http') === 0)): ?>
-                        <img src="<?php echo (strpos($product['image'], 'http') === 0) ? $product['image'] : BASE_URL . '/public/' . ltrim($product['image'], '/'); ?>"
+                        <img src="<?php echo (strpos($product['image'], 'http') === 0) ? $product['image'] : BASE_URL . '/' . ltrim($product['image'], '/'); ?>"
                             alt="<?php echo htmlspecialchars($product['name']); ?>" class="product-img">
                     <?php else: ?>
                         <div class="product-emoji"><?php echo $product['image'] ?? '📦'; ?></div>
@@ -75,11 +75,11 @@
         <?php foreach ($allCategories as $category): ?>
             <a href="<?php echo BASE_URL; ?>/products?category=<?php echo $category['id']; ?>" class="product-item">
                 <div class="product-image-wrapper aspect-16-9">
-                    <?php if (strpos($category['image'], 'assets/images') === 0): ?>
-                        <img src="<?php echo BASE_URL . '/public/' . $category['image']; ?>"
+                    <?php if (isset($category['image']) && (strpos($category['image'], 'assets/images') === 0 || strpos($category['image'], '/') === 0 || strpos($category['image'], 'http') === 0)): ?>
+                        <img src="<?php echo (strpos($category['image'], 'http') === 0) ? $category['image'] : BASE_URL . '/' . ltrim($category['image'], '/'); ?>"
                             alt="<?php echo htmlspecialchars($category['name']); ?>" class="category-img">
                     <?php else: ?>
-                        <span class="icon-lg"><?php echo $category['image']; ?></span>
+                        <div class="icon-lg"><?php echo $category['image'] ?? '📂'; ?></div>
                     <?php endif; ?>
                 </div>
                 <div class="product-details">
@@ -97,13 +97,14 @@
 
     <div class="products-container">
         <?php foreach ($allBrands as $brand): ?>
-            <a href="<?php echo BASE_URL; ?>/products?brand=<?php echo strtolower($brand['id']); ?>" class="product-item">
-                <div class="product-image-wrapper aspect-16-9 brand-gradient">
-                    <?php if (strpos($brand['image'], 'assets/images') === 0): ?>
-                        <img src="<?php echo BASE_URL . '/public/' . $brand['image']; ?>"
+            <a href="<?php echo BASE_URL; ?>/products?brand=<?php echo strtolower($brand['id']); ?>"
+                class="product-item brand-item">
+                <div class="product-image-wrapper aspect-3-2 brand-gradient">
+                    <?php if (isset($brand['image']) && (strpos($brand['image'], 'assets/images') === 0 || strpos($brand['image'], '/') === 0 || strpos($brand['image'], 'http') === 0)): ?>
+                        <img src="<?php echo (strpos($brand['image'], 'http') === 0) ? $brand['image'] : BASE_URL . '/' . ltrim($brand['image'], '/'); ?>"
                             alt="<?php echo htmlspecialchars($brand['name']); ?>" class="brand-img">
                     <?php else: ?>
-                        <span class="icon-md"><?php echo $brand['image']; ?></span>
+                        <div class="icon-md"><?php echo $brand['image'] ?? '🏢'; ?></div>
                     <?php endif; ?>
                 </div>
                 <div class="product-details">

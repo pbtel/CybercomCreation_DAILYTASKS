@@ -22,17 +22,24 @@ class OrderModel
             $this->db->beginTransaction();
 
             // 1. Insert into sales_order
-            $sql = "INSERT INTO sales_order (user_id, order_number, subtotal, discount, tax, final_amount, applied_coupon, status, created_at, updated_at) 
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW()) RETURNING order_id";
+            $sql = "INSERT INTO sales_order (user_id, order_number, subtotal, discount_amount, tax, shipping_cost, final_amount, status, customer_email, customer_phone, created_at, updated_at) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()) RETURNING order_id";
+
+            // Extract email and phone from address data if not directly provided
+            $email = $orderData['customer_email'] ?? ($orderData['address']['email'] ?? null);
+            $phone = $orderData['customer_phone'] ?? ($orderData['address']['phone'] ?? null);
+
             $result = $this->db->query($sql, [
                 $orderData['user_id'] ?? null,
                 $orderData['order_number'],
                 $orderData['subtotal'],
                 $orderData['discount'] ?? 0,
                 $orderData['tax'] ?? 0,
+                $orderData['shipping_cost'] ?? 0,
                 $orderData['final_amount'],
-                $orderData['applied_coupon'] ?? null,
-                $orderData['status'] ?? 'pending'
+                $orderData['status'] ?? 'pending',
+                $email,
+                $phone
             ]);
             $orderRow = $this->db->fetch($result);
             $orderId = $orderRow['order_id'];
@@ -45,15 +52,16 @@ class OrderModel
             // 2. Insert order products
             if (isset($orderData['items']) && is_array($orderData['items'])) {
                 foreach ($orderData['items'] as $item) {
-                    $sql = "INSERT INTO sales_order_products (order_id, product_id, product_name, quantity, price, variant_data) 
-                            VALUES ($1, $2, $3, $4, $5, $6)";
+                    $sql = "INSERT INTO sales_order_product (order_id, product_id, product_name, quantity, unit_price, variant_data, subtotal) 
+                            VALUES ($1, $2, $3, $4, $5, $6, $7)";
                     $this->db->query($sql, [
                         $orderId,
                         $item['product_id'],
                         $item['product_name'] ?? 'Product',
                         $item['quantity'],
                         $item['price'],
-                        json_encode($item['variant'] ?? [])
+                        json_encode($item['variant'] ?? []),
+                        $item['price'] * $item['quantity']
                     ]);
                 }
             }
@@ -61,12 +69,11 @@ class OrderModel
             // 3. Insert shipping address
             if (isset($orderData['address'])) {
                 $addr = $orderData['address'];
-                $sql = "INSERT INTO sales_order_address (order_id, full_name, email, phone, address_line1, address_line2, city, state, postal_code, country) 
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)";
+                $sql = "INSERT INTO sales_order_address (order_id, full_name, phone, address_line1, address_line2, city, state, pincode, country) 
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
                 $this->db->query($sql, [
                     $orderId,
                     $addr['full_name'] ?? '',
-                    $addr['email'] ?? '',
                     $addr['phone'] ?? '',
                     $addr['address_line1'] ?? '',
                     $addr['address_line2'] ?? '',
@@ -78,22 +85,22 @@ class OrderModel
             }
 
             // 4. Insert shipping method
-            $sql = "INSERT INTO sales_order_shipping_method (order_id, method_name, shipping_cost, estimated_delivery) 
-                    VALUES ($1, $2, $3, $4)";
-            $this->db->query($sql, [
-                $orderId,
-                $orderData['shipping_type'] ?? 'Standard',
-                $orderData['shipping_cost'] ?? 0,
-                $orderData['estimated_delivery'] ?? '3-5 Business Days'
-            ]);
-
-            // 5. Insert billing info
-            $sql = "INSERT INTO sales_order_billing (order_id, payment_method, billing_status) 
+            $sql = "INSERT INTO sales_order_shipping_method (order_id, shipping_method, shipping_type) 
                     VALUES ($1, $2, $3)";
             $this->db->query($sql, [
                 $orderId,
+                $orderData['shipping_type'] ?? 'Standard',
+                'Method' // or 'Express'/'Standard' if known
+            ]);
+
+            // 5. Insert billing info
+            $sql = "INSERT INTO sales_order_billing (order_id, payment_method, payment_status, coupon_code) 
+                    VALUES ($1, $2, $3, $4)";
+            $this->db->query($sql, [
+                $orderId,
                 $orderData['payment_method'] ?? 'COD',
-                'pending'
+                'pending',
+                $orderData['applied_coupon'] ?? null
             ]);
 
             $this->db->commit();
@@ -111,7 +118,7 @@ class OrderModel
      */
     public function getById($orderId)
     {
-        $sql = "SELECT o.*, s.method_name as shipping_type, s.shipping_cost, b.payment_method
+        $sql = "SELECT o.*, s.shipping_method, b.payment_method
                 FROM sales_order o
                 LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
                 LEFT JOIN sales_order_billing b ON o.order_id = b.order_id
@@ -121,15 +128,17 @@ class OrderModel
 
         if ($order) {
             // Get order items
-            $itemsSql = "SELECT op.*, pe.name as product_name, pe.image
-                         FROM sales_order_products op
-                         JOIN catalog_product_entity pe ON op.product_id = pe.product_id
+            $itemsSql = "SELECT op.*, op.product_name, pi.image_emoji as image
+                         FROM sales_order_product op
+                         LEFT JOIN catalog_product_entity pe ON op.product_id = pe.entity_id
+                         LEFT JOIN catalog_product_image pi ON pe.entity_id = pi.product_id AND pi.is_primary = true
                          WHERE op.order_id = $1";
             $itemsResult = $this->db->query($itemsSql, [$orderId]);
             $items = $this->db->fetchAll($itemsResult);
 
             foreach ($items as &$item) {
                 $item['variant'] = json_decode($item['variant_data'], true) ?? [];
+                $item['price'] = $item['unit_price']; // Map for view compatibility
             }
             $order['items'] = $items;
 
@@ -147,7 +156,7 @@ class OrderModel
      */
     public function getUserOrders($userId)
     {
-        $sql = "SELECT o.*, s.method_name as shipping_type, s.shipping_cost
+        $sql = "SELECT o.*, s.shipping_method
                 FROM sales_order o
                 LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
                 WHERE o.user_id = $1 
@@ -157,15 +166,17 @@ class OrderModel
 
         foreach ($orders as &$order) {
             // Get order items
-            $itemsSql = "SELECT op.*, pe.name as product_name, pe.image
-                         FROM sales_order_products op
-                         JOIN catalog_product_entity pe ON op.product_id = pe.product_id
+            $itemsSql = "SELECT op.*, op.product_name, pi.image_emoji as image
+                         FROM sales_order_product op
+                         LEFT JOIN catalog_product_entity pe ON op.product_id = pe.entity_id
+                         LEFT JOIN catalog_product_image pi ON pe.entity_id = pi.product_id AND pi.is_primary = true
                          WHERE op.order_id = $1";
             $itemsResult = $this->db->query($itemsSql, [$order['order_id']]);
             $items = $this->db->fetchAll($itemsResult);
 
             foreach ($items as &$item) {
                 $item['variant'] = json_decode($item['variant_data'], true) ?? [];
+                $item['price'] = $item['unit_price']; // Map for view compatibility
             }
             $order['items'] = $items;
         }
@@ -178,7 +189,7 @@ class OrderModel
      */
     public function getByStatus($status)
     {
-        $sql = "SELECT o.*, s.method_name as shipping_type, s.shipping_cost
+        $sql = "SELECT o.*, s.shipping_method
                 FROM sales_order o
                 LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
                 WHERE o.status = $1 
@@ -222,7 +233,7 @@ class OrderModel
     }
 
     /**
-     * Get chart data for orders visualization (aggregated by date)
+     * Get chart data for orders visualization (individual orders)
      */
     public function getChartData()
     {
@@ -231,11 +242,10 @@ class OrderModel
         }
         $userId = $_SESSION['user']['user_id'];
 
-        $sql = "SELECT CAST(created_at AS DATE) as date, SUM(final_amount) as total 
+        $sql = "SELECT created_at as date, final_amount as total, order_number 
                 FROM sales_order 
                 WHERE user_id = $1 AND status NOT IN ('cancelled', 'cart') 
-                GROUP BY CAST(created_at AS DATE) 
-                ORDER BY date ASC";
+                ORDER BY created_at ASC";
         $result = $this->db->query($sql, [$userId]);
         return $this->db->fetchAll($result) ?? [];
     }

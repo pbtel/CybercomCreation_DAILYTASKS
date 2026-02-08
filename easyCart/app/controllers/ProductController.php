@@ -23,9 +23,12 @@ class ProductController extends Controller
         $selectedPriceRange = $this->get('price', 'all');
         $selectedRating = floatval($this->get('rating', 0));
         $viewMode = $this->get('view', 'grid');
+        $searchQuery = $this->get('q', '');
 
-        // Get products based on filters
-        if ($selectedCategory !== 'all') {
+        // Get products based on filters or search
+        if (!empty($searchQuery)) {
+            $displayProducts = $productModel->search($searchQuery);
+        } elseif ($selectedCategory !== 'all') {
             $displayProducts = $productModel->getByCategory($selectedCategory);
         } else {
             $displayProducts = $productModel->getAll();
@@ -43,15 +46,18 @@ class ProductController extends Controller
             switch ($selectedPriceRange) {
                 case 'under5k':
                     $displayProducts = array_filter($displayProducts, function ($p) {
-                        return $p['price'] < 5000; });
+                        return $p['price'] < 5000;
+                    });
                     break;
                 case '5k-20k':
                     $displayProducts = array_filter($displayProducts, function ($p) {
-                        return $p['price'] >= 5000 && $p['price'] <= 20000; });
+                        return $p['price'] >= 5000 && $p['price'] <= 20000;
+                    });
                     break;
                 case 'above20k':
                     $displayProducts = array_filter($displayProducts, function ($p) {
-                        return $p['price'] > 20000; });
+                        return $p['price'] > 20000;
+                    });
                     break;
             }
         }
@@ -63,6 +69,15 @@ class ProductController extends Controller
             });
         }
 
+        // Apply pagination
+        $itemsPerPage = 24;
+        $currentPage = $this->get('page', 1);
+        $totalItems = count($displayProducts);
+        $pagination = new Pagination($totalItems, $itemsPerPage, $currentPage);
+
+        // Slice products for current page
+        $pagedProducts = array_slice($displayProducts, $pagination->getOffset(), $pagination->getLimit());
+
         // Get all categories and brands for filter
         $allCategories = $categoryModel->getAll();
         $allBrands = $brandModel->getAll();
@@ -70,7 +85,7 @@ class ProductController extends Controller
         // Pass data to view
         $data = [
             'pageTitle' => 'Products',
-            'displayProducts' => $displayProducts,
+            'displayProducts' => $pagedProducts,
             'allCategories' => $allCategories,
             'allBrands' => $allBrands,
             'selectedCategory' => $selectedCategory,
@@ -78,6 +93,9 @@ class ProductController extends Controller
             'selectedPriceRange' => $selectedPriceRange,
             'selectedRating' => $selectedRating,
             'viewMode' => $viewMode,
+            'searchQuery' => $searchQuery,
+            'pagination' => $pagination,
+            'totalResults' => $totalItems,
             'products' => $productModel->getAll() // For count
         ];
 

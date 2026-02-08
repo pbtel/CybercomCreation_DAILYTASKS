@@ -41,19 +41,21 @@ class App
             $this->controller = $controllerClass;
             unset($segments[0]);
         } else {
-            // If the specific controller doesn't exist but was requested, it's a 404
-            // For now, we fallback to Home only if the URL was empty
             if ($controllerName !== 'Home') {
                 http_response_code(404);
-                die("404 - Controller $controllerClass not found");
+                header('Content-Type: application/json');
+                die(json_encode(['success' => false, 'message' => "Endpoint /$controllerName not found"]));
             }
         }
 
         require_once __DIR__ . '/../controllers/' . $this->controller . '.php';
         $this->controller = new $this->controller;
 
+        // Re-index segments so methods and params are always at fixed indices
+        $segments = array_values($segments);
+
         // 3. Handle API Method Mapping
-        if ($controllerName === 'Api' && isset($segments[1])) {
+        if ($controllerName === 'Api' && isset($segments[0])) {
             $apiRoutes = [
                 'cart-add' => 'cartAdd',
                 'cart-update' => 'cartUpdate',
@@ -65,29 +67,29 @@ class App
                 'shipping-method-update' => 'shippingMethodUpdate',
                 'chart-data' => 'chartData'
             ];
-            if (isset($apiRoutes[$segments[1]])) {
-                $segments[1] = $apiRoutes[$segments[1]];
+            if (isset($apiRoutes[$segments[0]])) {
+                $segments[0] = $apiRoutes[$segments[0]];
             }
         }
 
         // 4. Handle Parameterized Routes (e.g. product/1 -> product/show/1)
         $currentControllerName = str_replace('Controller', '', get_class($this->controller));
         if (in_array(strtolower($currentControllerName), ['product', 'order'])) {
-            if (isset($segments[1]) && is_numeric($segments[1])) {
+            if (isset($segments[0]) && is_numeric($segments[0])) {
                 // Prepend 'show' as the method
-                array_splice($segments, 1, 0, 'show');
+                array_unshift($segments, 'show');
             }
         }
 
-        // 4. Resolve Method
-        if (isset($segments[1])) {
-            if (method_exists($this->controller, $segments[1])) {
-                $this->method = $segments[1];
-                unset($segments[1]);
+        // 5. Resolve Method
+        if (isset($segments[0])) {
+            if (method_exists($this->controller, $segments[0])) {
+                $this->method = $segments[0];
+                unset($segments[0]);
             }
         }
 
-        // 5. Dispatch
+        // 6. Dispatch
         $this->params = $segments ? array_values($segments) : [];
         call_user_func_array([$this->controller, $this->method], $this->params);
     }

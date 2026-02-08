@@ -12,6 +12,11 @@ class ApiController extends Controller
      */
     public function cartAdd()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Please login to add items to cart', 'login_required' => true]);
+        // }
+
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -19,13 +24,14 @@ class ApiController extends Controller
         $productId = intval($this->post('product_id'));
         $quantity = intval($this->post('quantity', 1));
 
+        // Collect variants dynamically
         $variant = [];
-        if ($this->post('variant_color'))
-            $variant['color'] = $this->post('variant_color');
-        if ($this->post('variant_storage'))
-            $variant['storage'] = $this->post('variant_storage');
-        if ($this->post('variant_size'))
-            $variant['size'] = $this->post('variant_size');
+        foreach ($_POST as $key => $value) {
+            if (strpos($key, 'variant_') === 0 && !empty($value)) {
+                $type = substr($key, 8); // Remove 'variant_' prefix
+                $variant[$type] = $value;
+            }
+        }
 
         $productModel = $this->model('ProductModel');
         $product = $productModel->getById($productId);
@@ -67,6 +73,11 @@ class ApiController extends Controller
      */
     public function cartUpdate()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Please login to update cart', 'login_required' => true]);
+        // }
+
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -89,11 +100,19 @@ class ApiController extends Controller
                 $discount = $couponModel->calculateDiscount($subtotal);
                 $finalSubtotal = $subtotal - $discount;
 
+                $cartItems = $cartModel->getItemsWithDetails();
+                $itemSubtotal = 0;
+                if (isset($cartItems[$cartKey])) {
+                    $itemSubtotal = $cartItems[$cartKey]['subtotal'];
+                }
+
                 return $this->json([
                     'success' => true,
                     'message' => 'Cart updated',
                     'cart_count' => $cartModel->getCount(),
                     'subtotal' => $subtotal,
+                    'cart_subtotal' => $subtotal,
+                    'item_subtotal' => $itemSubtotal,
                     'discount' => $discount,
                     'final_subtotal' => $finalSubtotal,
                     'has_items' => $cartModel->getCount() > 0
@@ -111,6 +130,11 @@ class ApiController extends Controller
      */
     public function cartRemove()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Please login to modify cart', 'login_required' => true]);
+        // }
+
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -135,6 +159,7 @@ class ApiController extends Controller
                     'message' => 'Item removed',
                     'cart_count' => $cartModel->getCount(),
                     'subtotal' => $subtotal,
+                    'cart_subtotal' => $subtotal,
                     'discount' => $discount,
                     'final_subtotal' => $subtotal - $discount,
                     'has_items' => $cartModel->getCount() > 0
@@ -152,6 +177,11 @@ class ApiController extends Controller
      */
     public function cartSummary()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
+        // }
+
         $cartModel = $this->model('CartModel');
         $couponModel = $this->model('CouponModel');
         $shippingModel = $this->model('ShippingModel');
@@ -186,6 +216,11 @@ class ApiController extends Controller
      */
     public function couponApply()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Please login to apply coupons', 'login_required' => true]);
+        // }
+
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -220,6 +255,11 @@ class ApiController extends Controller
      */
     public function couponRemove()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
+        // }
+
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -242,6 +282,11 @@ class ApiController extends Controller
      */
     public function shippingCalculate()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
+        // }
+
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
@@ -277,6 +322,11 @@ class ApiController extends Controller
      */
     public function shippingMethodUpdate()
     {
+        // $userModel = $this->model('UserModel');
+        // if (!$userModel->isLoggedIn()) {
+        //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
+        // }
+
         if (!$this->isPost()) {
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
