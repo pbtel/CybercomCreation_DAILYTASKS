@@ -168,7 +168,8 @@
 
                     <div class="summary-row fs-1-25 font-800 mb-2">
                         <span>Grand Total:</span>
-                        <span class="color-primary">₹<?php echo number_format($subtotalAfterCoupon); ?>*</span>
+                        <span class="color-primary"
+                            data-estimated-total>₹<?php echo number_format($subtotalAfterCoupon); ?>*</span>
                     </div>
 
                     <p class="fs-0-8 text-secondary mb-1-5">

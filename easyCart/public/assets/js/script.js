@@ -302,34 +302,11 @@ function handleUpdateQuantity(event) {
 // ============================================
 // 5. PRODUCT DETAIL PAGE - IMAGE SWITCHING
 // ============================================
+/*
 function initProductImageSwitching() {
-    const thumbs = document.querySelectorAll('.showcase-thumb');
-    const mainImage = document.querySelector('.showcase-main');
-
-    if (!mainImage || thumbs.length === 0) return;
-
-    thumbs.forEach((thumb, index) => {
-        thumb.style.cursor = 'pointer';
-        thumb.addEventListener('click', () => {
-            // Get the emoji/content from the thumbnail
-            const imageContent = thumb.textContent;
-            mainImage.textContent = imageContent;
-
-            // Remove active class from all thumbnails
-            thumbs.forEach(t => t.style.opacity = '0.6');
-
-            // Add active class to clicked thumbnail
-            thumb.style.opacity = '1';
-        });
-
-        // Set initial state
-        if (index === 0) {
-            thumb.style.opacity = '1';
-        } else {
-            thumb.style.opacity = '0.6';
-        }
-    });
+    // Logic moved to product-detail.php to handle image src swapping correctly
 }
+*/
 
 // ============================================
 // 6. SHIPPING METHOD HIGHLIGHT
@@ -701,11 +678,11 @@ document.addEventListener('DOMContentLoaded', function () {
         initCartInteractions();
     }
 
-    // Initialize product image switching
-    const imageShowcase = document.querySelector('.image-showcase');
-    if (imageShowcase) {
-        initProductImageSwitching();
-    }
+    // Initialize product image switching - NOW HANDLED IN PRODUCT DETAIL PAGE
+    // const imageShowcase = document.querySelector('.image-showcase');
+    // if (imageShowcase) {
+    //     initProductImageSwitching();
+    // }
 
     // Initialize shipping method highlight
     const shippingSection = document.querySelector('div');

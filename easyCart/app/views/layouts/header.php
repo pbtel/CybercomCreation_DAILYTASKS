@@ -12,8 +12,8 @@
     <script>
         window.BASE_URL = '<?php echo BASE_URL; ?>';
     </script>
-    <script src="<?php echo BASE_URL; ?>/assets/js/script.js" defer></script>
-    <script src="<?php echo BASE_URL; ?>/assets/js/cart-ajax.js" defer></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/script.js?v=<?php echo time(); ?>"></script>
+    <script src="<?php echo BASE_URL; ?>/assets/js/cart-ajax.js?v=<?php echo time(); ?>"></script>
 </head>
 
 <body>

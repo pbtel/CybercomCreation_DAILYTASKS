@@ -25,7 +25,8 @@
             <div class="showcase-thumbs">
                 <?php if (!empty($product['images'])): ?>
                     <?php foreach ($product['images'] as $index => $img): ?>
-                        <div class="showcase-thumb <?php echo $index === 0 ? 'active' : ''; ?>">
+                        <div class="showcase-thumb <?php echo $index === 0 ? 'active' : ''; ?>"
+                            onclick="swapImage(event, this)">
                             <?php
                             $imgUrl = $img['image'] ?? $img['image_url'] ?? '';
                             ?>
@@ -36,7 +37,7 @@
 
                     <!-- Ensure we have 4 slots if less than 4 images -->
                     <?php for ($i = count($product['images']); $i < 4; $i++): ?>
-                        <div class="showcase-thumb">
+                        <div class="showcase-thumb" onclick="swapImage(event, this)">
                             <?php if (isset($product['image']) && (strpos($product['image'], 'assets/images') === 0 || strpos($product['image'], '/') === 0 || strpos($product['image'], 'http') === 0)): ?>
                                 <img src="<?php echo (strpos($product['image'], 'http') === 0) ? $product['image'] : BASE_URL . '/' . ltrim($product['image'], '/'); ?>"
                                     alt="Filler Thumb">
@@ -47,7 +48,7 @@
                     <?php endfor; ?>
                 <?php else: ?>
                     <?php for ($i = 0; $i < 4; $i++): ?>
-                        <div class="showcase-thumb <?php echo $i === 0 ? 'active' : ''; ?>">
+                        <div class="showcase-thumb <?php echo $i === 0 ? 'active' : ''; ?>" onclick="swapImage(event, this)">
                             <?php if (isset($product['image']) && strpos($product['image'], 'assets/images') === 0): ?>
                                 <img src="<?php echo BASE_URL . '/' . ltrim($product['image'], '/'); ?>"
                                     alt="Thumb <?php echo $i + 1; ?>">
@@ -320,45 +321,53 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        // ==========================================
         // THUMBNAIL INTERACTION
+        // ==========================================
         const thumbs = document.querySelectorAll('.showcase-thumb');
         const mainImageContainer = document.querySelector('.showcase-main');
 
-        thumbs.forEach(thumb => {
-            thumb.addEventListener('click', function () {
-                // Remove active class from all
-                thumbs.forEach(t => t.classList.remove('active'));
-                // Add to current
-                this.classList.add('active');
+        if (thumbs.length > 0 && mainImageContainer) {
+            thumbs.forEach(thumb => {
+                thumb.addEventListener('click', function () {
+                    // Update active state
+                    thumbs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
 
-                // Swap Content
-                const img = this.querySelector('img');
-                const emoji = this.querySelector('.detail-emoji-thumb');
+                    // Get source
+                    const img = this.querySelector('img');
+                    const emoji = this.querySelector('.detail-emoji-thumb');
 
-                // Fade out effect could be added here
-                mainImageContainer.innerHTML = '';
+                    // Simple logic: Clear and rebuild content every time to ensure consistency
+                    mainImageContainer.innerHTML = '';
 
-                if (img) {
-                    const newImg = document.createElement('img');
-                    newImg.src = img.src;
-                    newImg.alt = img.alt;
-                    mainImageContainer.appendChild(newImg);
-                } else if (emoji) {
-                    const newDiv = document.createElement('div');
-                    newDiv.className = 'detail-emoji';
-                    newDiv.textContent = emoji.textContent;
-                    mainImageContainer.appendChild(newDiv);
-                }
+                    if (img) {
+                        const newImg = document.createElement('img');
+                        newImg.src = img.src;
+                        newImg.alt = img.alt || 'Product Image';
+                        mainImageContainer.appendChild(newImg);
+                    } else if (emoji) {
+                        const newDiv = document.createElement('div');
+                        newDiv.className = 'detail-emoji';
+                        newDiv.textContent = emoji.textContent;
+                        mainImageContainer.appendChild(newDiv);
+                    }
+                });
             });
-        });
+        }
 
-        // VARIANT SELECTION (Visual only for now)
+        // ==========================================
+        // VARIANT SELECTION
+        // ==========================================
         const variantButtons = document.querySelectorAll('.variant-choice');
         variantButtons.forEach(btn => {
             btn.addEventListener('click', function () {
-                const siblings = this.parentElement.querySelectorAll('.variant-choice');
-                siblings.forEach(s => s.classList.remove('selected'));
-                this.classList.add('selected');
+                const group = this.closest('.variant-choices');
+                if (group) {
+                    const siblings = group.querySelectorAll('.variant-choice');
+                    siblings.forEach(s => s.classList.remove('selected'));
+                    this.classList.add('selected');
+                }
             });
         });
     });
