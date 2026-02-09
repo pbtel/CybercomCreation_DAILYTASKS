@@ -9,7 +9,7 @@
     <div class="checkout-grid">
         <!-- CHECKOUT FORM -->
         <div>
-            <form action="<?php echo BASE_URL; ?>/checkout/place" method="POST">
+            <form id="checkout-form" action="<?php echo BASE_URL; ?>/checkout/place" method="POST">
                 <!-- SHIPPING INFO -->
                 <div class="checkout-section">
                     <h2 class="checkout-section-title">📦 Shipping Information</h2>
@@ -216,58 +216,93 @@
 
     <script>
     const API_URL = '<?php echo BASE_URL; ?>/api';
-    const subtotalAfterCoupon = <?php echo $subtotalAfterCoupon; ?>;
+    // No need to redeclare subtotalAfterCoupon if not used or already available in wider scope
+    // const subtotalAfterCoupon = <?php echo $subtotalAfterCoupon; ?>;
 
     function updateOrderSummary() {
-        // Get selected shipping method
-        const selectedMethod = document.querySelector('input[name="shipping_method"]:checked').value;
+        // ... (Shipping update logic remains similar but streamlined if needed)
+        const selectedRadio = document.querySelector('input[name="shipping_method"]:checked');
+        if (!selectedRadio) return;
         
-        // Save shipping method to session via AJAX
-        fetch(API_URL + '/shippingMethodUpdate', {
+        const selectedMethod = selectedRadio.value;
+        const subtotal = <?php echo $subtotalAfterCoupon; ?>; // PHP injection
+
+        // Optimistic UI update or simple fetch to calculate
+        // For simplicity, let's just trigger the fetch to update totals
+        
+        // 1. Update Session
+        fetch('<?php echo BASE_URL; ?>/api/shipping/update-method', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'shipping_method=' + encodeURIComponent(selectedMethod)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                console.error('Failed to update shipping method:', data.message);
-            }
         });
-        
-        // Use AJAX to calculate shipping
-        fetch(API_URL + '/shippingCalculate', {
+
+        // 2. Calculate Costs
+        fetch('<?php echo BASE_URL; ?>/api/shipping/calculate', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: 'shipping_method=' + encodeURIComponent(selectedMethod)
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: 'shipping_method=' + encodeURIComponent(selectedMethod) + '&subtotal=' + subtotal
         })
-        .then(response => response.json())
+        .then(res => res.json())
         .then(data => {
-            if (data.success) {
-                document.getElementById('summary-shipping').textContent = '₹' + data.shipping_cost.toLocaleString('en-IN');
-                document.getElementById('summary-tax').textContent = '₹' + data.tax.toLocaleString('en-IN');
-                document.getElementById('summary-total').textContent = '₹' + data.total.toLocaleString('en-IN');
+            if(data.success) {
+                document.getElementById('summary-shipping').textContent = '₹' + parseInt(data.shipping).toLocaleString('en-IN');
+                document.getElementById('summary-tax').textContent = '₹' + parseInt(data.tax).toLocaleString('en-IN');
+                document.getElementById('summary-total').textContent = '₹' + parseInt(data.total).toLocaleString('en-IN');
             }
         });
-        
-        // Update shipping option borders
-        document.querySelectorAll('.shipping-option').forEach(label => {
-            const radio = label.querySelector('input[type="radio"]');
-            if (radio.checked) {
-                label.classList.add('selected');
-                label.classList.remove('shadow-none');
-            } else {
-                label.classList.remove('selected');
-                label.classList.add('shadow-none');
-            }
-        });
+
+        // Visual update
+        document.querySelectorAll('.shipping-option').forEach(el => el.classList.remove('selected'));
+        if(selectedRadio.closest('.shipping-option')) selectedRadio.closest('.shipping-option').classList.add('selected');
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+        // --- DATA PERSISTENCE LOGIC START ---
+        const form = document.getElementById('checkout-form');
+        const storageKey = 'easycart_checkout_form_data';
+
+        // 1. Restore data on load
+        const savedData = sessionStorage.getItem(storageKey);
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            Object.keys(data).forEach(key => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'radio' || input.type === 'checkbox') {
+                        if (input.value === data[key]) input.checked = true;
+                    } else {
+                        input.value = data[key];
+                    }
+                }
+            });
+            // If shipping method was restored, update summary
+            if (data['shipping_method']) {
+                const radio = form.querySelector(`input[name="shipping_method"][value="${data['shipping_method']}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    updateOrderSummary();
+                }
+            }
+        }
+
+        // 2. Save data on input
+        form.addEventListener('input', function(e) {
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            sessionStorage.setItem(storageKey, JSON.stringify(data));
+        });
+
+        // 3. Clear data on successful submit
+        form.addEventListener('submit', function() {
+            sessionStorage.removeItem(storageKey);
+        });
+        // --- DATA PERSISTENCE LOGIC END ---
+
+        // Initial summary update
         updateOrderSummary();
     });
     </script>

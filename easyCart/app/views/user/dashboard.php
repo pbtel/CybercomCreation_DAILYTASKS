@@ -72,10 +72,11 @@
                 </div>
 
                 <?php if (empty($recentOrders)): ?>
-                    <div class="text-center py-3rem">
-                        <div class="fs-3 mb-1rem">🛍️</div>
-                        <p class="text-secondary">You haven't placed any orders yet.</p>
-                        <a href="<?php echo BASE_URL; ?>/products" class="btn btn-primary mt-1rem">Start Shopping</a>
+                    <div class="empty-state-container">
+                        <div class="empty-state-icon">🛍️</div>
+                        <h3 class="empty-state-title">No orders yet</h3>
+                        <p class="empty-state-text">You haven't placed any orders yet. Start shopping to fill this area!</p>
+                        <a href="<?php echo BASE_URL; ?>/products" class="btn-primary-custom">Start Shopping</a>
                     </div>
                 <?php else: ?>
                     <div style="overflow-x: auto; margin: 0 -1rem;">
@@ -577,6 +578,68 @@
         .welcome-text {
             font-size: 2.25rem;
         }
+    }
+
+    /* EMPTY STATE STYLING */
+    .empty-state-container {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(var(--primary-rgb), 0.03);
+        border-radius: 1.5rem;
+        margin-top: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 2px dashed var(--border);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.8;
+        background: white;
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-title {
+        font-size: 1.5rem;
+        font-weight: 800;
+        margin: 0 0 0.5rem 0;
+        color: var(--text-primary);
+    }
+
+    .empty-state-text {
+        color: var(--text-secondary);
+        margin: 0 0 2rem 0;
+        font-size: 1rem;
+        max-width: 400px;
+        line-height: 1.6;
+    }
+
+    .btn-primary-custom {
+        padding: 0.875rem 2rem;
+        background: var(--primary);
+        color: white;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        display: inline-block;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(99, 102, 241, 0.4);
+        background: var(--primary-dark);
     }
 </style>
 

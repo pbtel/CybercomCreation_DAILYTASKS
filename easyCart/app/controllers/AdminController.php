@@ -28,11 +28,11 @@ class AdminController extends Controller
 
         // Fetch stats
         $db = Database::getInstance();
-        $totalSalesResult = $db->query("SELECT SUM(final_amount) as total FROM sales_order WHERE status != 'cancelled'");
+        $totalSalesResult = $db->query("SELECT SUM(final_amount) as total FROM sales_order WHERE status != 'cancelled' AND status != 'cart'");
         $totalSalesRow = $db->fetch($totalSalesResult);
         $totalSales = $totalSalesRow['total'] ?? 0;
 
-        $totalOrdersResult = $db->query("SELECT COUNT(*) as total FROM sales_order");
+        $totalOrdersResult = $db->query("SELECT COUNT(*) as total FROM sales_order WHERE status != 'cart'");
         $totalOrdersRow = $db->fetch($totalOrdersResult);
         $totalOrders = $totalOrdersRow['total'] ?? 0;
 
@@ -65,6 +65,7 @@ class AdminController extends Controller
         $sql = "SELECT o.*, u.name as customer_name 
                 FROM sales_order o 
                 LEFT JOIN customer_entity u ON o.user_id = u.entity_id 
+                WHERE o.status != 'cart'
                 ORDER BY o.created_at DESC";
         $result = $db->query($sql);
         $allOrders = $db->fetchAll($result);

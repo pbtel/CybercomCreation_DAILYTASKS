@@ -122,7 +122,7 @@ class OrderModel
                 FROM sales_order o
                 LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
                 LEFT JOIN sales_order_billing b ON o.order_id = b.order_id
-                WHERE o.order_id = $1";
+                WHERE o.order_id = $1 AND o.status != 'cart'";
         $result = $this->db->query($sql, [$orderId]);
         $order = $this->db->fetch($result);
 
@@ -159,7 +159,7 @@ class OrderModel
         $sql = "SELECT o.*, s.shipping_method
                 FROM sales_order o
                 LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
-                WHERE o.user_id = $1 
+                WHERE o.user_id = $1 AND o.status != 'cart'
                 ORDER BY o.created_at DESC";
         $result = $this->db->query($sql, [$userId]);
         $orders = $this->db->fetchAll($result);
@@ -210,7 +210,7 @@ class OrderModel
                     SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) as shipped,
                     SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered
                 FROM sales_order
-                WHERE user_id = $1";
+                WHERE user_id = $1 AND status != 'cart'";
 
         $result = $this->db->query($sql, [$userId]);
         $stats = $this->db->fetch($result);
