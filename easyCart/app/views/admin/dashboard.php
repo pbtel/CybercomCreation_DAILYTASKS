@@ -6,6 +6,8 @@
         <div class="flex-gap-1">
             <a href="<?php echo BASE_URL; ?>/admin/orders" class="chip">Manage Orders</a>
             <a href="<?php echo BASE_URL; ?>/admin/products" class="chip">Manage Products</a>
+            <a href="<?php echo BASE_URL; ?>/admin/importExport" class="chip"
+                style="background: var(--primary); color: white;">Import / Export</a>
         </div>
     </div>
 

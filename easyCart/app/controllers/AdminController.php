@@ -36,7 +36,7 @@ class AdminController extends Controller
         $totalOrdersRow = $db->fetch($totalOrdersResult);
         $totalOrders = $totalOrdersRow['total'] ?? 0;
 
-        $totalUsersResult = $db->query("SELECT COUNT(*) as total FROM users");
+        $totalUsersResult = $db->query("SELECT COUNT(*) as total FROM customer_entity");
         $totalUsersRow = $db->fetch($totalUsersResult);
         $totalUsers = $totalUsersRow['total'] ?? 0;
 
@@ -64,7 +64,7 @@ class AdminController extends Controller
         $db = Database::getInstance();
         $sql = "SELECT o.*, u.name as customer_name 
                 FROM sales_order o 
-                LEFT JOIN users u ON o.user_id = u.user_id 
+                LEFT JOIN customer_entity u ON o.user_id = u.entity_id 
                 ORDER BY o.created_at DESC";
         $result = $db->query($sql);
         $allOrders = $db->fetchAll($result);
@@ -149,5 +149,150 @@ class AdminController extends Controller
             }
         }
         $this->redirect('admin/products');
+    }
+
+    /**
+     * Import/Export Page
+     */
+    public function importExport()
+    {
+        $data = [
+            'pageTitle' => 'Import / Export Products'
+        ];
+        $this->view('admin/import_export', $data);
+    }
+
+    /**
+     * Process Product Import
+     */
+    public function processImport()
+    {
+        if (!$this->isPost()) {
+            $this->redirect('admin/importExport');
+            return;
+        }
+
+        if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] != UPLOAD_ERR_OK) {
+            Session::setFlash('error', 'Please upload a valid CSV file.');
+            $this->redirect('admin/importExport');
+            return;
+        }
+
+        $file = $_FILES['csv_file']['tmp_name'];
+        $handle = fopen($file, "r");
+
+        if ($handle === false) {
+            Session::setFlash('error', 'Could not open CSV file.');
+            $this->redirect('admin/importExport');
+            return;
+        }
+
+        // Expected header: sku, name, brand, price, stock, description, category, image_url, discount_percent
+        $header = fgetcsv($handle);
+
+        $productModel = $this->model('ProductModel');
+        $successCount = 0;
+        $errorCount = 0;
+        $errors = [];
+
+        while (($row = fgetcsv($handle)) !== false) {
+            // Map row to data
+            // Assuming order: 0:sku, 1:name, 2:brand, 3:price, 4:stock, 5:description, 6:category, 7:image_url, 8:discount_percent
+            if (count($row) < 4) {
+                $errorCount++; // Invalid row
+                continue;
+            }
+
+            $data = [
+                'sku' => $row[0] ?? '',
+                'name' => $row[1] ?? '',
+                'brand' => $row[2] ?? '',
+                'price' => $row[3] ?? 0,
+                'stock' => $row[4] ?? 0,
+                'description' => $row[5] ?? '',
+                'category' => $row[6] ?? '',
+                'image_url' => $row[7] ?? '',
+                'discount_percent' => $row[8] ?? 0
+            ];
+
+            // Validation
+            if (empty($data['sku']) || empty($data['name']) || empty($data['price'])) {
+                $errorCount++;
+                $errors[] = "Row with missing required fields (SKU: {$data['sku']})";
+                continue;
+            }
+
+            // Check duplicate
+            $existing = $productModel->getBySku($data['sku']);
+            if ($existing) {
+                // Update
+                if ($productModel->updateProduct($existing['id'], $data)) {
+                    $successCount++;
+                } else {
+                    $errorCount++;
+                    $errors[] = "Failed to update SKU: {$data['sku']}";
+                }
+            } else {
+                // Create
+                if ($productModel->createProduct($data)) {
+                    $successCount++;
+                } else {
+                    $errorCount++;
+                    $errors[] = "Failed to create SKU: {$data['sku']}";
+                }
+            }
+        }
+
+        fclose($handle);
+
+        $msg = "Import completed. Success: $successCount, Failed: $errorCount.";
+        if (!empty($errors)) {
+            $msg .= " Errors: " . implode(", ", array_slice($errors, 0, 5)); // Show first 5 errors
+        }
+
+        if ($errorCount > 0) {
+            Session::setFlash('warning', $msg);
+        } else {
+            Session::setFlash('success', $msg);
+        }
+
+        $this->redirect('admin/importExport');
+    }
+
+    /**
+     * Export Products to CSV
+     */
+    public function exportProducts()
+    {
+        $productModel = $this->model('ProductModel');
+        $products = $productModel->getAll();
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment; filename="products_export_' . date('Y-m-d') . '.csv"');
+
+        $output = fopen('php://output', 'w');
+
+        // Header
+        fputcsv($output, ['sku', 'name', 'brand', 'price', 'stock', 'description', 'category', 'image_url', 'discount_percent', 'original_price', 'rating', 'reviews']);
+
+        foreach ($products as $product) {
+            fputcsv($output, [
+                $product['sku'],
+                $product['name'],
+                $product['brand'],
+                $product['price'],
+                $product['stock'],
+                $product['description'],
+                $product['category'],
+                $product['image'] ?? '', // Image emoji/url
+                $product['discount_percent'],
+                $product['original_price'],
+                $product['rating'],
+                $product['reviews_count']
+            ]);
+        }
+
+        fclose($output);
+        exit;
     }
 }

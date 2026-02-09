@@ -111,7 +111,8 @@
                 </div>
 
                 <div class="row-alt">
-                    <span class="text-secondary">Shipping Cost</span>
+                    <span class="text-secondary">Shipping Cost
+                        (<?php echo $order['shipping_method'] ?? 'Standard'; ?>)</span>
                     <span class="font-700">₹<?php echo number_format($order['shipping_cost'] ?? 0); ?></span>
                 </div>
 

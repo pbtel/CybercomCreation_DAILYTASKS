@@ -388,6 +388,9 @@
                         <?php echo htmlspecialchars($order['address']['pincode'] ?? $order['address']['postal_code']); ?><br>
                         <?php echo htmlspecialchars($order['address']['country']); ?>
                     </p>
+                    <p style="margin-top: 10px; font-size: 0.9rem; color: var(--text-muted);">
+                        <strong>Via:</strong> <?php echo $order['shipping_method'] ?? 'Standard'; ?>
+                    </p>
                 <?php else: ?>
                     <p>No address information available.</p>
                 <?php endif; ?>
@@ -414,22 +417,27 @@
                                 <div class="item-variant">
                                     <?php
                                     $vLines = [];
-                                    foreach ($item['variant'] as $type => $value) {
-                                        $vLines[] = ucfirst($type) . ': ' . $value;
+                                    if (is_array($item['variant'])) {
+                                        foreach ($item['variant'] as $type => $value) {
+                                            $vLines[] = ucfirst($type) . ': ' . $value;
+                                        }
                                     }
                                     echo implode(' | ', $vLines);
                                     ?>
                                 </div>
                             <?php endif; ?>
+                            <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                                SKU: <?php echo $item['sku'] ?? 'N/A'; ?>
+                            </div>
                         </td>
                         <td class="text-center mono">
                             <?php echo $item['quantity']; ?>
                         </td>
-                        <td class="text-right mono">₹
-                            <?php echo number_format($item['price']); ?>
+                        <td class="text-right mono">
+                            ₹<?php echo number_format($item['price']); ?>
                         </td>
-                        <td class="text-right mono">₹
-                            <?php echo number_format($item['price'] * $item['quantity']); ?>
+                        <td class="text-right mono font-700">
+                            ₹<?php echo number_format($item['price'] * $item['quantity']); ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -444,7 +452,7 @@
                 </div>
 
                 <div class="summary-row">
-                    <label>Shipping / Handling</label>
+                    <label>Shipping (<?php echo $order['shipping_method'] ?? 'Standard'; ?>)</label>
                     <span class="mono">₹<?php echo number_format($order['shipping_cost'] ?? 0); ?></span>
                 </div>
 

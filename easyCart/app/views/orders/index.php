@@ -68,8 +68,8 @@
                             <span><?php echo $orderDate; ?></span>
                         </div>
                         <div class="meta-group">
-                            <label>Ship To</label>
-                            <span><?php echo Session::get('user')['name'] ?? 'Customer'; ?></span>
+                            <label>Shipping Method</label>
+                            <span><?php echo $order['shipping_method'] ?? 'Standard'; ?></span>
                         </div>
                     </div>
 

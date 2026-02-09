@@ -308,4 +308,189 @@ class ProductModel
 
         return $product;
     }
+    /**
+     * Create new product
+     */
+    public function createProduct($data)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Get or Create Brand
+            $brandId = null;
+            if (!empty($data['brand'])) {
+                $brandId = $this->getBrandIdByName($data['brand']);
+            }
+
+            // 2. Insert into catalog_product_entity
+            $sql = "INSERT INTO catalog_product_entity 
+                    (sku, name, brand_id, price, original_price, discount_percent, stock, description, shipping_type, is_active) 
+                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+                    RETURNING entity_id";
+
+            $params = [
+                $data['sku'],
+                $data['name'],
+                $brandId,
+                $data['price'],
+                $data['original_price'] ?? $data['price'],
+                $data['discount_percent'] ?? 0,
+                $data['stock'] ?? 0,
+                $data['description'] ?? '',
+                $data['shipping_type'] ?? 'standard',
+                true // is_active
+            ];
+
+            $result = $this->db->query($sql, $params);
+            $row = $this->db->fetch($result);
+            $productId = $row['entity_id'];
+
+            // 3. Handle Images
+            if (!empty($data['image_url'])) {
+                // Assuming image_url contains emoji or path
+                $imgSql = "INSERT INTO catalog_product_image (product_id, image_emoji, is_primary) VALUES ($1, $2, true)";
+                $this->db->query($imgSql, [$productId, $data['image_url']]);
+            }
+
+            // 4. Handle Categories
+            if (!empty($data['category'])) {
+                $categoryId = $this->getCategoryIdByName($data['category']);
+                if ($categoryId) {
+                    $catSql = "INSERT INTO catalog_category_products (category_id, product_id) VALUES ($1, $2)";
+                    $this->db->query($catSql, [$categoryId, $productId]);
+                }
+            }
+
+            $this->db->commit();
+            return $productId;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            // Log error or rethrow
+            error_log("Error creating product: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Update existing product
+     */
+    public function updateProduct($productId, $data)
+    {
+        try {
+            $this->db->beginTransaction();
+
+            // 1. Get or Create Brand
+            $brandId = null;
+            if (!empty($data['brand'])) {
+                $brandId = $this->getBrandIdByName($data['brand']);
+            }
+
+            // 2. Update catalog_product_entity
+            $sql = "UPDATE catalog_product_entity 
+                    SET name = $1, brand_id = $2, price = $3, original_price = $4, 
+                        discount_percent = $5, stock = $6, description = $7, updated_at = NOW()
+                    WHERE entity_id = $8";
+
+            $params = [
+                $data['name'],
+                $brandId,
+                $data['price'],
+                $data['original_price'] ?? $data['price'],
+                $data['discount_percent'] ?? 0,
+                $data['stock'] ?? 0,
+                $data['description'] ?? '',
+                $productId
+            ];
+
+            $this->db->query($sql, $params);
+
+            // 3. Update Image if provided (simple replacement for primary)
+            if (!empty($data['image_url'])) {
+                // Check if exists
+                $checkImg = $this->db->query("SELECT image_id FROM catalog_product_image WHERE product_id = $1 AND is_primary = true", [$productId]);
+                if ($this->db->fetch($checkImg)) {
+                    $this->db->query("UPDATE catalog_product_image SET image_emoji = $1 WHERE product_id = $2 AND is_primary = true", [$data['image_url'], $productId]);
+                } else {
+                    $this->db->query("INSERT INTO catalog_product_image (product_id, image_emoji, is_primary) VALUES ($1, $2, true)", [$productId, $data['image_url']]);
+                }
+            }
+
+            // 4. Update Category
+            if (!empty($data['category'])) {
+                $categoryId = $this->getCategoryIdByName($data['category']);
+                if ($categoryId) {
+                    // Remove existing category associations (assuming single category ownership for simplicity in CSV flow)
+                    $this->db->query("DELETE FROM catalog_category_products WHERE product_id = $1", [$productId]);
+
+                    // Add new association
+                    $catSql = "INSERT INTO catalog_category_products (category_id, product_id) VALUES ($1, $2)";
+                    $this->db->query($catSql, [$categoryId, $productId]);
+                }
+            }
+
+            $this->db->commit();
+            return true;
+
+        } catch (Exception $e) {
+            $this->db->rollBack();
+            error_log("Error updating product: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get or Create Brand ID by Name
+     */
+    private function getBrandIdByName($name)
+    {
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+
+        $sql = "SELECT entity_id FROM catalog_brand_entity WHERE brand_slug = $1";
+        $result = $this->db->query($sql, [$slug]);
+        $row = $this->db->fetch($result);
+
+        if ($row) {
+            return $row['entity_id'];
+        }
+
+        // Create new
+        $insertSql = "INSERT INTO catalog_brand_entity (brand_slug, name, is_active) VALUES ($1, $2, true) RETURNING entity_id";
+        $result = $this->db->query($insertSql, [$slug, $name]);
+        $row = $this->db->fetch($result);
+        return $row['entity_id'];
+    }
+
+    /**
+     * Get or Create Category ID by Name
+     */
+    private function getCategoryIdByName($name)
+    {
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+
+        $sql = "SELECT entity_id FROM catalog_category_entity WHERE category_slug = $1";
+        $result = $this->db->query($sql, [$slug]);
+        $row = $this->db->fetch($result);
+
+        if ($row) {
+            return $row['entity_id'];
+        }
+
+        // Create new
+        $insertSql = "INSERT INTO catalog_category_entity (category_slug, name, is_active) VALUES ($1, $2, true) RETURNING entity_id";
+        $result = $this->db->query($insertSql, [$slug, $name]);
+        $row = $this->db->fetch($result);
+        return $row['entity_id'];
+    }
+
+    /**
+     * Get product by SKU
+     */
+    public function getBySku($sku)
+    {
+        $sql = "SELECT entity_id FROM catalog_product_entity WHERE sku = $1";
+        $result = $this->db->query($sql, [$sku]);
+        return $this->db->fetch($result);
+    }
 }
+
