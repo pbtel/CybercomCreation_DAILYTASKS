@@ -4,7 +4,7 @@
  * Auth Controller
  * Handles user authentication (login, signup, logout)
  */
-class AuthController extends Controller
+class Controller_Auth extends Controller
 {
 
     /**
@@ -13,7 +13,7 @@ class AuthController extends Controller
     public function login()
     {
         // Redirect if already logged in
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         if ($userModel->isLoggedIn()) {
             $this->redirect('home');
             return;
@@ -51,7 +51,7 @@ class AuthController extends Controller
         }
 
         // Verify login
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         $result = $userModel->verifyLogin($email, $password);
 
         if ($result['success']) {
@@ -59,7 +59,7 @@ class AuthController extends Controller
             $userModel->login($result['user_id'], $result['name'], $result['email']);
 
             // Merge guest cart
-            $cartModel = $this->model('CartModel');
+            $cartModel = $this->model('Model_Cart');
             $cartModel->mergeGuestCart($result['user_id']);
 
             Session::setFlash('success', 'Welcome back, ' . $result['name'] . '!');
@@ -81,7 +81,7 @@ class AuthController extends Controller
     public function signup()
     {
         // Redirect if already logged in
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         if ($userModel->isLoggedIn()) {
             $this->redirect('home');
             return;
@@ -135,7 +135,7 @@ class AuthController extends Controller
         }
 
         // Register user
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         $result = $userModel->register($firstName, $lastName, $email, $password);
 
         if ($result['success']) {
@@ -143,7 +143,7 @@ class AuthController extends Controller
             $userModel->login($result['user_id'], $result['name'], $result['email']);
 
             // Merge guest cart
-            $cartModel = $this->model('CartModel');
+            $cartModel = $this->model('Model_Cart');
             $cartModel->mergeGuestCart($result['user_id']);
 
             Session::setFlash('success', 'Account created successfully! Welcome, ' . $result['name'] . '!');
@@ -164,7 +164,7 @@ class AuthController extends Controller
      */
     public function logout()
     {
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         $userModel->logout();
 
         Session::setFlash('success', 'You have been logged out');

@@ -86,7 +86,7 @@
                     <h2 class="checkout-section-title">🚚 Delivery Method</h2>
                     
                     <?php 
-                    $shippingModel = new ShippingModel();
+                    $shippingModel = new Model_Shipping();
                     $methods = ['standard', 'express', 'whiteglove', 'freight'];
                     foreach ($methods as $method): 
                         $available = in_array($method, $availableShippingMethods);

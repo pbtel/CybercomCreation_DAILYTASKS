@@ -6,7 +6,7 @@
  */
 class App
 {
-    protected $controller = 'HomeController';
+    protected $controller = 'Controller_Home';
     protected $method = 'index';
     protected $params = [];
 
@@ -33,8 +33,10 @@ class App
         }
 
         // 2. Resolve Controller
+        // Rename convention: Home -> Controller_Home
         $controllerName = isset($segments[0]) ? ucfirst(strtolower($segments[0])) : 'Home';
-        $controllerClass = $controllerName . 'Controller';
+
+        $controllerClass = 'Controller_' . $controllerName;
         $controllerFile = __DIR__ . '/../controllers/' . $controllerClass . '.php';
 
         if (file_exists($controllerFile)) {
@@ -73,7 +75,9 @@ class App
         }
 
         // 4. Handle Parameterized Routes (e.g. product/1 or product/slug -> product/show/param)
-        $currentControllerName = str_replace('Controller', '', get_class($this->controller));
+        // Get the core name "Product" from "Controller_Product"
+        $currentControllerName = str_replace('Controller_', '', get_class($this->controller));
+
         if (in_array(strtolower($currentControllerName), ['product', 'order'])) {
             // Check if first segment is a valid method
             $isMethod = isset($segments[0]) && method_exists($this->controller, $segments[0]);

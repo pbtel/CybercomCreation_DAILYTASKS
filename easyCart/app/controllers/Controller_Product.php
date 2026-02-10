@@ -4,7 +4,7 @@
  * Product Controller
  * Handles product listing and detail pages
  */
-class ProductController extends Controller
+class Controller_Product extends Controller
 {
 
     /**
@@ -13,9 +13,9 @@ class ProductController extends Controller
     public function index()
     {
         // Load models
-        $productModel = $this->model('ProductModel');
-        $categoryModel = $this->model('CategoryModel');
-        $brandModel = $this->model('BrandModel');
+        $productModel = $this->model('Model_Product');
+        $categoryModel = $this->model('Model_Category');
+        $brandModel = $this->model('Model_Brand');
 
         // Get filter parameters
         $selectedCategory = $this->get('category', 'all');
@@ -114,7 +114,7 @@ class ProductController extends Controller
         }
 
         // Load model
-        $productModel = $this->model('ProductModel');
+        $productModel = $this->model('Model_Product');
 
         // Get product by ID or Slug
         if (is_numeric($param)) {

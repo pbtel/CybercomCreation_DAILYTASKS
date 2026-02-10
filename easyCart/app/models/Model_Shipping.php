@@ -4,7 +4,7 @@
  * Shipping Model
  * Handles shipping cost calculations and methods
  */
-class ShippingModel
+class Model_Shipping
 {
 
     /**

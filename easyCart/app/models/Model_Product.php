@@ -4,7 +4,7 @@
  * Product Model
  * Handles all product-related database operations
  */
-class ProductModel
+class Model_Product
 {
     private $db;
 

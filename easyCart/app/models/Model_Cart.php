@@ -4,7 +4,7 @@
  * Cart Model
  * Handles all cart-related operations
  */
-class CartModel
+class Model_Cart
 {
     private $db;
 
@@ -88,8 +88,8 @@ class CartModel
         // Billing
         if (isset($postData['payment_method'])) {
             // Get applied coupon code
-            require_once __DIR__ . '/CouponModel.php';
-            $couponModel = new CouponModel();
+            require_once __DIR__ . '/Model_Coupon.php';
+            $couponModel = new Model_Coupon();
             $appliedCoupon = $couponModel->getApplied();
             $couponCode = $appliedCoupon['code'] ?? null;
 
@@ -103,10 +103,10 @@ class CartModel
 
         // --- NEW: Update sales_cart with totals and contact info ---
         // Calculate Totals using models
-        require_once __DIR__ . '/ShippingModel.php';
-        require_once __DIR__ . '/CouponModel.php';
-        $shippingModel = new ShippingModel();
-        $couponModel = new CouponModel();
+        require_once __DIR__ . '/Model_Shipping.php';
+        require_once __DIR__ . '/Model_Coupon.php';
+        $shippingModel = new Model_Shipping();
+        $couponModel = new Model_Coupon();
 
         $subtotal = $this->getSubtotal();
         // Use CouponModel for cart-wide discount
@@ -254,10 +254,10 @@ class CartModel
         $cart = $this->getCurrentCart();
         $total = 0;
 
-        require_once __DIR__ . '/ProductModel.php';
-        require_once __DIR__ . '/DiscountModel.php';
-        $productModel = new ProductModel();
-        $discountModel = new DiscountModel();
+        require_once __DIR__ . '/Model_Product.php';
+        require_once __DIR__ . '/Model_Discount.php';
+        $productModel = new Model_Product();
+        $discountModel = new Model_Discount();
 
         foreach ($cart as $item) {
             $product = $productModel->getById($item['product_id']);
@@ -278,10 +278,10 @@ class CartModel
         $cart = $this->getCurrentCart();
         $cartDetails = [];
 
-        require_once __DIR__ . '/ProductModel.php';
-        require_once __DIR__ . '/DiscountModel.php';
-        $productModel = new ProductModel();
-        $discountModel = new DiscountModel();
+        require_once __DIR__ . '/Model_Product.php';
+        require_once __DIR__ . '/Model_Discount.php';
+        $productModel = new Model_Product();
+        $discountModel = new Model_Discount();
 
         foreach ($cart as $key => $item) {
             $product = $productModel->getById($item['product_id']);
@@ -416,10 +416,10 @@ class CartModel
         }
 
         // --- NEW: Continuously update cart totals ---
-        require_once __DIR__ . '/ShippingModel.php';
-        require_once __DIR__ . '/CouponModel.php';
-        $shippingModel = new ShippingModel();
-        $couponModel = new CouponModel();
+        require_once __DIR__ . '/Model_Shipping.php';
+        require_once __DIR__ . '/Model_Coupon.php';
+        $shippingModel = new Model_Shipping();
+        $couponModel = new Model_Coupon();
 
         $subtotal = $this->getSubtotal();
         $discount = $couponModel->calculateDiscount($subtotal);

@@ -4,7 +4,7 @@
  * Admin Controller
  * Handles administrative backend tasks
  */
-class AdminController extends Controller
+class Controller_Admin extends Controller
 {
 
     public function __construct()
@@ -23,8 +23,8 @@ class AdminController extends Controller
      */
     public function index()
     {
-        $orderModel = $this->model('OrderModel');
-        $productModel = $this->model('ProductModel');
+        $orderModel = $this->model('Model_Order');
+        $productModel = $this->model('Model_Product');
 
         // Fetch stats
         $db = Database::getInstance();
@@ -58,7 +58,7 @@ class AdminController extends Controller
      */
     public function orders()
     {
-        $orderModel = $this->model('OrderModel');
+        $orderModel = $this->model('Model_Order');
 
         // Use Database directly for simple admin listing if model doesn't have getAllOrders
         $db = Database::getInstance();
@@ -112,7 +112,7 @@ class AdminController extends Controller
      */
     public function products()
     {
-        $productModel = $this->model('ProductModel');
+        $productModel = $this->model('Model_Product');
         $allProducts = $productModel->getAll();
 
         // Pagination
@@ -191,7 +191,7 @@ class AdminController extends Controller
         // Expected header: sku, name, brand, price, stock, description, category, image_url, discount_percent
         $header = fgetcsv($handle);
 
-        $productModel = $this->model('ProductModel');
+        $productModel = $this->model('Model_Product');
         $successCount = 0;
         $errorCount = 0;
         $errors = [];
@@ -265,7 +265,7 @@ class AdminController extends Controller
      */
     public function exportProducts()
     {
-        $productModel = $this->model('ProductModel');
+        $productModel = $this->model('Model_Product');
         $products = $productModel->getAll();
 
         header('Content-Type: text/csv');

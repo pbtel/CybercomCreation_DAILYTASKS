@@ -4,7 +4,7 @@
  * Discount Model
  * Handles first-unit discount calculations
  */
-class DiscountModel {
+class Model_Discount {
     
     /**
      * Calculate discount percentage based on product price

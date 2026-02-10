@@ -4,7 +4,7 @@
  * Category Model
  * Handles all category-related operations
  */
-class CategoryModel
+class Model_Category
 {
     private $db;
 

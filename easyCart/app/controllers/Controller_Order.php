@@ -4,7 +4,7 @@
  * Order Controller
  * Handles order history and details
  */
-class OrderController extends Controller
+class Controller_Order extends Controller
 {
 
     /**
@@ -13,11 +13,11 @@ class OrderController extends Controller
     public function index()
     {
         // Require login
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         $userModel->requireLogin('orders');
 
         // Load model
-        $orderModel = $this->model('OrderModel');
+        $orderModel = $this->model('Model_Order');
 
         // Get current user
         $user = $userModel->getCurrentUser();
@@ -59,11 +59,11 @@ class OrderController extends Controller
         }
 
         // Require login
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         $userModel->requireLogin('orders');
 
         // Load model
-        $orderModel = $this->model('OrderModel');
+        $orderModel = $this->model('Model_Order');
 
         // Get order
         $order = $orderModel->getById($id);
@@ -103,11 +103,11 @@ class OrderController extends Controller
         }
 
         // Require login
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         $userModel->requireLogin('orders');
 
         // Load model
-        $orderModel = $this->model('OrderModel');
+        $orderModel = $this->model('Model_Order');
 
         // Get order
         $order = $orderModel->getById($id);

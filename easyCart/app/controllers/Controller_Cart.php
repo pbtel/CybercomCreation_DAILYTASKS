@@ -4,7 +4,7 @@
  * Cart Controller
  * Handles shopping cart operations
  */
-class CartController extends Controller
+class Controller_Cart extends Controller
 {
 
     /**
@@ -13,13 +13,13 @@ class CartController extends Controller
     public function index()
     {
         // Guests allowed to view cart
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         // $userModel->requireLogin('cart');
 
         // Load models
-        $cartModel = $this->model('CartModel');
-        $couponModel = $this->model('CouponModel');
-        $shippingModel = $this->model('ShippingModel');
+        $cartModel = $this->model('Model_Cart');
+        $couponModel = $this->model('Model_Coupon');
+        $shippingModel = $this->model('Model_Shipping');
 
         // Get cart data
         $cartItems = $cartModel->getItemsWithDetails();
@@ -59,7 +59,7 @@ class CartController extends Controller
     public function add()
     {
         // Guests allowed to add to cart
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         // $userModel->requireLogin('cart'); // Remove this line
 
         if (!$this->isPost()) {
@@ -85,7 +85,7 @@ class CartController extends Controller
         }
 
         // Add to cart
-        $cartModel = $this->model('CartModel');
+        $cartModel = $this->model('Model_Cart');
         $success = $cartModel->addToCart($productId, $quantity, $variant);
 
         if ($success) {
@@ -105,7 +105,7 @@ class CartController extends Controller
     public function update()
     {
         // Guests allowed to update cart
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         // $userModel->requireLogin('cart'); // Remove this line
 
         if (!$this->isPost()) {
@@ -123,7 +123,7 @@ class CartController extends Controller
         }
 
         // Update cart
-        $cartModel = $this->model('CartModel');
+        $cartModel = $this->model('Model_Cart');
         $success = $cartModel->updateQuantity($cartItemKey, $quantity);
 
         if ($success) {
@@ -141,7 +141,7 @@ class CartController extends Controller
     public function remove()
     {
         // Guests allowed to remove from cart
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         // $userModel->requireLogin('cart'); // Remove this line
 
         if (!$this->isPost()) {
@@ -158,7 +158,7 @@ class CartController extends Controller
         }
 
         // Remove from cart
-        $cartModel = $this->model('CartModel');
+        $cartModel = $this->model('Model_Cart');
         $success = $cartModel->removeItem($cartItemKey);
 
         if ($success) {
@@ -176,7 +176,7 @@ class CartController extends Controller
     public function clear()
     {
         // Guests allowed to clear cart
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         // $userModel->requireLogin('cart'); // Remove this line
 
         if (!$this->isPost()) {
@@ -185,7 +185,7 @@ class CartController extends Controller
         }
 
         // Clear cart
-        $cartModel = $this->model('CartModel');
+        $cartModel = $this->model('Model_Cart');
         $cartModel->clearCart();
 
         Session::setFlash('success', 'Cart cleared');

@@ -4,7 +4,7 @@
  * Brand Model
  * Handles all brand-related operations
  */
-class BrandModel
+class Model_Brand
 {
     private $db;
 

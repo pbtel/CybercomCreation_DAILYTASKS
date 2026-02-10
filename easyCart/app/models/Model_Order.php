@@ -4,7 +4,7 @@
  * Order Model
  * Handles all order-related database operations
  */
-class OrderModel
+class Model_Order
 {
     private $db;
 

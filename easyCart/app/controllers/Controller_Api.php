@@ -4,7 +4,7 @@
  * Api Controller
  * Handles all AJAX requests
  */
-class ApiController extends Controller
+class Controller_Api extends Controller
 {
 
     /**
@@ -12,7 +12,7 @@ class ApiController extends Controller
      */
     public function cartAdd()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Please login to add items to cart', 'login_required' => true]);
         // }
@@ -33,7 +33,7 @@ class ApiController extends Controller
             }
         }
 
-        $productModel = $this->model('ProductModel');
+        $productModel = $this->model('Model_Product');
         $product = $productModel->getById($productId);
 
         if (!$product) {
@@ -53,7 +53,7 @@ class ApiController extends Controller
         }
 
         try {
-            $cartModel = $this->model('CartModel');
+            $cartModel = $this->model('Model_Cart');
             $cartModel->addToCart($productId, $quantity, $variant);
 
             return $this->json([
@@ -63,8 +63,8 @@ class ApiController extends Controller
                 'cart_subtotal' => $cartModel->getSubtotal(),
                 'product_name' => $product['name']
             ]);
-        } catch (Exception $e) {
-            return $this->json(['success' => false, 'message' => 'Failed to add product to cart']);
+        } catch (Throwable $e) {
+            return $this->json(['success' => false, 'message' => 'Failed to add product to cart: ' . $e->getMessage()]);
         }
     }
 
@@ -73,7 +73,7 @@ class ApiController extends Controller
      */
     public function cartUpdate()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Please login to update cart', 'login_required' => true]);
         // }
@@ -90,12 +90,12 @@ class ApiController extends Controller
         }
 
         try {
-            $cartModel = $this->model('CartModel');
+            $cartModel = $this->model('Model_Cart');
             $success = $cartModel->updateQuantity($cartKey, $quantity);
 
             if ($success) {
                 $subtotal = $cartModel->getSubtotal();
-                $couponModel = $this->model('CouponModel');
+                $couponModel = $this->model('Model_Coupon');
                 $appliedCoupon = $couponModel->getApplied();
                 $discount = $couponModel->calculateDiscount($subtotal);
                 $finalSubtotal = $subtotal - $discount;
@@ -120,8 +120,8 @@ class ApiController extends Controller
             } else {
                 return $this->json(['success' => false, 'message' => 'Item not found in cart']);
             }
-        } catch (Exception $e) {
-            return $this->json(['success' => false, 'message' => 'Failed to update cart']);
+        } catch (Throwable $e) {
+            return $this->json(['success' => false, 'message' => 'Failed to update cart: ' . $e->getMessage()]);
         }
     }
 
@@ -130,7 +130,7 @@ class ApiController extends Controller
      */
     public function cartRemove()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Please login to modify cart', 'login_required' => true]);
         // }
@@ -146,12 +146,12 @@ class ApiController extends Controller
         }
 
         try {
-            $cartModel = $this->model('CartModel');
+            $cartModel = $this->model('Model_Cart');
             $success = $cartModel->removeItem($cartKey);
 
             if ($success) {
                 $subtotal = $cartModel->getSubtotal();
-                $couponModel = $this->model('CouponModel');
+                $couponModel = $this->model('Model_Coupon');
                 $discount = $couponModel->calculateDiscount($subtotal);
 
                 return $this->json([
@@ -167,8 +167,8 @@ class ApiController extends Controller
             } else {
                 return $this->json(['success' => false, 'message' => 'Item not found in cart']);
             }
-        } catch (Exception $e) {
-            return $this->json(['success' => false, 'message' => 'Failed to remove item']);
+        } catch (Throwable $e) {
+            return $this->json(['success' => false, 'message' => 'Failed to remove item: ' . $e->getMessage()]);
         }
     }
 
@@ -177,14 +177,14 @@ class ApiController extends Controller
      */
     public function cartSummary()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
         // }
 
-        $cartModel = $this->model('CartModel');
-        $couponModel = $this->model('CouponModel');
-        $shippingModel = $this->model('ShippingModel');
+        $cartModel = $this->model('Model_Cart');
+        $couponModel = $this->model('Model_Coupon');
+        $shippingModel = $this->model('Model_Shipping');
 
         $subtotal = $cartModel->getSubtotal();
         $discount = $couponModel->calculateDiscount($subtotal);
@@ -216,7 +216,7 @@ class ApiController extends Controller
      */
     public function couponApply()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Please login to apply coupons', 'login_required' => true]);
         // }
@@ -230,11 +230,11 @@ class ApiController extends Controller
             return $this->json(['success' => false, 'message' => 'Coupon code is required']);
         }
 
-        $couponModel = $this->model('CouponModel');
+        $couponModel = $this->model('Model_Coupon');
         $result = $couponModel->apply($code);
 
         if ($result['success']) {
-            $cartModel = $this->model('CartModel');
+            $cartModel = $this->model('Model_Cart');
             $subtotal = $cartModel->getSubtotal();
             $discount = $couponModel->calculateDiscount($subtotal);
 
@@ -255,7 +255,7 @@ class ApiController extends Controller
      */
     public function couponRemove()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
         // }
@@ -264,10 +264,10 @@ class ApiController extends Controller
             return $this->json(['success' => false, 'message' => 'Invalid request method']);
         }
 
-        $couponModel = $this->model('CouponModel');
+        $couponModel = $this->model('Model_Coupon');
         $couponModel->remove();
 
-        $cartModel = $this->model('CartModel');
+        $cartModel = $this->model('Model_Cart');
         $subtotal = $cartModel->getSubtotal();
 
         return $this->json([
@@ -282,7 +282,7 @@ class ApiController extends Controller
      */
     public function shippingCalculate()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
         // }
@@ -296,9 +296,9 @@ class ApiController extends Controller
             return $this->json(['success' => false, 'message' => 'Shipping method is required']);
         }
 
-        $cartModel = $this->model('CartModel');
-        $couponModel = $this->model('CouponModel');
-        $shippingModel = $this->model('ShippingModel');
+        $cartModel = $this->model('Model_Cart');
+        $couponModel = $this->model('Model_Coupon');
+        $shippingModel = $this->model('Model_Shipping');
 
         $subtotal = $cartModel->getSubtotal();
         $discount = $couponModel->calculateDiscount($subtotal);
@@ -322,7 +322,7 @@ class ApiController extends Controller
      */
     public function shippingMethodUpdate()
     {
-        // $userModel = $this->model('UserModel');
+        // $userModel = $this->model('Model_User');
         // if (!$userModel->isLoggedIn()) {
         //     return $this->json(['success' => false, 'message' => 'Unauthorized access', 'login_required' => true]);
         // }
@@ -336,7 +336,7 @@ class ApiController extends Controller
             return $this->json(['success' => false, 'message' => 'Shipping method is required']);
         }
 
-        $shippingModel = $this->model('ShippingModel');
+        $shippingModel = $this->model('Model_Shipping');
         $shippingModel->setSelected($method);
 
         return $this->json(['success' => true, 'message' => 'Shipping method updated']);
@@ -352,7 +352,7 @@ class ApiController extends Controller
         }
 
         try {
-            $orderModel = $this->model('OrderModel');
+            $orderModel = $this->model('Model_Order');
             $chartData = $orderModel->getChartData();
 
             // Format for Chart.js
@@ -369,7 +369,7 @@ class ApiController extends Controller
                 'labels' => $labels,
                 'data' => $amounts
             ]);
-        } catch (Exception $e) {
+        } catch (Throwable $e) {
             return $this->json(['success' => false, 'message' => $e->getMessage()]);
         }
     }

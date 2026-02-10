@@ -4,12 +4,12 @@
  * Dashboard Controller
  * Routes users to their appropriate dashboard (Admin or Order History)
  */
-class DashboardController extends Controller
+class Controller_Dashboard extends Controller
 {
     public function index()
     {
         // Require login
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         $userModel->requireLogin('dashboard');
 
         $user = Session::get('user', ['logged_in' => false]);
@@ -21,7 +21,7 @@ class DashboardController extends Controller
         }
 
         // Fetch data for user dashboard
-        $orderModel = $this->model('OrderModel');
+        $orderModel = $this->model('Model_Order');
         $userId = $user['user_id'];
 
         $stats = $orderModel->getStats($userId);

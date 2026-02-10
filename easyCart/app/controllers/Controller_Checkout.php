@@ -4,7 +4,7 @@
  * Checkout Controller
  * Handles checkout process and order placement
  */
-class CheckoutController extends Controller
+class Controller_Checkout extends Controller
 {
 
     /**
@@ -13,13 +13,13 @@ class CheckoutController extends Controller
     public function index()
     {
         // Require login
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         // $userModel->requireLogin('checkout'); // Allow guests to view checkout page
 
         // Load models
-        $cartModel = $this->model('CartModel');
-        $couponModel = $this->model('CouponModel');
-        $shippingModel = $this->model('ShippingModel');
+        $cartModel = $this->model('Model_Cart');
+        $couponModel = $this->model('Model_Coupon');
+        $shippingModel = $this->model('Model_Shipping');
 
         // Get cart data
         $cartItems = $cartModel->getItemsWithDetails();
@@ -96,7 +96,7 @@ class CheckoutController extends Controller
         }
 
         // Handle Guest Checkout Interception
-        $userModel = $this->model('UserModel');
+        $userModel = $this->model('Model_User');
         if (!$userModel->isLoggedIn()) {
             // Save form data to session with timestamp
             $formData = $_POST;
@@ -104,7 +104,7 @@ class CheckoutController extends Controller
             Session::set('pending_checkout_data', $formData);
 
             // --- PERSIST TO DATABASE START ---
-            $cartModel = $this->model('CartModel');
+            $cartModel = $this->model('Model_Cart');
             $cartModel->saveGuestCheckoutData($_POST);
             // --- PERSIST TO DATABASE END ---
 
@@ -117,10 +117,10 @@ class CheckoutController extends Controller
         $userModel->requireLogin('checkout');
 
         // Load models
-        $cartModel = $this->model('CartModel');
-        $orderModel = $this->model('OrderModel');
-        $couponModel = $this->model('CouponModel');
-        $shippingModel = $this->model('ShippingModel');
+        $cartModel = $this->model('Model_Cart');
+        $orderModel = $this->model('Model_Order');
+        $couponModel = $this->model('Model_Coupon');
+        $shippingModel = $this->model('Model_Shipping');
 
         // Get cart data
         $cartItems = $cartModel->getItemsWithDetails();

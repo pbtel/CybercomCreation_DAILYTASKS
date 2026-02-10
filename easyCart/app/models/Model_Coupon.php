@@ -4,7 +4,7 @@
  * Coupon Model
  * Handles coupon validation and discount calculations
  */
-class CouponModel
+class Model_Coupon
 {
     private $validCoupons = [
         'SAVE5' => 5,

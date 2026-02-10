@@ -4,7 +4,7 @@
  * User Model
  * Handles all user-related operations
  */
-class UserModel
+class Model_User
 {
     private $db;
 
