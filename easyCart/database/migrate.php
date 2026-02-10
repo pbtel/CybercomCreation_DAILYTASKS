@@ -123,6 +123,7 @@ try {
 
                 $insertedProduct = insertProduct([
                     'sku' => $p['sku'] ?? 'SKU-' . str_pad($p['id'], 5, '0', STR_PAD_LEFT),
+                    'url_slug' => strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $p['name']))),
                     'name' => $p['name'],
                     'brand_id' => $brandId,
                     'price' => $p['price'],

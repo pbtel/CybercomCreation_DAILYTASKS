@@ -118,7 +118,8 @@
                     </div>
                 <?php else: ?>
                     <?php foreach ($displayProducts as $product): ?>
-                        <a href="<?php echo BASE_URL; ?>/product/<?php echo $product['id']; ?>" class="product-item">
+                        <a href="<?php echo BASE_URL; ?>/product/<?php echo !empty($product['slug']) ? $product['slug'] : $product['id']; ?>"
+                            class="product-item">
                             <div class="product-image-wrapper">
                                 <?php if (!empty($product['tags'])): ?>
                                     <div class="product-tag"><?php echo ucfirst($product['tags'][0]); ?></div>

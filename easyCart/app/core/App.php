@@ -72,10 +72,15 @@ class App
             }
         }
 
-        // 4. Handle Parameterized Routes (e.g. product/1 -> product/show/1)
+        // 4. Handle Parameterized Routes (e.g. product/1 or product/slug -> product/show/param)
         $currentControllerName = str_replace('Controller', '', get_class($this->controller));
         if (in_array(strtolower($currentControllerName), ['product', 'order'])) {
-            if (isset($segments[0]) && is_numeric($segments[0])) {
+            // Check if first segment is a valid method
+            $isMethod = isset($segments[0]) && method_exists($this->controller, $segments[0]);
+
+            // If it's NOT a method, treat it as a parameter for 'show'
+            // This covers both numeric IDs and string Slugs
+            if (isset($segments[0]) && !$isMethod) {
                 // Prepend 'show' as the method
                 array_unshift($segments, 'show');
             }

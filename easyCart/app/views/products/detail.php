@@ -273,7 +273,8 @@
             <h2 class="section-title">You May Also Like</h2>
             <div class="products-container">
                 <?php foreach ($relatedProducts as $recProduct): ?>
-                    <a href="<?php echo BASE_URL; ?>/product/<?php echo $recProduct['id']; ?>" class="product-item">
+                    <a href="<?php echo BASE_URL; ?>/product/<?php echo !empty($recProduct['slug']) ? $recProduct['slug'] : $recProduct['id']; ?>"
+                        class="product-item">
                         <div class="product-image-wrapper">
                             <?php if (!empty($recProduct['tags'])): ?>
                                 <div class="product-tag"><?php echo ucfirst($recProduct['tags'][0]); ?></div>

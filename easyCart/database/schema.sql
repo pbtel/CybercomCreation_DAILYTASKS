@@ -132,6 +132,7 @@ CREATE INDEX idx_category_attr_category ON catalog_category_attribute(category_i
 
 CREATE TABLE catalog_product_entity (
     entity_id SERIAL PRIMARY KEY,
+    url_slug VARCHAR(255),
     sku VARCHAR(100) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
     brand_id INTEGER REFERENCES catalog_brand_entity(entity_id) ON DELETE SET NULL,
@@ -148,6 +149,7 @@ CREATE TABLE catalog_product_entity (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX idx_product_slug ON catalog_product_entity(url_slug);
 CREATE INDEX idx_product_sku ON catalog_product_entity(sku);
 CREATE INDEX idx_product_brand ON catalog_product_entity(brand_id);
 CREATE INDEX idx_product_active ON catalog_product_entity(is_active);

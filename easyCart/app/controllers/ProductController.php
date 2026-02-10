@@ -104,11 +104,11 @@ class ProductController extends Controller
 
     /**
      * Product detail page
-     * URL: /product/{id}
+     * URL: /product/{id} or /product/{slug}
      */
-    public function show($id = null)
+    public function show($param = null)
     {
-        if (!$id) {
+        if (!$param) {
             $this->redirect('products');
             return;
         }
@@ -116,14 +116,26 @@ class ProductController extends Controller
         // Load model
         $productModel = $this->model('ProductModel');
 
-        // Get product
-        $product = $productModel->getById($id);
+        // Get product by ID or Slug
+        if (is_numeric($param)) {
+            // If accessed via ID, redirect to Slug URL for SEO consistency
+            $product = $productModel->getById($param);
+            if ($product && !empty($product['slug'])) {
+                header("HTTP/1.1 301 Moved Permanently");
+                $this->redirect('product/' . $product['slug']);
+                return;
+            }
+        } else {
+            $product = $productModel->getBySlug($param);
+        }
 
         if (!$product) {
             Session::setFlash('error', 'Product not found');
             $this->redirect('products');
             return;
         }
+
+        $id = $product['id']; // Get numeric ID for further queries
 
         // Get additional product data
         $product['images'] = $productModel->getImages($id);

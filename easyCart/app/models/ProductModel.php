@@ -20,6 +20,7 @@ class ProductModel
     {
         $sql = "SELECT 
                     pe.entity_id as id,
+                    pe.url_slug as slug,
                     pe.sku,
                     pe.name,
                     pe.price,
@@ -52,12 +53,52 @@ class ProductModel
     }
 
     /**
+     * Get product by Slug
+     */
+    public function getBySlug($slug)
+    {
+        $sql = "SELECT 
+                    pe.entity_id as id,
+                    pe.url_slug as slug,
+                    pe.sku,
+                    pe.name,
+                    pe.price,
+                    pe.original_price,
+                    pe.discount_percent,
+                    pe.shipping_type,
+                    pe.rating,
+                    pe.reviews_count,
+                    pe.stock,
+                    pi.image_emoji as image,
+                    pe.description,
+                    be.brand_slug as brand,
+                    ce.category_slug as category,
+                    pe.is_active as featured
+                FROM catalog_product_entity pe
+                LEFT JOIN catalog_product_image pi ON pe.entity_id = pi.product_id AND pi.is_primary = true
+                LEFT JOIN catalog_category_products ccp ON pe.entity_id = ccp.product_id
+                LEFT JOIN catalog_category_entity ce ON ccp.category_id = ce.entity_id
+                LEFT JOIN catalog_brand_entity be ON pe.brand_id = be.entity_id
+                WHERE pe.url_slug = $1";
+
+        $result = $this->db->query($sql, [$slug]);
+        $product = $this->db->fetch($result);
+
+        if ($product) {
+            return $this->formatProduct($product);
+        }
+
+        return null;
+    }
+
+    /**
      * Get all products
      */
     public function getAll()
     {
         $sql = "SELECT 
                     pe.entity_id as id,
+                    pe.url_slug as slug,
                     pe.sku,
                     pe.name,
                     pe.price,
@@ -104,6 +145,7 @@ class ProductModel
 
         $sql = "SELECT 
                     pe.entity_id as id,
+                    pe.url_slug as slug,
                     pe.sku,
                     pe.name,
                     pe.price,
@@ -151,6 +193,7 @@ class ProductModel
 
         $sql = "SELECT 
                     pe.entity_id as id,
+                    pe.url_slug as slug,
                     pe.sku,
                     pe.name,
                     pe.price,
@@ -195,6 +238,7 @@ class ProductModel
         // or just return first 8.
         $sql = "SELECT 
                     pe.entity_id as id,
+                    pe.url_slug as slug,
                     pe.sku,
                     pe.name,
                     pe.price,
@@ -234,6 +278,7 @@ class ProductModel
     {
         $sql = "SELECT 
                     pe.entity_id as id,
+                    pe.url_slug as slug,
                     pe.sku,
                     pe.name,
                     pe.price,
@@ -316,6 +361,7 @@ class ProductModel
 
         // Convert numeric fields
         $product['id'] = (int) $product['id'];
+        $product['slug'] = $product['slug'] ?? ''; // Ensure slug is present
         $product['price'] = (float) $product['price'];
         $product['original_price'] = (float) ($product['original_price'] ?? $product['price']);
         $product['discount_percent'] = (int) ($product['discount_percent'] ?? 0);
