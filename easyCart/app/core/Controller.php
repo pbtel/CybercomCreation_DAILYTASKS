@@ -4,12 +4,14 @@
  * Base Controller Class
  * All controllers extend this class
  */
-class Controller {
-    
+class Controller
+{
+
     /**
      * Load a model
      */
-    public function model($model) {
+    public function model($model)
+    {
         require_once __DIR__ . '/../models/' . $model . '.php';
         return new $model();
     }
@@ -17,23 +19,25 @@ class Controller {
     /**
      * Load a view with data
      */
-    public function view($view, $data = []) {
+    public function view($view, $data = [])
+    {
         // Extract data to variables
         extract($data);
-        
-        // Check if view file exists
-        $viewFile = __DIR__ . '/../views/' . $view . '.php';
+
+        // Check if template file exists
+        $viewFile = __DIR__ . '/../templates/' . $view . '.php';
         if (file_exists($viewFile)) {
             require_once $viewFile;
         } else {
-            die("View not found: " . $view);
+            die("View template not found: " . $view);
         }
     }
 
     /**
      * Redirect to another URL
      */
-    public function redirect($url) {
+    public function redirect($url)
+    {
         header('Location: ' . BASE_URL . '/' . ltrim($url, '/'));
         exit;
     }
@@ -41,7 +45,8 @@ class Controller {
     /**
      * Return JSON response
      */
-    public function json($data, $statusCode = 200) {
+    public function json($data, $statusCode = 200)
+    {
         http_response_code($statusCode);
         header('Content-Type: application/json');
         echo json_encode($data);
@@ -51,7 +56,8 @@ class Controller {
     /**
      * Get POST data
      */
-    public function post($key = null, $default = null) {
+    public function post($key = null, $default = null)
+    {
         if ($key === null) {
             return $_POST;
         }
@@ -61,7 +67,8 @@ class Controller {
     /**
      * Get GET data
      */
-    public function get($key = null, $default = null) {
+    public function get($key = null, $default = null)
+    {
         if ($key === null) {
             return $_GET;
         }
@@ -71,14 +78,16 @@ class Controller {
     /**
      * Check if request is POST
      */
-    public function isPost() {
+    public function isPost()
+    {
         return $_SERVER['REQUEST_METHOD'] === 'POST';
     }
 
     /**
      * Check if request is GET
      */
-    public function isGet() {
+    public function isGet()
+    {
         return $_SERVER['REQUEST_METHOD'] === 'GET';
     }
 }

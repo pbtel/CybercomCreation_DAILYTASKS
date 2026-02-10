@@ -25,7 +25,10 @@ class Controller_Auth extends Controller
             'redirect' => $this->get('redirect', 'home')
         ];
 
-        $this->view('auth/login', $data);
+        // Use View_Auth_Login class
+        require_once __DIR__ . '/../views/View_Auth.php';
+        $view = new View_Auth_Login($data);
+        echo $view->toHtml();
     }
 
     /**
@@ -93,7 +96,10 @@ class Controller_Auth extends Controller
             'redirect' => $this->get('redirect', 'home')
         ];
 
-        $this->view('auth/signup', $data);
+        // Use View_Auth_Signup class
+        require_once __DIR__ . '/../views/View_Auth.php';
+        $view = new View_Auth_Signup($data);
+        echo $view->toHtml();
     }
 
     /**

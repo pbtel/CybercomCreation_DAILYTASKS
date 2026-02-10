@@ -50,7 +50,10 @@ class Controller_Cart extends Controller
             'taxNote' => 'Calculated at checkout'
         ];
 
-        $this->view('cart/index', $data);
+        // Use View_Cart class
+        require_once __DIR__ . '/../views/View_Cart.php';
+        $view = new View_Cart($data);
+        echo $view->toHtml();
     }
 
     /**

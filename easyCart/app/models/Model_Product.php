@@ -258,7 +258,7 @@ class Model_Product
                 LEFT JOIN catalog_category_products ccp ON pe.entity_id = ccp.product_id
                 LEFT JOIN catalog_category_entity ce ON ccp.category_id = ce.entity_id
                 LEFT JOIN catalog_brand_entity be ON pe.brand_id = be.entity_id
-                WHERE pe.is_active = true
+                WHERE pe.is_featured = true
                 LIMIT 8";
 
         $result = $this->db->query($sql);

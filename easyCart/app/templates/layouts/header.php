@@ -34,16 +34,15 @@
                 <a href="<?php echo BASE_URL; ?>/home">Home</a>
                 <a href="<?php echo BASE_URL; ?>/products">Products</a>
                 <a href="<?php echo BASE_URL; ?>/cart">Cart<span
-                        class="cart-badge <?php echo Session::getCartCount() > 0 ? '' : 'hidden'; ?>"
-                        id="cartBadge"><?php echo Session::getCartCount(); ?></span></a>
+                        class="cart-badge <?php echo $cartCount > 0 ? '' : 'hidden'; ?>"
+                        id="cartBadge"><?php echo $cartCount; ?></span></a>
                 <a href="<?php echo BASE_URL; ?>/orders">Orders</a>
                 <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
                     <span class="theme-icon">🌙</span>
                 </button>
-                <?php $user = Session::get('user', ['logged_in' => false]); ?>
-                <?php if ($user['logged_in']): ?>
+                <?php if ($currentUser['logged_in']): ?>
                     <a href="<?php echo BASE_URL; ?>/dashboard">Dashboard</a>
-                    <?php if ($user['email'] === 'admin@easycart.com'): ?>
+                    <?php if ($currentUser['email'] === 'admin@easycart.com'): ?>
                         <a href="<?php echo BASE_URL; ?>/admin" style="color: var(--primary); font-weight: 700;">Admin</a>
                     <?php endif; ?>
                     <a href="<?php echo BASE_URL; ?>/logout">Logout</a>

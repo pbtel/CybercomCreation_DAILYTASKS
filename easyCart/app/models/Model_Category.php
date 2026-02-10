@@ -22,7 +22,7 @@ class Model_Category
                     entity_id,
                     category_slug as id,
                     name,
-                    icon as image,
+                    image,
                     description
                 FROM catalog_category_entity
                 WHERE category_slug = $1";
@@ -54,7 +54,7 @@ class Model_Category
                     entity_id,
                     category_slug as id,
                     name,
-                    icon as image,
+                    image,
                     description
                 FROM catalog_category_entity
                 WHERE is_active = true

@@ -50,7 +50,10 @@ class Controller_Admin extends Controller
             'recentOrders' => $recentOrders
         ];
 
-        $this->view('admin/dashboard', $data);
+        // Use View_Admin_Dashboard class
+        require_once __DIR__ . '/../views/View_Admin.php';
+        $view = new View_Admin_Dashboard($data);
+        echo $view->toHtml();
     }
 
     /**
@@ -85,7 +88,10 @@ class Controller_Admin extends Controller
             'totalItems' => $totalItems
         ];
 
-        $this->view('admin/orders', $data);
+        // Use View_Admin_Orders class
+        require_once __DIR__ . '/../views/View_Admin.php';
+        $view = new View_Admin_Orders($data);
+        echo $view->toHtml();
     }
 
     /**
@@ -130,7 +136,10 @@ class Controller_Admin extends Controller
             'totalItems' => $totalItems
         ];
 
-        $this->view('admin/products', $data);
+        // Use View_Admin_Products class
+        require_once __DIR__ . '/../views/View_Admin.php';
+        $view = new View_Admin_Products($data);
+        echo $view->toHtml();
     }
 
     /**
@@ -160,7 +169,10 @@ class Controller_Admin extends Controller
         $data = [
             'pageTitle' => 'Import / Export Products'
         ];
-        $this->view('admin/import_export', $data);
+        // Use View_Admin_ImportExport class
+        require_once __DIR__ . '/../views/View_Admin.php';
+        $view = new View_Admin_ImportExport($data);
+        echo $view->toHtml();
     }
 
     /**

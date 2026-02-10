@@ -44,7 +44,10 @@ class Controller_Order extends Controller
             'stats' => $stats
         ];
 
-        $this->view('orders/index', $data);
+        // Use View_Order_List class
+        require_once __DIR__ . '/../views/View_Orders.php';
+        $view = new View_Order_List($data);
+        echo $view->toHtml();
     }
 
     /**
@@ -88,7 +91,10 @@ class Controller_Order extends Controller
             'order' => $order
         ];
 
-        $this->view('orders/detail', $data);
+        // Use View_Order_Detail class
+        require_once __DIR__ . '/../views/View_Orders.php';
+        $view = new View_Order_Detail($data);
+        echo $view->toHtml();
     }
 
     /**
@@ -133,8 +139,10 @@ class Controller_Order extends Controller
             'user' => $user
         ];
 
-        // Using special view without standard layout for printing
-        $this->view('orders/invoice', $data);
+        // Use View_Order_Invoice class
+        require_once __DIR__ . '/../views/View_Order_Invoice.php';
+        $view = new View_Order_Invoice($data);
+        echo $view->toHtml();
     }
 
     /**

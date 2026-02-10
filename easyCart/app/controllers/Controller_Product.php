@@ -99,7 +99,10 @@ class Controller_Product extends Controller
             'products' => $productModel->getAll() // For count
         ];
 
-        $this->view('products/index', $data);
+        // Use View_Product_Index class
+        require_once __DIR__ . '/../views/View_Products.php';
+        $view = new View_Product_Index($data);
+        echo $view->toHtml();
     }
 
     /**
@@ -159,6 +162,9 @@ class Controller_Product extends Controller
             'relatedProducts' => $relatedProducts
         ];
 
-        $this->view('products/detail', $data);
+        // Use View_Product_Detail class
+        require_once __DIR__ . '/../views/View_Products.php';
+        $view = new View_Product_Detail($data);
+        echo $view->toHtml();
     }
 }

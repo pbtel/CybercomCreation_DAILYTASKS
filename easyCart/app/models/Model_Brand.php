@@ -22,7 +22,7 @@ class Model_Brand
                     entity_id,
                     brand_slug as id,
                     name,
-                    logo as image,
+                    image,
                     description
                 FROM catalog_brand_entity
                 WHERE brand_slug = $1";
@@ -46,7 +46,7 @@ class Model_Brand
                     entity_id,
                     brand_slug as id,
                     name,
-                    logo as image,
+                    image,
                     description
                 FROM catalog_brand_entity
                 WHERE is_active = true

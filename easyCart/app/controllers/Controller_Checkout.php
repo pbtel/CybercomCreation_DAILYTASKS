@@ -82,7 +82,10 @@ class Controller_Checkout extends Controller
 
         $data['savedData'] = $savedData;
 
-        $this->view('checkout/index', $data);
+        // Use View_Checkout class
+        require_once __DIR__ . '/../views/View_Checkout.php';
+        $view = new View_Checkout($data);
+        echo $view->toHtml();
     }
 
     /**

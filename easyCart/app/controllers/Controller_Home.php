@@ -26,6 +26,9 @@ class Controller_Home extends Controller
             'allBrands' => $allBrands
         ];
 
-        $this->view('home/index', $data);
+        // Use View_Home class
+        require_once __DIR__ . '/../views/View_Home.php';
+        $view = new View_Home($data);
+        echo $view->toHtml();
     }
 }

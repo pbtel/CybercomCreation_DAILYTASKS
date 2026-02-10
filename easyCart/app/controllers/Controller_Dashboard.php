@@ -46,6 +46,9 @@ class Controller_Dashboard extends Controller
             'chartData' => $chartData
         ];
 
-        $this->view('user/dashboard', $data);
+        // Use View_User_Dashboard class
+        require_once __DIR__ . '/../views/View_Dashboard.php';
+        $view = new View_User_Dashboard($data);
+        echo $view->toHtml();
     }
 }
