@@ -44,8 +44,105 @@ class CartModel
     }
 
     /**
-     * Set current cart
+     * Save guest checkout data to sales_cart tables.
      */
+    public function saveGuestCheckoutData($postData)
+    {
+        $guestCart = $this->getCurrentCart();
+        if (empty($guestCart)) {
+            return false;
+        }
+
+        $sessionId = session_id();
+        $cartId = $this->getOrCreateDbCart($sessionId);
+
+        // Address
+        $this->db->query("DELETE FROM sales_cart_address WHERE cart_id = $1", [$cartId]);
+        $fullName = $postData['first_name'] . ' ' . $postData['last_name'];
+        $this->db->query(
+            "INSERT INTO sales_cart_address (cart_id, full_name, email, phone, address_line1, city, state, pincode, country) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+            [
+                $cartId,
+                $fullName,
+                $postData['email'] ?? '',
+                $postData['phone'],
+                $postData['address'],
+                $postData['city'],
+                $postData['state'],
+                $postData['pincode'],
+                $postData['country'] ?? 'India'
+            ]
+        );
+
+        // Shipping Method
+        if (isset($postData['shipping_method'])) {
+            $this->db->query("DELETE FROM sales_cart_shipping_method WHERE cart_id = $1", [$cartId]);
+            $this->db->query(
+                "INSERT INTO sales_cart_shipping_method (cart_id, shipping_method, shipping_type) 
+                 VALUES ($1, $2, $3)",
+                [$cartId, $postData['shipping_method'], 'standard']
+            );
+        }
+
+        // Billing
+        if (isset($postData['payment_method'])) {
+            // Get applied coupon code
+            require_once __DIR__ . '/CouponModel.php';
+            $couponModel = new CouponModel();
+            $appliedCoupon = $couponModel->getApplied();
+            $couponCode = $appliedCoupon['code'] ?? null;
+
+            $this->db->query("DELETE FROM sales_cart_billing WHERE cart_id = $1", [$cartId]);
+            $this->db->query(
+                "INSERT INTO sales_cart_billing (cart_id, payment_method, payment_status, coupon_code) 
+                 VALUES ($1, $2, $3, $4)",
+                [$cartId, $postData['payment_method'], 'pending', $couponCode]
+            );
+        }
+
+        // --- NEW: Update sales_cart with totals and contact info ---
+        // Calculate Totals using models
+        require_once __DIR__ . '/ShippingModel.php';
+        require_once __DIR__ . '/CouponModel.php';
+        $shippingModel = new ShippingModel();
+        $couponModel = new CouponModel();
+
+        $subtotal = $this->getSubtotal();
+        // Use CouponModel for cart-wide discount
+        $discount = $couponModel->calculateDiscount($subtotal);
+        $subtotalAfterCoupon = $subtotal - $discount;
+
+        $shippingMethod = $postData['shipping_method'] ?? 'standard';
+        $shippingCost = $shippingModel->calculateCost($subtotalAfterCoupon, $shippingMethod);
+        $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shippingCost);
+        $finalAmount = $subtotalAfterCoupon + $shippingCost + $tax;
+
+        $this->db->query(
+            "UPDATE sales_cart SET 
+                subtotal = $1, 
+                discount_amount = $2, 
+                shipping_cost = $3, 
+                tax = $4, 
+                final_amount = $5, 
+                customer_email = $6, 
+                customer_phone = $7,
+                updated_at = NOW()
+            WHERE cart_id = $8",
+            [
+                $subtotal,
+                $discount,
+                $shippingCost,
+                $tax,
+                $finalAmount,
+                $postData['email'] ?? null,
+                $postData['phone'] ?? null,
+                $cartId
+            ]
+        );
+
+        return true;
+    }
     public function setCurrentCart($cart)
     {
         if (Session::get('session_type') === 'user' && Session::has('user')) {
@@ -304,13 +401,63 @@ class CartModel
             // Insert new items
             foreach ($cart as $item) {
                 $variantJson = json_encode($item['variant']);
+
+                // Fix timezone to IST
+                $dt = new DateTime("@" . $item['added_at']);
+                $dt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+                $addedAt = $dt->format('Y-m-d H:i:s');
+
                 $this->db->query(
                     "INSERT INTO sales_cart_product (cart_id, product_id, quantity, variant_data, added_at) 
                      VALUES ($1, $2, $3, $4, $5)",
-                    [$cartId, $item['product_id'], $item['quantity'], $variantJson, date('Y-m-d H:i:s', $item['added_at'])]
+                    [$cartId, $item['product_id'], $item['quantity'], $variantJson, $addedAt]
                 );
             }
         }
+
+        // --- NEW: Continuously update cart totals ---
+        require_once __DIR__ . '/ShippingModel.php';
+        require_once __DIR__ . '/CouponModel.php';
+        $shippingModel = new ShippingModel();
+        $couponModel = new CouponModel();
+
+        $subtotal = $this->getSubtotal();
+        $discount = $couponModel->calculateDiscount($subtotal);
+        $subtotalAfterCoupon = $subtotal - $discount;
+
+        // Get applied coupon code
+        $appliedCoupon = $couponModel->getApplied();
+        $couponCode = $appliedCoupon['code'] ?? null;
+
+        // Retrieve existing shipping choice or default
+        $shippingResult = $this->db->fetch($this->db->query("SELECT shipping_method FROM sales_cart_shipping_method WHERE cart_id = $1", [$cartId]));
+        $shippingMethod = $shippingResult['shipping_method'] ?? 'standard';
+
+        $shippingCost = $shippingModel->calculateCost($subtotalAfterCoupon, $shippingMethod);
+        $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shippingCost);
+        $finalAmount = $subtotalAfterCoupon + $shippingCost + $tax;
+
+        // Get existing contact info to avoid overwriting with null if possible (though usually handled in checkout save)
+        // But for sync, we just want to update totals.
+
+        $this->db->query(
+            "UPDATE sales_cart SET 
+                subtotal = $1, 
+                discount_amount = $2, 
+                shipping_cost = $3, 
+                tax = $4, 
+                final_amount = $5,
+                updated_at = NOW()
+            WHERE cart_id = $6",
+            [
+                $subtotal,
+                $discount,
+                $shippingCost,
+                $tax,
+                $finalAmount,
+                $cartId
+            ]
+        );
     }
 
     /**
@@ -356,6 +503,97 @@ class CartModel
 
         // Deactivate guest cart in DB
         $sessionId = session_id();
+
+        // --- DATA MIGRATION START ---
+        // Retrieve guest checkout data before deactivating
+        $cartIdRow = $this->db->fetch($this->db->query("SELECT cart_id FROM sales_cart WHERE session_id = $1 AND is_active = true", [$sessionId]));
+        $cartId = $cartIdRow['cart_id'] ?? null;
+
+        if ($cartId) {
+            $address = $this->db->fetch($this->db->query("SELECT * FROM sales_cart_address WHERE cart_id = $1", [$cartId]));
+            $billing = $this->db->fetch($this->db->query("SELECT * FROM sales_cart_billing WHERE cart_id = $1", [$cartId]));
+            $shipping = $this->db->fetch($this->db->query("SELECT * FROM sales_cart_shipping_method WHERE cart_id = $1", [$cartId]));
+
+            // Get user's active cart order
+            $orderId = $this->getOrCreateDbOrderCart($userId);
+
+            if ($orderId) {
+                // Migrate Address
+                if ($address) {
+                    $this->db->query("DELETE FROM sales_order_address WHERE order_id = $1", [$orderId]);
+                    $this->db->query(
+                        "INSERT INTO sales_order_address (order_id, full_name, phone, address_line1, address_line2, city, state, pincode, country) 
+                         VALUES ($1, $2, $3, $4, '', $5, $6, $7, $8)",
+                        [
+                            $orderId,
+                            $address['full_name'],
+                            $address['phone'],
+                            $address['address_line1'],
+                            $address['city'],
+                            $address['state'],
+                            $address['pincode'],
+                            $address['country']
+                        ]
+                    );
+
+                    // --- NEW: Update sales_order with migrated totals and contact info ---
+                    // Retrieve cart totals
+                    $cartTotals = $this->db->fetch($this->db->query("SELECT subtotal, discount_amount, shipping_cost, tax, final_amount FROM sales_cart WHERE cart_id = $1", [$cartId]));
+
+                    if ($cartTotals) {
+                        $this->db->query(
+                            "UPDATE sales_order SET 
+                                customer_email = $1, 
+                                customer_phone = $2,
+                                subtotal = $3,
+                                discount_amount = $4,
+                                shipping_cost = $5,
+                                tax = $6,
+                                final_amount = $7,
+                                updated_at = NOW()
+                             WHERE order_id = $8",
+                            [
+                                $address['email'] ?? null,
+                                $address['phone'] ?? null,
+                                $cartTotals['subtotal'],
+                                $cartTotals['discount_amount'],
+                                $cartTotals['shipping_cost'],
+                                $cartTotals['tax'],
+                                $cartTotals['final_amount'],
+                                $orderId
+                            ]
+                        );
+                    } else if (!empty($address['email'])) {
+                        $this->db->query(
+                            "UPDATE sales_order SET customer_email = $1, customer_phone = $2 WHERE order_id = $3",
+                            [$address['email'], $address['phone'], $orderId]
+                        );
+                    }
+                }
+
+                // Migrate Billing
+                if ($billing) {
+                    $this->db->query("DELETE FROM sales_order_billing WHERE order_id = $1", [$orderId]);
+                    $this->db->query(
+                        "INSERT INTO sales_order_billing (order_id, payment_method, payment_status, coupon_code) 
+                         VALUES ($1, $2, 'pending', $3)",
+                        [$orderId, $billing['payment_method'], $billing['coupon_code']]
+                    );
+                }
+
+                // Migrate Shipping Method
+                if ($shipping) {
+                    $this->db->query("DELETE FROM sales_order_shipping_method WHERE order_id = $1", [$orderId]);
+                    $this->db->query(
+                        "INSERT INTO sales_order_shipping_method (order_id, shipping_method, shipping_type) 
+                         VALUES ($1, $2, $3)",
+                        [$orderId, $shipping['shipping_method'], $shipping['shipping_type']]
+                    );
+                }
+            }
+        }
+        // --- DATA MIGRATION END ---
+
         $this->db->query(
             "UPDATE sales_cart SET is_active = false, updated_at = NOW() WHERE session_id = $1 AND is_active = true",
             [$sessionId]

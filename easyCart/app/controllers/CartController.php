@@ -14,7 +14,7 @@ class CartController extends Controller
     {
         // Guests allowed to view cart
         $userModel = $this->model('UserModel');
-        $userModel->requireLogin('cart');
+        // $userModel->requireLogin('cart');
 
         // Load models
         $cartModel = $this->model('CartModel');

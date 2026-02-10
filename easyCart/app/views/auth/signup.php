@@ -10,6 +10,10 @@
         </p>
 
         <form action="<?php echo BASE_URL; ?>/auth/signupProcess" method="POST">
+            <?php if (isset($redirect)): ?>
+                <input type="hidden" name="redirect" value="<?php echo htmlspecialchars($redirect); ?>">
+            <?php endif; ?>
+
             <div class="form-row form-input-group">
                 <div>
                     <label class="form-label">First Name *</label>
@@ -61,7 +65,8 @@
         <div class="auth-footer">
             <p class="text-muted-sm">
                 Already have an account?
-                <a href="<?php echo BASE_URL; ?>/login" class="color-primary font-700">Login</a>
+                <a href="<?php echo BASE_URL; ?>/login<?php echo isset($redirect) && $redirect !== 'home' ? '?redirect=' . urlencode($redirect) : ''; ?>"
+                    class="color-primary font-700">Login</a>
             </p>
         </div>
 

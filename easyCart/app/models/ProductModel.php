@@ -292,10 +292,27 @@ class ProductModel
      */
     private function formatProduct($product)
     {
+        // Load static data for rich attributes (variants, specs) if not in DB
+        static $staticProducts = null;
+        if ($staticProducts === null) {
+            require __DIR__ . '/../../database/original_products.php';
+            $staticProducts = $products; // from included file
+        }
+
         // Handle potentially missing fields
         $product['specs'] = []; // Default empty
         $product['variants'] = []; // Default empty
         $product['tags'] = []; // Default empty
+
+        // Merge with static data if ID matches
+        foreach ($staticProducts as $sp) {
+            if ($sp['id'] == $product['id']) {
+                $product['variants'] = $sp['variants'] ?? [];
+                $product['specs'] = $sp['specs'] ?? [];
+                $product['tags'] = $sp['tags'] ?? [];
+                break;
+            }
+        }
 
         // Convert numeric fields
         $product['id'] = (int) $product['id'];

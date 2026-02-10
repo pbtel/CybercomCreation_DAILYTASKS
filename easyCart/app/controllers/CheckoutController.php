@@ -4,31 +4,33 @@
  * Checkout Controller
  * Handles checkout process and order placement
  */
-class CheckoutController extends Controller {
-    
+class CheckoutController extends Controller
+{
+
     /**
      * Display checkout page
      */
-    public function index() {
+    public function index()
+    {
         // Require login
         $userModel = $this->model('UserModel');
-        $userModel->requireLogin('checkout');
-        
+        // $userModel->requireLogin('checkout'); // Allow guests to view checkout page
+
         // Load models
         $cartModel = $this->model('CartModel');
         $couponModel = $this->model('CouponModel');
         $shippingModel = $this->model('ShippingModel');
-        
+
         // Get cart data
         $cartItems = $cartModel->getItemsWithDetails();
         $subtotal = $cartModel->getSubtotal();
-        
+
         // Redirect if cart is empty
         if (empty($cartItems)) {
             $this->redirect('cart');
             return;
         }
-        
+
         // Apply coupon discount if available
         $appliedCoupon = $couponModel->getApplied();
         $couponDiscount = 0;
@@ -36,23 +38,23 @@ class CheckoutController extends Controller {
             $couponDiscount = $couponModel->calculateDiscount($subtotal);
         }
         $subtotalAfterCoupon = $subtotal - $couponDiscount;
-        
+
         // Get available shipping methods and auto-select default if needed
         $availableShippingMethods = $shippingModel->getAvailableMethods($cartItems, $subtotalAfterCoupon);
         $selectedShippingMethod = $shippingModel->getOrSetDefault($cartItems, $subtotalAfterCoupon);
-        
+
         // Validate selected method is available
         if (!in_array($selectedShippingMethod, $availableShippingMethods)) {
             require_once __DIR__ . '/../../includes/shipping-type-helpers.php';
             $selectedShippingMethod = getDefaultShippingMethod($cartItems, $subtotalAfterCoupon);
             $shippingModel->setSelected($selectedShippingMethod);
         }
-        
+
         // Calculate costs
         $shipping = $shippingModel->calculateCost($subtotalAfterCoupon, $selectedShippingMethod);
         $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shipping);
         $total = $shippingModel->calculateOrderTotal($subtotalAfterCoupon, $shipping, $tax);
-        
+
         // Pass data to view
         $data = [
             'pageTitle' => 'Checkout',
@@ -67,39 +69,69 @@ class CheckoutController extends Controller {
             'tax' => $tax,
             'total' => $total
         ];
-        
+
+
+        // Add saved data to view only if recent (e.g., set within last 30 mins)
+        $savedData = Session::get('pending_checkout_data', []);
+
+        // Check for expiration
+        if (isset($savedData['_timestamp']) && (time() - $savedData['_timestamp'] > 1800)) {
+            Session::remove('pending_checkout_data');
+            $savedData = [];
+        }
+
+        $data['savedData'] = $savedData;
+
         $this->view('checkout/index', $data);
     }
-    
+
     /**
      * Place order
      */
-    public function place() {
+    public function place()
+    {
         if (!$this->isPost()) {
             $this->redirect('checkout');
             return;
         }
-        
-        // Require login
+
+        // Handle Guest Checkout Interception
         $userModel = $this->model('UserModel');
+        if (!$userModel->isLoggedIn()) {
+            // Save form data to session with timestamp
+            $formData = $_POST;
+            $formData['_timestamp'] = time();
+            Session::set('pending_checkout_data', $formData);
+
+            // --- PERSIST TO DATABASE START ---
+            $cartModel = $this->model('CartModel');
+            $cartModel->saveGuestCheckoutData($_POST);
+            // --- PERSIST TO DATABASE END ---
+
+            Session::setFlash('info', 'Please login to complete your order. Your details have been saved.');
+            $this->redirect('login?redirect=checkout'); // Redirect to login
+            return;
+        }
+
+        // Require login
         $userModel->requireLogin('checkout');
-        
+
         // Load models
         $cartModel = $this->model('CartModel');
         $orderModel = $this->model('OrderModel');
         $couponModel = $this->model('CouponModel');
         $shippingModel = $this->model('ShippingModel');
-        
+
         // Get cart data
         $cartItems = $cartModel->getItemsWithDetails();
         $subtotal = $cartModel->getSubtotal();
-        
+
         if (empty($cartItems)) {
             Session::setFlash('error', 'Your cart is empty');
             $this->redirect('cart');
             return;
         }
-        
+
         // Get form data
         $firstName = $this->post('first_name');
         $lastName = $this->post('last_name');
@@ -112,14 +144,14 @@ class CheckoutController extends Controller {
         $country = $this->post('country', 'IN');
         $paymentMethod = $this->post('payment_method', 'cod');
         $shippingMethod = $this->post('shipping_method');
-        
+
         // Validate required fields
         if (!$firstName || !$lastName || !$email || !$phone || !$address || !$city || !$state || !$pincode) {
             Session::setFlash('error', 'Please fill all required fields');
             $this->redirect('checkout');
             return;
         }
-        
+
         // Calculate costs
         $appliedCoupon = $couponModel->getApplied();
         $couponDiscount = 0;
@@ -127,15 +159,15 @@ class CheckoutController extends Controller {
             $couponDiscount = $couponModel->calculateDiscount($subtotal);
         }
         $subtotalAfterCoupon = $subtotal - $couponDiscount;
-        
+
         $shipping = $shippingModel->calculateCost($subtotalAfterCoupon, $shippingMethod);
         $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shipping);
         $total = $shippingModel->calculateOrderTotal($subtotalAfterCoupon, $shipping, $tax);
-        
+
         // Prepare order data
         $user = $userModel->getCurrentUser();
         $orderNumber = $orderModel->generateOrderNumber();
-        
+
         $orderData = [
             'user_id' => $user['user_id'],
             'order_number' => $orderNumber,
@@ -162,7 +194,7 @@ class CheckoutController extends Controller {
             ],
             'items' => []
         ];
-        
+
         // Add cart items to order
         foreach ($cartItems as $item) {
             $orderData['items'][] = [
@@ -173,17 +205,20 @@ class CheckoutController extends Controller {
                 'variant' => $item['variant']
             ];
         }
-        
+
         // Save order
         $orderId = $orderModel->save($orderData);
-        
+
         if ($orderId) {
             // Clear cart
             $cartModel->clearCart();
-            
+
             // Remove coupon
             $couponModel->remove();
-            
+
+            // Remove saved checkout data
+            Session::remove('pending_checkout_data');
+
             Session::setFlash('success', 'Order placed successfully! Order #' . $orderNumber);
             $this->redirect('orders');
         } else {

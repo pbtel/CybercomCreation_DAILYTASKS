@@ -9,53 +9,66 @@
     <div class="checkout-grid">
         <!-- CHECKOUT FORM -->
         <div>
-            <form id="checkout-form" action="<?php echo BASE_URL; ?>/checkout/place" method="POST">
+            <form id="checkout-form" action="<?php echo BASE_URL; ?>/checkout/place" method="POST" autocomplete="off">
+                <!-- Fake fields to trick browser autofill -->
+                <input type="text" style="display:none">
+                <input type="password" style="display:none">
+                
                 <!-- SHIPPING INFO -->
+                <?php 
+                    $savedData = $data['savedData'] ?? [];
+                    $currentUser = Session::get('user') ?? [];
+                    
+                    // Helper to get value
+                    $getVal = function($key) use ($savedData, $currentUser) {
+                        return $savedData[$key] ?? ($currentUser[$key] ?? '');
+                    };
+                ?>
                 <div class="checkout-section">
                     <h2 class="checkout-section-title">📦 Shipping Information</h2>
                     
                     <div class="form-row">
                         <div>
                             <label class="form-label">First Name *</label>
-                            <input type="text" name="first_name" required class="form-input">
+                            <input type="text" name="first_name" required class="form-input" value="<?php echo htmlspecialchars($getVal('first_name')); ?>">
                         </div>
                         <div>
                             <label class="form-label">Last Name *</label>
-                            <input type="text" name="last_name" required class="form-input">
+                            <input type="text" name="last_name" required class="form-input" value="<?php echo htmlspecialchars($getVal('last_name')); ?>">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div>
                             <label class="form-label">Email Address *</label>
-                            <input type="email" name="email" required class="form-input" value="<?php echo Session::get('user')['email'] ?? ''; ?>">
+                            <input type="email" name="email" required class="form-input" value="<?php echo htmlspecialchars($savedData['email'] ?? ($currentUser['email'] ?? '')); ?>">
                         </div>
                         <div>
                             <label class="form-label">Phone Number *</label>
-                            <input type="tel" name="phone" required class="form-input" placeholder="+91">
+                            <input type="tel" name="phone" required class="form-input" placeholder="+91" value="<?php echo htmlspecialchars($getVal('phone')); ?>">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label class="form-label">Delivery Address *</label>
-                        <input type="text" name="address" required class="form-input" placeholder="House No, Street, Area">
+                        <input type="text" name="address" required class="form-input" placeholder="House No, Street, Area" value="<?php echo htmlspecialchars($getVal('address')); ?>">
                     </div>
 
                     <div class="form-row form-group">
                         <div>
                             <label class="form-label">City *</label>
-                            <input type="text" name="city" required class="form-input">
+                            <input type="text" name="city" required class="form-input" value="<?php echo htmlspecialchars($getVal('city')); ?>">
                         </div>
                         <div>
                             <label class="form-label">State / Region *</label>
-                            <input type="text" name="state" required class="form-input">
+                            <input type="text" name="state" required class="form-input" value="<?php echo htmlspecialchars($getVal('state')); ?>">
                         </div>
                     </div>
 
                     <div class="form-row form-group">
                         <div>
                             <label class="form-label">Postal Code (PIN) *</label>
-                            <input type="text" name="pincode" required class="form-input">
+                            <input type="text" name="pincode" required class="form-input" value="<?php echo htmlspecialchars($getVal('pincode')); ?>">
                         </div>
                         <div>
                             <label class="form-label">Country *</label>
@@ -231,14 +244,14 @@
         // For simplicity, let's just trigger the fetch to update totals
         
         // 1. Update Session
-        fetch('<?php echo BASE_URL; ?>/api/shipping/update-method', {
+        fetch('<?php echo BASE_URL; ?>/api/shipping-method-update', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'shipping_method=' + encodeURIComponent(selectedMethod)
         });
 
         // 2. Calculate Costs
-        fetch('<?php echo BASE_URL; ?>/api/shipping/calculate', {
+        fetch('<?php echo BASE_URL; ?>/api/shipping-calculate', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'shipping_method=' + encodeURIComponent(selectedMethod) + '&subtotal=' + subtotal
@@ -246,9 +259,13 @@
         .then(res => res.json())
         .then(data => {
             if(data.success) {
-                document.getElementById('summary-shipping').textContent = '₹' + parseInt(data.shipping).toLocaleString('en-IN');
-                document.getElementById('summary-tax').textContent = '₹' + parseInt(data.tax).toLocaleString('en-IN');
-                document.getElementById('summary-total').textContent = '₹' + parseInt(data.total).toLocaleString('en-IN');
+                const shipping = data.shipping_cost || 0;
+                const tax = data.tax || 0;
+                const total = data.total || 0;
+                
+                document.getElementById('summary-shipping').textContent = '₹' + parseInt(shipping).toLocaleString('en-IN');
+                document.getElementById('summary-tax').textContent = '₹' + parseInt(tax).toLocaleString('en-IN');
+                document.getElementById('summary-total').textContent = '₹' + parseInt(total).toLocaleString('en-IN');
             }
         });
 
@@ -263,26 +280,42 @@
         const storageKey = 'easycart_checkout_form_data';
 
         // 1. Restore data on load
-        const savedData = sessionStorage.getItem(storageKey);
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            Object.keys(data).forEach(key => {
-                const input = form.querySelector(`[name="${key}"]`);
-                if (input) {
-                    if (input.type === 'radio' || input.type === 'checkbox') {
-                        if (input.value === data[key]) input.checked = true;
-                    } else {
-                        input.value = data[key];
+        const savedPacket = sessionStorage.getItem(storageKey);
+        const currentSessionId = '<?php echo session_id(); ?>';
+        
+        if (savedPacket) {
+            try {
+                const packet = JSON.parse(savedPacket);
+                
+                // Only restore if from SAME session
+                if (packet.sessionId === currentSessionId && packet.formData) {
+                    const data = packet.formData;
+                    Object.keys(data).forEach(key => {
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            if (input.type === 'radio' || input.type === 'checkbox') {
+                                if (input.value === data[key]) input.checked = true;
+                            } else {
+                                input.value = data[key];
+                            }
+                        }
+                    });
+                    
+                    // If shipping method was restored, update summary
+                    if (data['shipping_method']) {
+                        const radio = form.querySelector(`input[name="shipping_method"][value="${data['shipping_method']}"]`);
+                        if (radio) {
+                            radio.checked = true;
+                            updateOrderSummary();
+                        }
                     }
+                } else {
+                    // Session mismatch - clear stale data
+                    sessionStorage.removeItem(storageKey);
                 }
-            });
-            // If shipping method was restored, update summary
-            if (data['shipping_method']) {
-                const radio = form.querySelector(`input[name="shipping_method"][value="${data['shipping_method']}"]`);
-                if (radio) {
-                    radio.checked = true;
-                    updateOrderSummary();
-                }
+            } catch (e) {
+                console.error('Error parsing saved checkout data', e);
+                sessionStorage.removeItem(storageKey);
             }
         }
 
@@ -293,7 +326,13 @@
             formData.forEach((value, key) => {
                 data[key] = value;
             });
-            sessionStorage.setItem(storageKey, JSON.stringify(data));
+            // Bind to session ID to validation freshness
+            const storagePacket = {
+                sessionId: '<?php echo session_id(); ?>',
+                timestamp: new Date().getTime(),
+                formData: data
+            };
+            sessionStorage.setItem(storageKey, JSON.stringify(storagePacket));
         });
 
         // 3. Clear data on successful submit

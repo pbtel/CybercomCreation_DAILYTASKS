@@ -121,11 +121,6 @@ class UserModel
      */
     public function login($userId, $name, $email)
     {
-        // Merge guest cart before logging in
-        require_once __DIR__ . '/CartModel.php';
-        $cartModel = new CartModel();
-        $cartModel->mergeGuestCart($userId);
-
         // Set user session
         Session::set('user', [
             'logged_in' => true,
@@ -155,6 +150,9 @@ class UserModel
         Session::set('session_type', 'guest');
         Session::set('guest_id', 'guest_' . session_id());
         Session::set('guest_cart', []);
+
+        // Clear pending checkout data just in case
+        Session::remove('pending_checkout_data');
 
         return true;
     }

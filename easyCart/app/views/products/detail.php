@@ -132,27 +132,31 @@
             <?php endif; ?>
 
             <!-- VARIANTS -->
-            <?php if (isset($product['variants']) && !empty($product['variants'])): ?>
-                <?php foreach ($product['variants'] as $variantType => $options): ?>
-                    <div class="variant-group">
-                        <label class="variant-label">Choose <?php echo ucfirst($variantType); ?></label>
-                        <div class="variant-choices">
-                            <?php foreach ($options as $index => $option): ?>
-                                <button class="variant-choice <?php echo $index === 0 ? 'selected' : ''; ?>" type="button">
-                                    <?php echo htmlspecialchars($option); ?>
-                                </button>
-                            <?php endforeach; ?>
-                        </div>
-                    </div>
-                <?php endforeach; ?>
-            <?php endif; ?>
-
-            <!-- QUANTITY & ADD TO CART -->
+            <!-- FORM START: Wraps Variants and Quantity -->
             <form action="<?php echo BASE_URL; ?>/api/cart-add" method="POST" id="addToCartForm">
                 <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
-                <!-- Variant inputs will be added dynamically by JavaScript -->
 
-                <div class="form-group">
+                <!-- VARIANTS -->
+                <?php if (isset($product['variants']) && !empty($product['variants'])): ?>
+                    <?php foreach ($product['variants'] as $variantType => $options): ?>
+                        <div class="variant-group">
+                            <label class="variant-label">Choose <?php echo ucfirst($variantType); ?></label>
+                            <div class="variant-choices">
+                                <?php foreach ($options as $index => $option): ?>
+                                    <button class="variant-choice <?php echo $index === 0 ? 'selected' : ''; ?>" type="button"
+                                        data-value="<?php echo htmlspecialchars($option); ?>">
+                                        <?php echo htmlspecialchars($option); ?>
+                                    </button>
+                                <?php endforeach; ?>
+                                <input type="hidden" name="variant_<?php echo $variantType; ?>"
+                                    value="<?php echo htmlspecialchars($options[0]); ?>">
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+
+                <!-- QUANTITY -->
+                <div class="form-group mt-1-5">
                     <label class="variant-label">Quantity</label>
                     <div class="quantity-wrapper">
                         <input type="number" name="quantity" value="1" min="1" max="<?php echo $product['stock']; ?>"
@@ -367,6 +371,12 @@
                     const siblings = group.querySelectorAll('.variant-choice');
                     siblings.forEach(s => s.classList.remove('selected'));
                     this.classList.add('selected');
+
+                    // Update hidden input
+                    const hiddenInput = group.querySelector('input[type="hidden"]');
+                    if (hiddenInput && this.dataset.value) {
+                        hiddenInput.value = this.dataset.value;
+                    }
                 }
             });
         });

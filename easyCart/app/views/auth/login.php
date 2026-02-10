@@ -40,7 +40,8 @@
         <div class="auth-footer">
             <p class="text-muted-sm">
                 Don't have an account?
-                <a href="<?php echo BASE_URL; ?>/signup" class="color-primary font-700">Sign Up</a>
+                <a href="<?php echo BASE_URL; ?>/signup<?php echo isset($redirect) && $redirect !== 'home' ? '?redirect=' . urlencode($redirect) : ''; ?>"
+                    class="color-primary font-700">Sign Up</a>
             </p>
         </div>
 
