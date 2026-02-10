@@ -1,15 +1,14 @@
 <?php
 
-/**
- * Cart Model
- * Handles all cart-related operations
- */
-class Model_Cart
+require_once __DIR__ . '/../core/Core_Model.php';
+
+class Model_Cart extends Core_Model
 {
     private $db;
 
-    public function __construct()
+    protected function _init()
     {
+        $this->_resourceName = 'Resource_Cart';
         $this->db = Database::getInstance();
     }
 
@@ -60,8 +59,8 @@ class Model_Cart
         $this->db->query("DELETE FROM sales_cart_address WHERE cart_id = $1", [$cartId]);
         $fullName = $postData['first_name'] . ' ' . $postData['last_name'];
         $this->db->query(
-            "INSERT INTO sales_cart_address (cart_id, full_name, email, phone, address_line1, city, state, pincode, country) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
+            "INSERT INTO sales_cart_address (cart_id, full_name, email, phone, address_line1, city, state, pincode, country)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)",
             [
                 $cartId,
                 $fullName,
@@ -79,8 +78,8 @@ class Model_Cart
         if (isset($postData['shipping_method'])) {
             $this->db->query("DELETE FROM sales_cart_shipping_method WHERE cart_id = $1", [$cartId]);
             $this->db->query(
-                "INSERT INTO sales_cart_shipping_method (cart_id, shipping_method, shipping_type) 
-                 VALUES ($1, $2, $3)",
+                "INSERT INTO sales_cart_shipping_method (cart_id, shipping_method, shipping_type)
+VALUES ($1, $2, $3)",
                 [$cartId, $postData['shipping_method'], 'standard']
             );
         }
@@ -95,14 +94,14 @@ class Model_Cart
 
             $this->db->query("DELETE FROM sales_cart_billing WHERE cart_id = $1", [$cartId]);
             $this->db->query(
-                "INSERT INTO sales_cart_billing (cart_id, payment_method, payment_status, coupon_code) 
-                 VALUES ($1, $2, $3, $4)",
+                "INSERT INTO sales_cart_billing (cart_id, payment_method, payment_status, coupon_code)
+VALUES ($1, $2, $3, $4)",
                 [$cartId, $postData['payment_method'], 'pending', $couponCode]
             );
         }
 
         // --- NEW: Update sales_cart with totals and contact info ---
-        // Calculate Totals using models
+// Calculate Totals using models
         require_once __DIR__ . '/Model_Shipping.php';
         require_once __DIR__ . '/Model_Coupon.php';
         $shippingModel = new Model_Shipping();
@@ -119,16 +118,16 @@ class Model_Cart
         $finalAmount = $subtotalAfterCoupon + $shippingCost + $tax;
 
         $this->db->query(
-            "UPDATE sales_cart SET 
-                subtotal = $1, 
-                discount_amount = $2, 
-                shipping_cost = $3, 
-                tax = $4, 
-                final_amount = $5, 
-                customer_email = $6, 
-                customer_phone = $7,
-                updated_at = NOW()
-            WHERE cart_id = $8",
+            "UPDATE sales_cart SET
+subtotal = $1,
+discount_amount = $2,
+shipping_cost = $3,
+tax = $4,
+final_amount = $5,
+customer_email = $6,
+customer_phone = $7,
+updated_at = NOW()
+WHERE cart_id = $8",
             [
                 $subtotal,
                 $discount,
@@ -195,7 +194,8 @@ class Model_Cart
             } else {
                 $cart[$cartItemKey]['quantity'] = $quantity;
             }
-            $this->setCurrentCart($cart);
+            $this->
+                setCurrentCart($cart);
             return true;
         }
         return false;
@@ -339,7 +339,10 @@ class Model_Cart
             $subtotal = 0;
             // Insert new items
             foreach ($cart as $item) {
-                $product = $this->db->fetch($this->db->query("SELECT name, price FROM catalog_product_entity WHERE entity_id = $1", [$item['product_id']]));
+                $product = $this->db->fetch($this->db->query(
+                    "SELECT name, price FROM catalog_product_entity WHERE entity_id = $1",
+                    [$item['product_id']]
+                ));
                 if ($product) {
                     $itemPrice = (float) $product['price'];
                     $itemSubtotal = $itemPrice * $item['quantity'];
@@ -347,15 +350,19 @@ class Model_Cart
 
                     $variantJson = json_encode($item['variant']);
                     $this->db->query(
-                        "INSERT INTO sales_order_product (order_id, product_id, product_name, quantity, unit_price, variant_data, subtotal, created_at) 
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())",
+                        "INSERT INTO sales_order_product (order_id, product_id, product_name, quantity, unit_price, variant_data, subtotal,
+    created_at)
+    VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())",
                         [$orderId, $item['product_id'], $product['name'], $item['quantity'], $itemPrice, $variantJson, $itemSubtotal]
                     );
                 }
             }
 
             // Update order totals
-            $this->db->query("UPDATE sales_order SET subtotal = $1, final_amount = $1, updated_at = NOW() WHERE order_id = $2", [$subtotal, $orderId]);
+            $this->db->query(
+                "UPDATE sales_order SET subtotal = $1, final_amount = $1, updated_at = NOW() WHERE order_id = $2",
+                [$subtotal, $orderId]
+            );
         }
     }
 
@@ -377,8 +384,8 @@ class Model_Cart
         // Create new order with status 'cart'
         $orderNumber = 'ORD-CART-' . strtoupper(substr(md5(uniqid()), 0, 8));
         $this->db->query(
-            "INSERT INTO sales_order (user_id, order_number, subtotal, final_amount, status, created_at, updated_at) 
-             VALUES ($1, $2, 0, 0, 'cart', NOW(), NOW())",
+            "INSERT INTO sales_order (user_id, order_number, subtotal, final_amount, status, created_at, updated_at)
+    VALUES ($1, $2, 0, 0, 'cart', NOW(), NOW())",
             [$userId, $orderNumber]
         );
 
@@ -408,8 +415,8 @@ class Model_Cart
                 $addedAt = $dt->format('Y-m-d H:i:s');
 
                 $this->db->query(
-                    "INSERT INTO sales_cart_product (cart_id, product_id, quantity, variant_data, added_at) 
-                     VALUES ($1, $2, $3, $4, $5)",
+                    "INSERT INTO sales_cart_product (cart_id, product_id, quantity, variant_data, added_at)
+    VALUES ($1, $2, $3, $4, $5)",
                     [$cartId, $item['product_id'], $item['quantity'], $variantJson, $addedAt]
                 );
             }
@@ -430,7 +437,8 @@ class Model_Cart
         $couponCode = $appliedCoupon['code'] ?? null;
 
         // Retrieve existing shipping choice or default
-        $shippingResult = $this->db->fetch($this->db->query("SELECT shipping_method FROM sales_cart_shipping_method WHERE cart_id = $1", [$cartId]));
+        $shippingResult = $this->db->fetch($this->db->query("SELECT shipping_method FROM sales_cart_shipping_method WHERE
+    cart_id = $1", [$cartId]));
         $shippingMethod = $shippingResult['shipping_method'] ?? 'standard';
 
         $shippingCost = $shippingModel->calculateCost($subtotalAfterCoupon, $shippingMethod);
@@ -441,14 +449,14 @@ class Model_Cart
         // But for sync, we just want to update totals.
 
         $this->db->query(
-            "UPDATE sales_cart SET 
-                subtotal = $1, 
-                discount_amount = $2, 
-                shipping_cost = $3, 
-                tax = $4, 
-                final_amount = $5,
-                updated_at = NOW()
-            WHERE cart_id = $6",
+            "UPDATE sales_cart SET
+    subtotal = $1,
+    discount_amount = $2,
+    shipping_cost = $3,
+    tax = $4,
+    final_amount = $5,
+    updated_at = NOW()
+    WHERE cart_id = $6",
             [
                 $subtotal,
                 $discount,
@@ -477,8 +485,8 @@ class Model_Cart
 
         // Create new cart
         $this->db->query(
-            "INSERT INTO sales_cart (session_id, is_active, created_at, updated_at) 
-             VALUES ($1, true, NOW(), NOW())",
+            "INSERT INTO sales_cart (session_id, is_active, created_at, updated_at)
+    VALUES ($1, true, NOW(), NOW())",
             [$sessionId]
         );
 
@@ -506,13 +514,17 @@ class Model_Cart
 
         // --- DATA MIGRATION START ---
         // Retrieve guest checkout data before deactivating
-        $cartIdRow = $this->db->fetch($this->db->query("SELECT cart_id FROM sales_cart WHERE session_id = $1 AND is_active = true", [$sessionId]));
+        $cartIdRow = $this->db->fetch($this->db->query("SELECT cart_id FROM sales_cart WHERE session_id = $1 AND is_active =
+    true", [$sessionId]));
         $cartId = $cartIdRow['cart_id'] ?? null;
 
         if ($cartId) {
             $address = $this->db->fetch($this->db->query("SELECT * FROM sales_cart_address WHERE cart_id = $1", [$cartId]));
             $billing = $this->db->fetch($this->db->query("SELECT * FROM sales_cart_billing WHERE cart_id = $1", [$cartId]));
-            $shipping = $this->db->fetch($this->db->query("SELECT * FROM sales_cart_shipping_method WHERE cart_id = $1", [$cartId]));
+            $shipping = $this->db->fetch($this->db->query(
+                "SELECT * FROM sales_cart_shipping_method WHERE cart_id = $1",
+                [$cartId]
+            ));
 
             // Get user's active cart order
             $orderId = $this->getOrCreateDbOrderCart($userId);
@@ -522,8 +534,9 @@ class Model_Cart
                 if ($address) {
                     $this->db->query("DELETE FROM sales_order_address WHERE order_id = $1", [$orderId]);
                     $this->db->query(
-                        "INSERT INTO sales_order_address (order_id, full_name, phone, address_line1, address_line2, city, state, pincode, country) 
-                         VALUES ($1, $2, $3, $4, '', $5, $6, $7, $8)",
+                        "INSERT INTO sales_order_address (order_id, full_name, phone, address_line1, address_line2, city, state, pincode,
+    country)
+    VALUES ($1, $2, $3, $4, '', $5, $6, $7, $8)",
                         [
                             $orderId,
                             $address['full_name'],
@@ -538,20 +551,21 @@ class Model_Cart
 
                     // --- NEW: Update sales_order with migrated totals and contact info ---
                     // Retrieve cart totals
-                    $cartTotals = $this->db->fetch($this->db->query("SELECT subtotal, discount_amount, shipping_cost, tax, final_amount FROM sales_cart WHERE cart_id = $1", [$cartId]));
+                    $cartTotals = $this->db->fetch($this->db->query("SELECT subtotal, discount_amount, shipping_cost, tax, final_amount
+    FROM sales_cart WHERE cart_id = $1", [$cartId]));
 
                     if ($cartTotals) {
                         $this->db->query(
-                            "UPDATE sales_order SET 
-                                customer_email = $1, 
-                                customer_phone = $2,
-                                subtotal = $3,
-                                discount_amount = $4,
-                                shipping_cost = $5,
-                                tax = $6,
-                                final_amount = $7,
-                                updated_at = NOW()
-                             WHERE order_id = $8",
+                            "UPDATE sales_order SET
+    customer_email = $1,
+    customer_phone = $2,
+    subtotal = $3,
+    discount_amount = $4,
+    shipping_cost = $5,
+    tax = $6,
+    final_amount = $7,
+    updated_at = NOW()
+    WHERE order_id = $8",
                             [
                                 $address['email'] ?? null,
                                 $address['phone'] ?? null,
@@ -575,8 +589,8 @@ class Model_Cart
                 if ($billing) {
                     $this->db->query("DELETE FROM sales_order_billing WHERE order_id = $1", [$orderId]);
                     $this->db->query(
-                        "INSERT INTO sales_order_billing (order_id, payment_method, payment_status, coupon_code) 
-                         VALUES ($1, $2, 'pending', $3)",
+                        "INSERT INTO sales_order_billing (order_id, payment_method, payment_status, coupon_code)
+    VALUES ($1, $2, 'pending', $3)",
                         [$orderId, $billing['payment_method'], $billing['coupon_code']]
                     );
                 }
@@ -585,8 +599,8 @@ class Model_Cart
                 if ($shipping) {
                     $this->db->query("DELETE FROM sales_order_shipping_method WHERE order_id = $1", [$orderId]);
                     $this->db->query(
-                        "INSERT INTO sales_order_shipping_method (order_id, shipping_method, shipping_type) 
-                         VALUES ($1, $2, $3)",
+                        "INSERT INTO sales_order_shipping_method (order_id, shipping_method, shipping_type)
+    VALUES ($1, $2, $3)",
                         [$orderId, $shipping['shipping_method'], $shipping['shipping_type']]
                     );
                 }
@@ -608,16 +622,25 @@ class Model_Cart
         return $userCart;
     }
 
+    public function deactivateGuestCart()
+    {
+        $sessionId = session_id();
+        $this->db->query(
+            "UPDATE sales_cart SET is_active = false, updated_at = NOW() WHERE session_id = $1 AND is_active = true",
+            [$sessionId]
+        );
+    }
+
     /**
      * Load guest cart from database
      */
     private function loadGuestCartFromDb()
     {
         $sessionId = session_id();
-        $sql = "SELECT cp.*, c.cart_id 
-                FROM sales_cart_product cp
-                JOIN sales_cart c ON cp.cart_id = c.cart_id
-                WHERE c.session_id = $1 AND c.is_active = true";
+        $sql = "SELECT cp.*, c.cart_id
+    FROM sales_cart_product cp
+    JOIN sales_cart c ON cp.cart_id = c.cart_id
+    WHERE c.session_id = $1 AND c.is_active = true";
         $result = $this->db->query($sql, [$sessionId]);
         $rows = $this->db->fetchAll($result);
 
@@ -629,10 +652,10 @@ class Model_Cart
      */
     private function loadUserCartFromDb($userId)
     {
-        $sql = "SELECT cp.*, o.order_id 
-                FROM sales_order_product cp
-                JOIN sales_order o ON cp.order_id = o.order_id
-                WHERE o.user_id = $1 AND o.status = 'cart'";
+        $sql = "SELECT cp.*, o.order_id
+    FROM sales_order_product cp
+    JOIN sales_order o ON cp.order_id = o.order_id
+    WHERE o.user_id = $1 AND o.status = 'cart'";
         $result = $this->db->query($sql, [$userId]);
         $rows = $this->db->fetchAll($result);
 

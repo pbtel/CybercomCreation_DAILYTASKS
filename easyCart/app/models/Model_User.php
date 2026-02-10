@@ -1,197 +1,129 @@
 <?php
 
-/**
- * User Model
- * Handles all user-related operations
- */
-class Model_User
-{
-    private $db;
+require_once __DIR__ . '/../core/Core_Model.php';
 
-    public function __construct()
+class Model_User extends Core_Model
+{
+    protected function _init()
     {
-        $this->db = Database::getInstance();
+        $this->_resourceName = 'Resource_User';
     }
 
     /**
-     * Verify user login
+     * Authentication methods
      */
+    public function isLoggedIn()
+    {
+        return Session::isLoggedIn();
+    }
+
+    public function requireLogin($redirect = 'home')
+    {
+        if (!$this->isLoggedIn()) {
+            Session::setFlash('error', 'Please login to access this page');
+            header('Location: ' . BASE_URL . '/login?redirect=' . urlencode($redirect));
+            exit;
+        }
+    }
+
+    public function getCurrentUser()
+    {
+        $sessionUser = Session::getUser();
+        if (!$sessionUser['logged_in']) {
+            return null;
+        }
+
+        // Return standardized user data (with user_id for compatibility)
+        return [
+            'user_id' => $sessionUser['id'],
+            'id' => $sessionUser['id'],
+            'name' => $sessionUser['name'],
+            'email' => $sessionUser['email']
+        ];
+    }
+
+    public function login($userId, $name, $email)
+    {
+        Session::setUser([
+            'logged_in' => true,
+            'id' => $userId,
+            'user_id' => $userId, // For backward compatibility
+            'name' => $name,
+            'email' => $email
+        ]);
+        return true;
+    }
+
+    public function logout()
+    {
+        Session::logout();
+        return true;
+    }
+
+    /**
+     * User actions
+     */
+    public function register($firstName, $lastName, $email, $password)
+    {
+        // Check if email already exists
+        $existing = $this->getByEmail($email);
+        if ($existing) {
+            return ['success' => false, 'message' => 'Email already registered'];
+        }
+
+        $fullName = $firstName . ' ' . $lastName;
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+
+        $data = [
+            'email' => $email,
+            'password_hash' => $passwordHash,
+            'name' => $fullName,
+            'created_at' => date('Y-m-d H:i:s'),
+            'updated_at' => date('Y-m-d H:i:s')
+        ];
+
+        try {
+            $this->setData($data)->save();
+            return [
+                'success' => true,
+                'user_id' => $this->getId(),
+                'name' => $fullName,
+                'email' => $email
+            ];
+        } catch (Throwable $e) {
+            return ['success' => false, 'message' => 'Registration failed: ' . $e->getMessage()];
+        }
+    }
+
     public function verifyLogin($email, $password)
     {
-        $sql = "SELECT entity_id, name, email, password_hash FROM customer_entity WHERE email = $1";
-        $result = $this->db->query($sql, [$email]);
-        $user = $this->db->fetch($result);
+        $userData = $this->getByEmail($email);
 
-        if ($user) {
-            // Verify hashed password
-            if (password_verify($password, $user['password_hash'])) {
-                return [
-                    'success' => true,
-                    'user_id' => $user['entity_id'],
-                    'name' => $user['name'],
-                    'email' => $user['email']
-                ];
-            }
+        if (!$userData) {
+            return ['success' => false, 'message' => 'Invalid email or password'];
+        }
 
-            // Backward compatibility for plain text passwords
-            if ($password === $user['password_hash'] && substr($user['password_hash'], 0, 1) !== '$') {
-                // Update to hashed password
-                $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-                $this->updatePassword($user['entity_id'], $hashedPassword);
+        // Check password - field name from DB is password_hash
+        $hashedPassword = $userData['password_hash'] ?? null;
 
-                return [
-                    'success' => true,
-                    'user_id' => $user['entity_id'],
-                    'name' => $user['name'],
-                    'email' => $user['email']
-                ];
-            }
+        if ($hashedPassword && password_verify($password, $hashedPassword)) {
+            return [
+                'success' => true,
+                'user_id' => $userData['entity_id'],
+                'name' => $userData['name'],
+                'email' => $userData['email']
+            ];
         }
 
         return ['success' => false, 'message' => 'Invalid email or password'];
     }
 
     /**
-     * Register new user
-     */
-    public function register($firstName, $lastName, $email, $password)
-    {
-        // Check if user exists
-        $sql = "SELECT entity_id FROM customer_entity WHERE email = $1";
-        $result = $this->db->query($sql, [$email]);
-        $existing = $this->db->fetch($result);
-
-        if ($existing) {
-            return ['success' => false, 'message' => 'Email already registered'];
-        }
-
-        // Hash password
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-        $fullName = $firstName . ' ' . $lastName;
-
-        // Insert user
-        $sql = "INSERT INTO customer_entity (email, password_hash, name, created_at) 
-                VALUES ($1, $2, $3, NOW()) RETURNING entity_id";
-        $result = $this->db->query($sql, [$email, $hashedPassword, $fullName]);
-        $user = $this->db->fetch($result);
-
-        if ($user) {
-            return [
-                'success' => true,
-                'user_id' => $user['entity_id'],
-                'name' => $fullName,
-                'email' => $email
-            ];
-        }
-
-        return ['success' => false, 'message' => 'Failed to create user'];
-    }
-
-    /**
-     * Get user by ID
-     */
-    public function getById($userId)
-    {
-        $sql = "SELECT entity_id as user_id, name, email, created_at FROM customer_entity WHERE entity_id = $1";
-        $result = $this->db->query($sql, [$userId]);
-        return $this->db->fetch($result);
-    }
-
-    /**
-     * Get user by email
+     * Compatibility methods
      */
     public function getByEmail($email)
     {
-        $sql = "SELECT entity_id as user_id, name, email, created_at FROM customer_entity WHERE email = $1";
-        $result = $this->db->query($sql, [$email]);
-        return $this->db->fetch($result);
-    }
-
-    /**
-     * Update user password
-     */
-    private function updatePassword($userId, $hashedPassword)
-    {
-        $sql = "UPDATE customer_entity SET password_hash = $1 WHERE entity_id = $2";
-        return $this->db->query($sql, [$hashedPassword, $userId]);
-    }
-
-    /**
-     * Login user (set session)
-     */
-    public function login($userId, $name, $email)
-    {
-        // Set user session
-        Session::set('user', [
-            'logged_in' => true,
-            'user_id' => $userId,
-            'name' => $name,
-            'email' => $email
-        ]);
-
-        Session::set('session_type', 'user');
-
-        return true;
-    }
-
-    /**
-     * Logout user
-     */
-    public function logout()
-    {
-        Session::set('user', [
-            'logged_in' => false,
-            'user_id' => null,
-            'name' => null,
-            'email' => null
-        ]);
-
-        // Initialize new guest session
-        Session::set('session_type', 'guest');
-        Session::set('guest_id', 'guest_' . session_id());
-        Session::set('guest_cart', []);
-
-        // Clear pending checkout data just in case
-        Session::remove('pending_checkout_data');
-
-        return true;
-    }
-
-    /**
-     * Check if user is logged in
-     */
-    public function isLoggedIn()
-    {
-        $user = Session::get('user', ['logged_in' => false]);
-        return $user['logged_in'] === true;
-    }
-
-    /**
-     * Get current user data
-     */
-    public function getCurrentUser()
-    {
-        return Session::get('user', [
-            'logged_in' => false,
-            'user_id' => null,
-            'name' => 'Guest',
-            'email' => null
-        ]);
-    }
-
-    /**
-     * Require login (redirect if not logged in)
-     */
-    public function requireLogin($redirectUrl = null)
-    {
-        if (!$this->isLoggedIn()) {
-            $loginUrl = BASE_URL . '/login';
-            if ($redirectUrl) {
-                $loginUrl .= '?redirect=' . urlencode($redirectUrl);
-            }
-            Session::setFlash('info', 'Please login to access this page.');
-            header('Location: ' . $loginUrl);
-            exit;
-        }
+        $this->load($email, 'email');
+        return $this->getData();
     }
 }

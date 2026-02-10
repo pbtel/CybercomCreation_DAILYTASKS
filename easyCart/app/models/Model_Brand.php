@@ -1,66 +1,33 @@
 <?php
 
-/**
- * Brand Model
- * Handles all brand-related operations
- */
-class Model_Brand
+require_once __DIR__ . '/../core/Core_Model.php';
+
+class Model_Brand extends Core_Model
 {
-    private $db;
-
-    public function __construct()
+    protected function _init()
     {
-        $this->db = Database::getInstance();
+        $this->_resourceName = 'Resource_Brand';
     }
 
-    /**
-     * Get brand by ID (slug)
-     */
-    public function getById($brandId)
+    public function afterLoad()
     {
-        $sql = "SELECT 
-                    entity_id,
-                    brand_slug as id,
-                    name,
-                    image,
-                    description
-                FROM catalog_brand_entity
-                WHERE brand_slug = $1";
-
-        $result = $this->db->query($sql, [$brandId]);
-        $brand = $this->db->fetch($result);
-
-        if ($brand) {
-            unset($brand['entity_id']);
+        $data = $this->getData();
+        if (isset($data['brand_slug'])) {
+            $data['id'] = $data['brand_slug'];
         }
-
-        return $brand;
+        if (isset($data['logo']) && !isset($data['image'])) {
+            $data['image'] = $data['logo'];
+        }
+        $this->setData($data);
+        return $this;
     }
 
     /**
-     * Get all brands
+     * Compatibility methods
      */
     public function getAll()
     {
-        $sql = "SELECT 
-                    entity_id,
-                    brand_slug as id,
-                    name,
-                    image,
-                    description
-                FROM catalog_brand_entity
-                WHERE is_active = true
-                ORDER BY entity_id";
-
-        $result = $this->db->query($sql);
-        $brands = $this->db->fetchAll($result);
-
-        if ($brands) {
-            foreach ($brands as &$brand) {
-                unset($brand['brand_id']);
-            }
-        }
-
-        return $brands ?? [];
+        require_once 'Collection_Brand.php';
+        return (new Collection_Brand())->addFieldToFilter('is_active', true)->getData();
     }
 }

@@ -1,83 +1,44 @@
 <?php
 
-/**
- * Category Model
- * Handles all category-related operations
- */
-class Model_Category
+require_once __DIR__ . '/../core/Core_Model.php';
+
+class Model_Category extends Core_Model
 {
-    private $db;
-
-    public function __construct()
+    protected function _init()
     {
-        $this->db = Database::getInstance();
+        $this->_resourceName = 'Resource_Category';
     }
 
-    /**
-     * Get category by ID (slug)
-     */
-    public function getById($categoryId)
+    public function afterLoad()
     {
-        $sql = "SELECT 
-                    entity_id,
-                    category_slug as id,
-                    name,
-                    image,
-                    description
-                FROM catalog_category_entity
-                WHERE category_slug = $1";
+        $data = $this->getData();
+        if (isset($data['entity_id'])) {
+            $db = Database::getInstance();
+            $countSql = "SELECT COUNT(*) as count FROM catalog_category_products WHERE category_id = $1";
+            $countResult = $db->query($countSql, [$data['entity_id']]);
+            $countRow = $db->fetch($countResult);
+            $data['product_count'] = (int) ($countRow['count'] ?? 0);
 
-        $result = $this->db->query($sql, [$categoryId]);
-        $category = $this->db->fetch($result);
+            // Map icon/logo to image if not already done by SQL
+            if (isset($data['icon']) && !isset($data['image'])) {
+                $data['image'] = $data['icon'];
+            }
 
-        if ($category) {
-            // Get product count
-            $countSql = "SELECT COUNT(*) as count 
-                         FROM catalog_category_products 
-                         WHERE category_id = $1";
-            $countResult = $this->db->query($countSql, [$category['entity_id']]);
-            $countRow = $this->db->fetch($countResult);
-            $category['product_count'] = (int) ($countRow['count'] ?? 0);
-
-            unset($category['entity_id']);
+            // For compatibility with templates expecting 'id' instead of 'category_slug'
+            if (isset($data['category_slug'])) {
+                $data['id'] = $data['category_slug'];
+            }
         }
-
-        return $category;
+        $this->setData($data);
+        return $this;
     }
 
     /**
-     * Get all categories
+     * Compatibility methods
      */
     public function getAll()
     {
-        $sql = "SELECT 
-                    entity_id,
-                    category_slug as id,
-                    name,
-                    image,
-                    description
-                FROM catalog_category_entity
-                WHERE is_active = true
-                ORDER BY entity_id";
-
-        $result = $this->db->query($sql);
-
-        $categories = $this->db->fetchAll($result);
-
-        if ($categories) {
-            foreach ($categories as &$category) {
-                // Get product count
-                $countSql = "SELECT COUNT(*) as count 
-                             FROM catalog_category_products ccp
-                             WHERE ccp.category_id = $1";
-                $countResult = $this->db->query($countSql, [$category['entity_id']]);
-                $countRow = $this->db->fetch($countResult);
-                $category['product_count'] = (int) ($countRow['count'] ?? 0);
-
-                unset($category['entity_id']);
-            }
-        }
-
-        return $categories ?? [];
+        require_once 'Collection_Category.php';
+        return (new Collection_Category())->addFieldToFilter('is_active', true)->getData();
     }
 }

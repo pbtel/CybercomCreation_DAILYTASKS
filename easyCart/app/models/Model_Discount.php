@@ -1,78 +1,39 @@
 <?php
 
-/**
- * Discount Model
- * Handles first-unit discount calculations
- */
-class Model_Discount {
-    
-    /**
-     * Calculate discount percentage based on product price
-     * Tiered discount structure:
-     * - Price > ₹1500: 15% off
-     * - Price > ₹1000: 10% off
-     * - Price > ₹500: 5% off
-     * - Price <= ₹500: No discount
-     */
-    public function calculateFirstUnitDiscount($price) {
-        if ($price > 1500) {
-            return 15;
-        } elseif ($price > 1000) {
-            return 10;
-        } elseif ($price > 500) {
-            return 5;
-        }
-        return 0;
+require_once __DIR__ . '/../core/Core_Model.php';
+
+class Model_Discount extends Core_Model
+{
+    protected function _init()
+    {
+        $this->_resourceName = 'Resource_Discount';
     }
 
-    /**
-     * Get discounted price after applying first-unit discount
-     */
-    public function getDiscountedPrice($price) {
-        $discountPercent = $this->calculateFirstUnitDiscount($price);
-        if ($discountPercent > 0) {
-            return $price - ($price * $discountPercent / 100);
-        }
-        return $price;
+    public function getActiveForProduct($productId)
+    {
+        require_once 'Collection_Discount.php';
+        return (new Collection_Discount())
+            ->addFieldToFilter('product_id', $productId)
+            ->addFieldToFilter('is_active', true)
+            ->getData();
     }
 
-    /**
-     * Calculate total price for an item with first-unit discount
-     * First unit gets discount, additional units at full price
-     */
-    public function calculateItemTotal($price, $quantity) {
-        $discountPercent = $this->calculateFirstUnitDiscount($price);
-        $discountedPrice = $this->getDiscountedPrice($price);
-        
-        // First unit at discounted price, rest at full price
-        if ($quantity > 1) {
-            $total = $discountedPrice + ($price * ($quantity - 1));
-        } else {
-            $total = $discountedPrice;
+    public function calculateItemTotal($price, $quantity)
+    {
+        if (file_exists(__DIR__ . '/../../includes/discount-helpers.php')) {
+            require_once __DIR__ . '/../../includes/discount-helpers.php';
+            return calculateItemTotalWithDiscount($price, $quantity);
         }
-        
-        // Calculate savings
-        $fullPriceTotal = $price * $quantity;
-        $savings = $fullPriceTotal - $total;
-        
+
+        // Fallback if helper doesn't exist
         return [
-            'total' => $total,
-            'discount_percent' => $discountPercent,
+            'total' => $price * $quantity,
+            'discount_percent' => 0,
             'unit_price_original' => $price,
-            'unit_price_discounted' => $discountedPrice,
-            'first_unit_savings' => $price - $discountedPrice,
-            'total_savings' => $savings,
-            'full_price_total' => $fullPriceTotal
+            'unit_price_discounted' => $price,
+            'first_unit_savings' => 0,
+            'total_savings' => 0,
+            'full_price_total' => $price * $quantity
         ];
-    }
-
-    /**
-     * Format discount display text
-     */
-    public function formatDiscountText($savings, $discountPercent) {
-        if ($savings > 0 && $discountPercent > 0) {
-            return "Save ₹" . number_format($savings) . " ({$discountPercent}% off)";
-        }
-        return "";
     }
 }

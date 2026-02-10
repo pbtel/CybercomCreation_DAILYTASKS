@@ -1,55 +1,59 @@
 <?php
 
-/**
- * Coupon Model
- * Handles coupon validation and discount calculations
- */
-class Model_Coupon
+require_once __DIR__ . '/../core/Core_Model.php';
+
+class Model_Coupon extends Core_Model
 {
-    private $validCoupons = [
+    protected $_validCoupons = [
         'SAVE5' => 5,
         'SAVE10' => 10,
         'SAVE15' => 15,
         'SAVE20' => 20
     ];
 
-    /**
-     * Get all currently valid coupons
-     */
-    public function getAllCoupons()
+    protected function _init()
     {
-        return $this->validCoupons;
+        $this->_resourceName = 'Resource_Coupon';
     }
 
-    /**
-     * Validate coupon code
-     */
-    public function validate($code)
+    public function getByCode($code)
     {
-        $code = strtoupper(trim($code));
+        $this->load($code, 'code');
+        return $this->getData();
+    }
 
-        if (isset($this->validCoupons[$code])) {
-            return [
-                'code' => $code,
-                'discount_percent' => $this->validCoupons[$code]
-            ];
+    public function getAllActive()
+    {
+        require_once 'Collection_Coupon.php';
+        return (new Collection_Coupon())->addFieldToFilter('is_active', true)->getData();
+    }
+
+    public function getApplied()
+    {
+        return isset($_SESSION['applied_coupon']) ? $_SESSION['applied_coupon'] : null;
+    }
+
+    public function calculateDiscount($subtotal)
+    {
+        $coupon = $this->getApplied();
+        if ($coupon && isset($coupon['discount_percent'])) {
+            return ($subtotal * $coupon['discount_percent'] / 100);
         }
-
-        return false;
+        return 0;
     }
 
-    /**
-     * Apply coupon to session
-     */
     public function apply($code)
     {
-        $couponData = $this->validate($code);
-
-        if ($couponData) {
-            Session::set('applied_coupon', $couponData);
+        $code = strtoupper(trim($code));
+        if (isset($this->_validCoupons[$code])) {
+            $couponData = [
+                'code' => $code,
+                'discount_percent' => $this->_validCoupons[$code]
+            ];
+            $_SESSION['applied_coupon'] = $couponData;
             return [
                 'success' => true,
-                'message' => "Coupon {$couponData['code']} applied successfully!",
+                'message' => "Coupon {$code} applied successfully!",
                 'coupon' => $couponData
             ];
         }
@@ -60,46 +64,17 @@ class Model_Coupon
         ];
     }
 
-    /**
-     * Remove coupon from session
-     */
     public function remove()
     {
-        if (Session::has('applied_coupon')) {
-            Session::remove('applied_coupon');
+        if (isset($_SESSION['applied_coupon'])) {
+            unset($_SESSION['applied_coupon']);
             return true;
         }
         return false;
     }
 
-    /**
-     * Get currently applied coupon
-     */
-    public function getApplied()
+    public function getAllCoupons()
     {
-        return Session::get('applied_coupon', null);
-    }
-
-    /**
-     * Calculate coupon discount amount
-     */
-    public function calculateDiscount($subtotal)
-    {
-        $coupon = $this->getApplied();
-
-        if ($coupon && isset($coupon['discount_percent'])) {
-            return ($subtotal * $coupon['discount_percent'] / 100);
-        }
-
-        return 0;
-    }
-
-    /**
-     * Get subtotal after coupon discount
-     */
-    public function getSubtotalAfterDiscount($subtotal)
-    {
-        $discount = $this->calculateDiscount($subtotal);
-        return $subtotal - $discount;
+        return $this->_validCoupons;
     }
 }

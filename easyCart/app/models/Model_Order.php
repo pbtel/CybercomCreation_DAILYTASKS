@@ -1,252 +1,176 @@
 <?php
 
-/**
- * Order Model
- * Handles all order-related database operations
- */
-class Model_Order
-{
-    private $db;
+require_once __DIR__ . '/../core/Core_Model.php';
 
-    public function __construct()
+class Model_Order extends Core_Model
+{
+    protected function _init()
     {
-        $this->db = Database::getInstance();
+        $this->_resourceName = 'Resource_Order';
     }
 
-    /**
-     * Save order to database (distributed across 5 tables)
-     */
-    public function save($orderData)
+    public function afterLoad()
     {
-        try {
-            $this->db->beginTransaction();
+        $data = $this->getData();
+        if (isset($data['order_id'])) {
+            $db = Database::getInstance();
 
-            // 1. Insert into sales_order
-            $sql = "INSERT INTO sales_order (user_id, order_number, subtotal, discount_amount, tax, shipping_cost, final_amount, status, customer_email, customer_phone, created_at, updated_at) 
-                    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, NOW(), NOW()) RETURNING order_id";
+            // Load Items
+            $itemSql = "SELECT * FROM sales_order_product WHERE order_id = $1";
+            $itemResult = $db->query($itemSql, [$data['order_id']]);
+            $data['items'] = $db->fetchAll($itemResult) ?? [];
 
-            // Extract email and phone from address data if not directly provided
-            $email = $orderData['customer_email'] ?? ($orderData['address']['email'] ?? null);
-            $phone = $orderData['customer_phone'] ?? ($orderData['address']['phone'] ?? null);
+            // Load Address
+            $addrSql = "SELECT * FROM sales_order_address WHERE order_id = $1";
+            $addrResult = $db->query($addrSql, [$data['order_id']]);
+            $data['address'] = $db->fetch($addrResult) ?? [];
 
-            $result = $this->db->query($sql, [
-                $orderData['user_id'] ?? null,
-                $orderData['order_number'],
-                $orderData['subtotal'],
-                $orderData['discount'] ?? 0,
-                $orderData['tax'] ?? 0,
-                $orderData['shipping_cost'] ?? 0,
-                $orderData['final_amount'],
-                $orderData['status'] ?? 'pending',
-                $email,
-                $phone
-            ]);
-            $orderRow = $this->db->fetch($result);
-            $orderId = $orderRow['order_id'];
+            // Load Payment Info
+            $billingSql = "SELECT payment_method FROM sales_order_billing WHERE order_id = $1 LIMIT 1";
+            $billingResult = $db->query($billingSql, [$data['order_id']]);
+            $billingRow = $db->fetch($billingResult);
+            $data['payment_method'] = $billingRow['payment_method'] ?? 'not_specified';
 
-            if (!$orderId) {
-                $this->db->rollback();
-                return false;
-            }
+            // Load Shipping Method
+            $shipSql = "SELECT shipping_method FROM sales_order_shipping_method WHERE order_id = $1 LIMIT 1";
+            $shipResult = $db->query($shipSql, [$data['order_id']]);
+            $shipRow = $db->fetch($shipResult);
+            $data['shipping_method'] = $shipRow['shipping_method'] ?? 'Standard';
 
-            // 2. Insert order products
-            if (isset($orderData['items']) && is_array($orderData['items'])) {
-                foreach ($orderData['items'] as $item) {
-                    $sql = "INSERT INTO sales_order_product (order_id, product_id, product_name, quantity, unit_price, variant_data, subtotal) 
-                            VALUES ($1, $2, $3, $4, $5, $6, $7)";
-                    $this->db->query($sql, [
-                        $orderId,
-                        $item['product_id'],
-                        $item['product_name'] ?? 'Product',
-                        $item['quantity'],
-                        $item['price'],
-                        json_encode($item['variant'] ?? []),
-                        $item['price'] * $item['quantity']
-                    ]);
+            // Unserialize variant_data and map fields for template compatibility
+            foreach ($data['items'] as &$item) {
+                // Map unit_price to price
+                if (isset($item['unit_price'])) {
+                    $item['price'] = $item['unit_price'];
+                }
+
+                // Handle variant data
+                if (isset($item['variant_data']) && is_string($item['variant_data'])) {
+                    $item['variant'] = json_decode($item['variant_data'], true) ?? [];
+                }
+
+                // Try to get primary image from database if not present
+                if (!isset($item['image']) && isset($item['product_id'])) {
+                    $imgSql = "SELECT image_emoji FROM catalog_product_image WHERE product_id = $1 AND is_primary = true LIMIT 1";
+                    $imgResult = $db->query($imgSql, [$item['product_id']]);
+                    $imgRow = $db->fetch($imgResult);
+                    $item['image'] = $imgRow['image_emoji'] ?? '📦';
                 }
             }
-
-            // 3. Insert shipping address
-            if (isset($orderData['address'])) {
-                $addr = $orderData['address'];
-                $sql = "INSERT INTO sales_order_address (order_id, full_name, phone, address_line1, address_line2, city, state, pincode, country) 
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)";
-                $this->db->query($sql, [
-                    $orderId,
-                    $addr['full_name'] ?? '',
-                    $addr['phone'] ?? '',
-                    $addr['address_line1'] ?? '',
-                    $addr['address_line2'] ?? '',
-                    $addr['city'] ?? '',
-                    $addr['state'] ?? '',
-                    $addr['postal_code'] ?? '',
-                    $addr['country'] ?? 'India'
-                ]);
-            }
-
-            // 4. Insert shipping method
-            $sql = "INSERT INTO sales_order_shipping_method (order_id, shipping_method, shipping_type) 
-                    VALUES ($1, $2, $3)";
-            $this->db->query($sql, [
-                $orderId,
-                $orderData['shipping_type'] ?? 'Standard',
-                'Method' // or 'Express'/'Standard' if known
-            ]);
-
-            // 5. Insert billing info
-            $sql = "INSERT INTO sales_order_billing (order_id, payment_method, payment_status, coupon_code) 
-                    VALUES ($1, $2, $3, $4)";
-            $this->db->query($sql, [
-                $orderId,
-                $orderData['payment_method'] ?? 'COD',
-                'pending',
-                $orderData['applied_coupon'] ?? null
-            ]);
-
-            $this->db->commit();
-            return $orderId;
-
-        } catch (Exception $e) {
-            $this->db->rollback();
-            error_log("Failed to save order: " . $e->getMessage());
-            return false;
         }
+        $this->setData($data);
+        return $this;
     }
 
     /**
-     * Get order by ID with all details
+     * Compatibility methods
      */
-    public function getById($orderId)
+    public function getById($id)
     {
-        $sql = "SELECT o.*, s.shipping_method, b.payment_method
-                FROM sales_order o
-                LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
-                LEFT JOIN sales_order_billing b ON o.order_id = b.order_id
-                WHERE o.order_id = $1 AND o.status != 'cart'";
-        $result = $this->db->query($sql, [$orderId]);
-        $order = $this->db->fetch($result);
-
-        if ($order) {
-            // Get order items
-            $itemsSql = "SELECT op.*, op.product_name, pi.image_emoji as image
-                         FROM sales_order_product op
-                         LEFT JOIN catalog_product_entity pe ON op.product_id = pe.entity_id
-                         LEFT JOIN catalog_product_image pi ON pe.entity_id = pi.product_id AND pi.is_primary = true
-                         WHERE op.order_id = $1";
-            $itemsResult = $this->db->query($itemsSql, [$orderId]);
-            $items = $this->db->fetchAll($itemsResult);
-
-            foreach ($items as &$item) {
-                $item['variant'] = json_decode($item['variant_data'], true) ?? [];
-                $item['price'] = $item['unit_price']; // Map for view compatibility
-            }
-            $order['items'] = $items;
-
-            // Get address
-            $addrSql = "SELECT * FROM sales_order_address WHERE order_id = $1";
-            $addrResult = $this->db->query($addrSql, [$orderId]);
-            $order['address'] = $this->db->fetch($addrResult);
+        $this->load($id);
+        if ($this->getId()) {
+            return $this->afterLoad()->getData();
         }
-
-        return $order;
+        return null;
     }
 
-    /**
-     * Get orders by user ID
-     */
-    public function getUserOrders($userId)
+    public function getByUserId($userId)
     {
-        $sql = "SELECT o.*, s.shipping_method
-                FROM sales_order o
-                LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
-                WHERE o.user_id = $1 AND o.status != 'cart'
-                ORDER BY o.created_at DESC";
-        $result = $this->db->query($sql, [$userId]);
-        $orders = $this->db->fetchAll($result);
-
-        foreach ($orders as &$order) {
-            // Get order items
-            $itemsSql = "SELECT op.*, op.product_name, pi.image_emoji as image
-                         FROM sales_order_product op
-                         LEFT JOIN catalog_product_entity pe ON op.product_id = pe.entity_id
-                         LEFT JOIN catalog_product_image pi ON pe.entity_id = pi.product_id AND pi.is_primary = true
-                         WHERE op.order_id = $1";
-            $itemsResult = $this->db->query($itemsSql, [$order['order_id']]);
-            $items = $this->db->fetchAll($itemsResult);
-
-            foreach ($items as &$item) {
-                $item['variant'] = json_decode($item['variant_data'], true) ?? [];
-                $item['price'] = $item['unit_price']; // Map for view compatibility
-            }
-            $order['items'] = $items;
-        }
-
-        return $orders ?? [];
+        require_once 'Collection_Order.php';
+        $collection = new Collection_Order();
+        return $collection->addFieldToFilter('user_id', $userId)
+            ->addFieldToFilter('status', 'cart', '!=')
+            ->setOrder('created_at', 'DESC')
+            ->getData();
     }
 
-    /**
-     * Get orders by status
-     */
+    public function getByNumber($orderNumber)
+    {
+        $this->load($orderNumber, 'order_number');
+        return $this->afterLoad()->getData();
+    }
+
     public function getByStatus($status)
     {
-        $sql = "SELECT o.*, s.shipping_method
-                FROM sales_order o
-                LEFT JOIN sales_order_shipping_method s ON o.order_id = s.order_id
-                WHERE o.status = $1 
-                ORDER BY o.created_at DESC";
-        $result = $this->db->query($sql, [$status]);
-        return $this->db->fetchAll($result) ?? [];
+        require_once 'Collection_Order.php';
+        $collection = new Collection_Order();
+        return $collection->addFieldToFilter('status', $status)
+            ->setOrder('created_at', 'DESC')
+            ->getData();
     }
 
-    /**
-     * Get order statistics for a user
-     */
+    public function getFullOrder($orderId)
+    {
+        $this->load($orderId);
+        return $this->afterLoad()->getData();
+    }
+
+    public function getUserOrders($userId)
+    {
+        return $this->getByUserId($userId);
+    }
+
     public function getStats($userId)
     {
-        $sql = "SELECT 
-                    COUNT(*) as total,
-                    SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending,
-                    SUM(CASE WHEN status = 'processing' THEN 1 ELSE 0 END) as processing,
-                    SUM(CASE WHEN status = 'shipped' THEN 1 ELSE 0 END) as shipped,
-                    SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END) as delivered
-                FROM sales_order
-                WHERE user_id = $1 AND status != 'cart'";
+        $db = Database::getInstance();
 
-        $result = $this->db->query($sql, [$userId]);
-        $stats = $this->db->fetch($result);
-
-        return [
-            'total' => (int) ($stats['total'] ?? 0),
-            'pending' => (int) ($stats['pending'] ?? 0),
-            'processing' => (int) ($stats['processing'] ?? 0),
-            'shipped' => (int) ($stats['shipped'] ?? 0),
-            'delivered' => (int) ($stats['delivered'] ?? 0)
-        ];
-    }
-
-    /**
-     * Generate unique order number
-     */
-    public function generateOrderNumber()
-    {
-        return 'ORD-' . strtoupper(uniqid());
-    }
-
-    /**
-     * Get chart data for orders visualization (individual orders)
-     */
-    public function getChartData()
-    {
-        if (!isset($_SESSION['user'])) {
-            return [];
-        }
-        $userId = $_SESSION['user']['user_id'];
-
-        $sql = "SELECT created_at as date, final_amount as total, order_number 
+        // Total stats - Exclude 'cart' and 'cancelled' for accurate dashboard summary
+        $sql = "SELECT COUNT(*) as total_orders, SUM(final_amount) as total_spent 
                 FROM sales_order 
-                WHERE user_id = $1 AND status NOT IN ('cancelled', 'cart') 
-                ORDER BY created_at ASC";
-        $result = $this->db->query($sql, [$userId]);
-        return $this->db->fetchAll($result) ?? [];
+                WHERE user_id = $1 AND status != 'cancelled' AND status != 'cart'";
+        $result = $db->query($sql, [$userId]);
+        $row = $db->fetch($result);
+
+        // Status-wise counts
+        $statusSql = "SELECT status, COUNT(*) as count FROM sales_order WHERE user_id = $1 AND status != 'cart' GROUP BY status";
+        $statusResult = $db->query($statusSql, [$userId]);
+        $statusRows = $db->fetchAll($statusResult);
+
+        $statusCounts = [
+            'total' => (int) ($row['total_orders'] ?? 0),
+            'processing' => 0,
+            'shipped' => 0,
+            'delivered' => 0,
+            'cancelled' => 0,
+            'pending' => 0,
+            'completed' => 0
+        ];
+
+        foreach ($statusRows as $sRow) {
+            $status = strtolower($sRow['status']);
+            if (isset($statusCounts[$status])) {
+                $statusCounts[$status] = (int) $sRow['count'];
+            }
+        }
+
+        // If 'completed' is used, it often counts as 'delivered' in the UI
+        $statusCounts['delivered'] += $statusCounts['completed'];
+
+        return array_merge($statusCounts, [
+            'total_orders' => (int) ($row['total_orders'] ?? 0),
+            'total_spent' => (float) ($row['total_spent'] ?? 0),
+            'currency_symbol' => '₹'
+        ]);
+    }
+
+    public function getChartData($userId = null)
+    {
+        $db = Database::getInstance();
+        $params = [];
+        $where = "WHERE status != 'cancelled' AND status != 'cart'";
+
+        if ($userId) {
+            $where .= " AND user_id = $1";
+            $params[] = $userId;
+        }
+
+        $sql = "SELECT DATE(created_at) as date, SUM(final_amount) as total, MAX(order_number) as order_number 
+                FROM sales_order 
+                $where 
+                GROUP BY DATE(created_at) 
+                ORDER BY date ASC 
+                LIMIT 30";
+        $result = $db->query($sql, $params);
+        return $db->fetchAll($result) ?? [];
     }
 }

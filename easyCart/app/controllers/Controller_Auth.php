@@ -170,8 +170,16 @@ class Controller_Auth extends Controller
      */
     public function logout()
     {
+        // Deactivate active guest cart in DB so next guest gets a fresh one
+        $cartModel = $this->model('Model_Cart');
+        $cartModel->deactivateGuestCart();
+
+        // Standard user logout
         $userModel = $this->model('Model_User');
         $userModel->logout();
+
+        // Clear all app specific data while keeping the technical session alive for flash messages
+        Session::clearAppData();
 
         Session::setFlash('success', 'You have been logged out');
         $this->redirect('home');

@@ -12,7 +12,7 @@ class Controller_Dashboard extends Controller
         $userModel = $this->model('Model_User');
         $userModel->requireLogin('dashboard');
 
-        $user = Session::get('user', ['logged_in' => false]);
+        $user = $userModel->getCurrentUser();
 
         if ($user['email'] === 'admin@easycart.com') {
             // Admin user goes to admin dashboard
@@ -27,7 +27,7 @@ class Controller_Dashboard extends Controller
         $stats = $orderModel->getStats($userId);
         $allOrders = $orderModel->getUserOrders($userId);
         $recentOrders = array_slice($allOrders, 0, 5); // Just first 5
-        $chartData = $orderModel->getChartData();
+        $chartData = $orderModel->getChartData($userId);
 
         // Calculate total spent
         $totalSpent = 0;

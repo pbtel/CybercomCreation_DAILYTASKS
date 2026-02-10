@@ -139,4 +139,18 @@ class Session
         $cartModel = new Model_Cart();
         return $cartModel->getCount();
     }
+    /**
+     * Clear all application data (cart, checkout, etc.)
+     * Used during logout to reset guest state
+     */
+    public static function clearAppData()
+    {
+        self::remove('guest_cart');
+        self::remove('user_carts');
+        self::remove('applied_coupon');
+        self::remove('checkout_data');
+        self::remove('selected_shipping_method');
+        self::remove('pending_checkout_data');
+        self::remove('session_type');
+    }
 }
