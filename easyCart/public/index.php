@@ -5,6 +5,70 @@
  * All requests are routed through this file
  */
 
+// --- SECURITY: Mandatory Basic Authentication Check ---
+$authUser = $_SERVER['PHP_AUTH_USER'] ?? null;
+$authPass = $_SERVER['PHP_AUTH_PW'] ?? null;
+
+// Handle CGI/FastCGI and other environment variables
+if (!$authUser) {
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] ?? $_SERVER['Authorization'] ?? null;
+    if (!$authHeader && function_exists('getallheaders')) {
+        $headers = getallheaders();
+        $authHeader = $headers['Authorization'] ?? $headers['authorization'] ?? null;
+    }
+
+    if ($authHeader && strpos(strtolower($authHeader), 'basic') === 0) {
+        $credentials = explode(':', base64_decode(substr($authHeader, 6)), 2);
+        if (count($credentials) === 2) {
+            $authUser = $credentials[0];
+            $authPass = $credentials[1];
+        }
+    }
+}
+
+if (!$authUser) {
+    header('WWW-Authenticate: Basic realm="Restricted Area"');
+    header('HTTP/1.0 401 Unauthorized');
+    echo '<h1>401 Unauthorized</h1><p>Please log in to access this site.</p>';
+    exit;
+} else {
+    $htpasswdPath = dirname(__DIR__) . '/../.htpasswd';
+    $authenticated = false;
+
+    // 1. Hardcoded check for "pooja" to ensure immediate access
+    if (trim($authUser) === 'pooja' && trim($authPass) === 'pooja') {
+        $authenticated = true;
+    }
+    // 2. Check .htpasswd file if hardcoded fails
+    elseif (file_exists($htpasswdPath)) {
+        $lines = file($htpasswdPath);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if (empty($line))
+                continue;
+
+            $parts = explode(':', $line, 2);
+            if (count($parts) < 2)
+                continue;
+            list($user, $hash) = $parts;
+
+            if ($user === $authUser) {
+                if (password_verify($authPass, $hash) || crypt($authPass, $hash) === $hash) {
+                    $authenticated = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!$authenticated) {
+        header('WWW-Authenticate: Basic realm="Restricted Area"');
+        header('HTTP/1.0 401 Unauthorized');
+        echo '<h1>401 Unauthorized</h1><p>Invalid credentials.</p>';
+        exit;
+    }
+}
+
 // Define base URL dynamically
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'];

@@ -51,12 +51,26 @@ class Model_User extends Core_Model
             'name' => $name,
             'email' => $email
         ]);
+
+        // Merge guest cart logic
+        require_once __DIR__ . '/Model_Cart.php';
+        $cartModel = new Model_Cart();
+        $cartModel->mergeGuestCart($userId, $email);
+
+        Session::set('session_type', 'user');
+
         return true;
     }
 
     public function logout()
     {
+        // Deactivate guest cart if any
+        require_once __DIR__ . '/Model_Cart.php';
+        $cartModel = new Model_Cart();
+        $cartModel->deactivateGuestCart();
+
         Session::logout();
+        Session::clearAppData();
         return true;
     }
 

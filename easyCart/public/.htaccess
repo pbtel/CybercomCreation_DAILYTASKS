@@ -1,4 +1,11 @@
 RewriteEngine On
+RewriteBase /easycart/
+
+# Ensure Authorization header is passed to PHP (Standard Apache 2.4.13+)
+CGIPassAuth On
+
+# Fallback for older Apache / CGI
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
 # Allow direct access to existing files and directories (images, css, js)
 RewriteCond %{REQUEST_FILENAME} -f [OR]

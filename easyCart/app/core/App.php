@@ -36,6 +36,12 @@ class App
         // Rename convention: Home -> Controller_Home
         $controllerName = isset($segments[0]) ? ucfirst(strtolower($segments[0])) : 'Home';
 
+        // Fix for subdirectory routing: If the first segment matches the project folder name, skip it
+        if (strtolower($controllerName) === 'easycart') {
+            array_shift($segments);
+            $controllerName = isset($segments[0]) ? ucfirst(strtolower($segments[0])) : 'Home';
+        }
+
         $controllerClass = 'Controller_' . $controllerName;
         $controllerFile = __DIR__ . '/../controllers/' . $controllerClass . '.php';
 
@@ -137,15 +143,21 @@ class App
             // Clean up common entry point noise
             $url = preg_replace('/^\/?(public\/index\.php|index\.php|public)\/?/i', '', $url);
             $url = trim($url, '/');
+
+            // Security: Prevent accessing hidden files or common project folders
+            if (strpos($url, 'app/') === 0 || strpos($url, '.gemini/') === 0) {
+                return ['home'];
+            }
+
             $url = filter_var($url, FILTER_SANITIZE_URL);
 
             if ($url === '')
                 return ['home'];
 
             $segments = explode('/', $url);
-            // Filter out empty segments and re-index
+            // Filter out empty segments, 'index.php' and re-index
             return array_values(array_filter($segments, function ($s) {
-                return $s !== '';
+                return $s !== '' && strtolower($s) !== 'index.php';
             }));
         }
 

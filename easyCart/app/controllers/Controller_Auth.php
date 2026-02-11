@@ -62,8 +62,7 @@ class Controller_Auth extends Controller
             $userModel->login($result['user_id'], $result['name'], $result['email']);
 
             // Merge guest cart
-            $cartModel = $this->model('Model_Cart');
-            $cartModel->mergeGuestCart($result['user_id']);
+            // Merge guest cart logic is now handled in Model_User::login
 
             Session::setFlash('success', 'Welcome back, ' . $result['name'] . '!');
             $this->redirect($redirect);
@@ -149,8 +148,7 @@ class Controller_Auth extends Controller
             $userModel->login($result['user_id'], $result['name'], $result['email']);
 
             // Merge guest cart
-            $cartModel = $this->model('Model_Cart');
-            $cartModel->mergeGuestCart($result['user_id']);
+            // Merge guest cart logic is now handled in Model_User::login
 
             Session::setFlash('success', 'Account created successfully! Welcome, ' . $result['name'] . '!');
             $this->redirect($redirect);
@@ -170,16 +168,13 @@ class Controller_Auth extends Controller
      */
     public function logout()
     {
-        // Deactivate active guest cart in DB so next guest gets a fresh one
-        $cartModel = $this->model('Model_Cart');
-        $cartModel->deactivateGuestCart();
+
 
         // Standard user logout
         $userModel = $this->model('Model_User');
         $userModel->logout();
 
-        // Clear all app specific data while keeping the technical session alive for flash messages
-        Session::clearAppData();
+
 
         Session::setFlash('success', 'You have been logged out');
         $this->redirect('home');

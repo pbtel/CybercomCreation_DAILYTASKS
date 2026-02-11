@@ -1,59 +1,90 @@
 <?php
 
-/**
- * Checkout Controller
- * Handles checkout process and order placement
- */
+require_once __DIR__ . '/../core/Controller.php';
+
 class Controller_Checkout extends Controller
 {
-
-    /**
-     * Display checkout page
-     */
     public function index()
     {
-        // Require login
-        $userModel = $this->model('Model_User');
-        // $userModel->requireLogin('checkout'); // Allow guests to view checkout page
-
-        // Load models
         $cartModel = $this->model('Model_Cart');
-        $couponModel = $this->model('Model_Coupon');
+        $userModel = $this->model('Model_User');
         $shippingModel = $this->model('Model_Shipping');
+        $couponModel = $this->model('Model_Coupon');
 
-        // Get cart data
         $cartItems = $cartModel->getItemsWithDetails();
-        $subtotal = $cartModel->getSubtotal();
-
-        // Redirect if cart is empty
         if (empty($cartItems)) {
             $this->redirect('cart');
             return;
         }
 
-        // Apply coupon discount if available
+        $subtotal = $cartModel->getSubtotal();
         $appliedCoupon = $couponModel->getApplied();
-        $couponDiscount = 0;
-        if ($appliedCoupon) {
-            $couponDiscount = $couponModel->calculateDiscount($subtotal);
-        }
+        $couponDiscount = $couponModel->calculateDiscount($subtotal);
         $subtotalAfterCoupon = $subtotal - $couponDiscount;
 
-        // Get available shipping methods and auto-select default if needed
         $availableShippingMethods = $shippingModel->getAvailableMethods($cartItems, $subtotalAfterCoupon);
-        $selectedShippingMethod = $shippingModel->getOrSetDefault($cartItems, $subtotalAfterCoupon);
 
-        // Validate selected method is available
+        // Initial selection logic
+        $selectedShippingMethod = Session::get('selected_shipping_method', 'standard');
         if (!in_array($selectedShippingMethod, $availableShippingMethods)) {
-            require_once __DIR__ . '/../../includes/shipping-type-helpers.php';
-            $selectedShippingMethod = getDefaultShippingMethod($cartItems, $subtotalAfterCoupon);
+            $selectedShippingMethod = !empty($availableShippingMethods) ? $availableShippingMethods[0] : 'standard';
+            Session::set('selected_shipping_method', $selectedShippingMethod);
             $shippingModel->setSelected($selectedShippingMethod);
         }
 
-        // Calculate costs
-        $shipping = $shippingModel->calculateCost($subtotalAfterCoupon, $selectedShippingMethod);
-        $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shipping);
-        $total = $shippingModel->calculateOrderTotal($subtotalAfterCoupon, $shipping, $tax);
+        // Add saved data (pending form entries) 
+        $savedData = Session::get('pending_checkout_data', []);
+
+        // Check for session data expiration
+        if (isset($savedData['_timestamp']) && (time() - $savedData['_timestamp'] > 1800)) {
+            Session::remove('pending_checkout_data');
+            $savedData = [];
+        }
+
+        // --- Populate from Database if logged in ---
+        if ($userModel->isLoggedIn()) {
+            $user = $userModel->getCurrentUser();
+            $dbCheckoutData = $cartModel->getCheckoutData($user['user_id']);
+
+            // Merge: Combine both, preferring non-empty values
+            if (empty($savedData)) {
+                $savedData = $dbCheckoutData;
+            } else {
+                foreach ($dbCheckoutData as $key => $value) {
+                    if (!empty($value) && (empty($savedData[$key]))) {
+                        $savedData[$key] = $value;
+                    }
+                }
+            }
+
+            // Fallback: If First Name/Last Name still empty, split from user name
+            if ((empty($savedData['first_name']) || empty($savedData['last_name'])) && !empty($user['name'])) {
+                $parts = explode(' ', trim($user['name']));
+                if (empty($savedData['first_name'])) {
+                    $savedData['first_name'] = $parts[0] ?? '';
+                }
+                if (empty($savedData['last_name'])) {
+                    array_shift($parts);
+                    $savedData['last_name'] = implode(' ', $parts);
+                }
+            }
+        }
+
+        // --- Override selection with saved data if available ---
+        if (isset($savedData['shipping_method']) && in_array($savedData['shipping_method'], $availableShippingMethods)) {
+            $selectedShippingMethod = $savedData['shipping_method'];
+            $shippingModel->setSelected($selectedShippingMethod);
+        }
+
+        // Ensure payment method is correctly prioritized
+        if (!isset($savedData['payment_method']) || empty($savedData['payment_method'])) {
+            $savedData['payment_method'] = 'cod'; // Default
+        }
+
+        // Calculate costs with finalized method
+        $shippingCost = $shippingModel->calculateCost($subtotalAfterCoupon, $selectedShippingMethod);
+        $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shippingCost);
+        $total = $shippingModel->calculateOrderTotal($subtotalAfterCoupon, $shippingCost, $tax);
 
         // Pass data to view
         $data = [
@@ -65,22 +96,11 @@ class Controller_Checkout extends Controller
             'subtotalAfterCoupon' => $subtotalAfterCoupon,
             'availableShippingMethods' => $availableShippingMethods,
             'selectedShippingMethod' => $selectedShippingMethod,
-            'shipping' => $shipping,
+            'shipping' => $shippingCost,
             'tax' => $tax,
-            'total' => $total
+            'total' => $total,
+            'savedData' => $savedData
         ];
-
-
-        // Add saved data to view only if recent (e.g., set within last 30 mins)
-        $savedData = Session::get('pending_checkout_data', []);
-
-        // Check for expiration
-        if (isset($savedData['_timestamp']) && (time() - $savedData['_timestamp'] > 1800)) {
-            Session::remove('pending_checkout_data');
-            $savedData = [];
-        }
-
-        $data['savedData'] = $savedData;
 
         // Use View_Checkout class
         require_once __DIR__ . '/../views/View_Checkout.php';
@@ -89,8 +109,28 @@ class Controller_Checkout extends Controller
     }
 
     /**
-     * Place order
+     * Real-time persistence for AJAX calls
      */
+    public function persistAjax()
+    {
+        if (!$this->isPost()) {
+            echo json_encode(['success' => false]);
+            return;
+        }
+
+        $cartModel = $this->model('Model_Cart');
+
+        // 1. Save to Session immediately for same-session persistence
+        $data = $_POST;
+        $data['_timestamp'] = time();
+        Session::set('pending_checkout_data', $data);
+
+        // 2. Persist to DB for cross-session/cross-device persistence
+        $success = $cartModel->saveCheckoutData($data);
+
+        echo json_encode(['success' => $success]);
+    }
+
     public function place()
     {
         if (!$this->isPost()) {
@@ -98,134 +138,75 @@ class Controller_Checkout extends Controller
             return;
         }
 
-        // Handle Guest Checkout Interception
+        $cartModel = $this->model('Model_Cart');
         $userModel = $this->model('Model_User');
+
+        // Handle Guest Checkout Interception
         if (!$userModel->isLoggedIn()) {
-            // Save form data to session with timestamp
+            // Save form data to session so it's maintained after login/back
             $formData = $_POST;
             $formData['_timestamp'] = time();
             Session::set('pending_checkout_data', $formData);
 
-            // --- PERSIST TO DATABASE START ---
-            $cartModel = $this->model('Model_Cart');
+            // Also persist to database guest tables for fallback
             $cartModel->saveGuestCheckoutData($_POST);
-            // --- PERSIST TO DATABASE END ---
 
-            Session::setFlash('info', 'Please login to complete your order. Your details have been saved.');
+            Session::setFlash('info', 'Please login to complete your order. Your details have been preserved.');
             $this->redirect('login?redirect=checkout'); // Redirect to login
             return;
         }
 
-        // Require login
-        $userModel->requireLogin('checkout');
+        // For logged in users: Finalize persistent checkout data
+        $user = $userModel->getCurrentUser();
+        $cartModel->saveUserCheckoutData($user['user_id'], $_POST);
 
-        // Load models
-        $cartModel = $this->model('Model_Cart');
-        $orderModel = $this->model('Model_Order');
-        $couponModel = $this->model('Model_Coupon');
-        $shippingModel = $this->model('Model_Shipping');
-
-        // Get cart data
-        $cartItems = $cartModel->getItemsWithDetails();
+        // Process order placement
         $subtotal = $cartModel->getSubtotal();
 
-        if (empty($cartItems)) {
-            Session::setFlash('error', 'Your cart is empty');
-            $this->redirect('cart');
-            return;
-        }
-
-        // Get form data
-        $firstName = $this->post('first_name');
-        $lastName = $this->post('last_name');
-        $email = $this->post('email');
-        $phone = $this->post('phone');
-        $address = $this->post('address');
-        $city = $this->post('city');
-        $state = $this->post('state');
-        $pincode = $this->post('pincode');
-        $country = $this->post('country', 'IN');
-        $paymentMethod = $this->post('payment_method', 'cod');
-        $shippingMethod = $this->post('shipping_method');
-
-        // Validate required fields
-        if (!$firstName || !$lastName || !$email || !$phone || !$address || !$city || !$state || !$pincode) {
-            Session::setFlash('error', 'Please fill all required fields');
-            $this->redirect('checkout');
-            return;
-        }
-
-        // Calculate costs
-        $appliedCoupon = $couponModel->getApplied();
-        $couponDiscount = 0;
-        if ($appliedCoupon) {
-            $couponDiscount = $couponModel->calculateDiscount($subtotal);
-        }
+        require_once __DIR__ . '/../models/Model_Coupon.php';
+        $couponModel = new Model_Coupon();
+        $couponDiscount = $couponModel->calculateDiscount($subtotal);
         $subtotalAfterCoupon = $subtotal - $couponDiscount;
 
-        $shipping = $shippingModel->calculateCost($subtotalAfterCoupon, $shippingMethod);
-        $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shipping);
-        $total = $shippingModel->calculateOrderTotal($subtotalAfterCoupon, $shipping, $tax);
+        require_once __DIR__ . '/../models/Model_Shipping.php';
+        $shippingModel = new Model_Shipping();
+        $shippingMethod = $_POST['shipping_method'] ?? 'standard';
+        $shippingCost = $shippingModel->calculateCost($subtotalAfterCoupon, $shippingMethod);
+        $tax = $shippingModel->calculateTax($subtotalAfterCoupon, $shippingCost);
+        $total = $subtotalAfterCoupon + $shippingCost + $tax;
 
-        // Prepare order data
-        $user = $userModel->getCurrentUser();
-        $orderNumber = $orderModel->generateOrderNumber();
+        // Transition the "CART" order to "PENDING"
+        $orderId = $cartModel->getOrCreateDbOrderCart($user['user_id']);
+        $orderModel = $this->model('Model_Order');
+        $orderModel->load($orderId);
 
-        $orderData = [
-            'user_id' => $user['user_id'],
-            'order_number' => $orderNumber,
-            'subtotal' => $subtotal,
-            'discount' => $couponDiscount,
-            'tax' => $tax,
-            'final_amount' => $total,
-            'applied_coupon' => $appliedCoupon ? $appliedCoupon['code'] : null,
-            'status' => 'pending',
-            'shipping_type' => $shippingMethod,
-            'shipping_cost' => $shipping,
-            'estimated_delivery' => $shippingModel->getDeliveryDays($shippingMethod) . ' business days',
-            'payment_method' => $paymentMethod,
-            'address' => [
-                'full_name' => $firstName . ' ' . $lastName,
-                'email' => $email,
-                'phone' => $phone,
-                'address_line1' => $address,
-                'address_line2' => '',
-                'city' => $city,
-                'state' => $state,
-                'postal_code' => $pincode,
-                'country' => $country
-            ],
-            'items' => []
-        ];
+        if ($orderModel->getId()) {
+            $orderNumber = 'ORD-' . strtoupper(substr(md5(uniqid()), 0, 8));
 
-        // Add cart items to order
-        foreach ($cartItems as $item) {
-            $orderData['items'][] = [
-                'product_id' => $item['product']['id'],
-                'product_name' => $item['product']['name'],
-                'quantity' => $item['quantity'],
-                'price' => $item['unit_price_discounted'],
-                'variant' => $item['variant']
-            ];
-        }
+            // Update order status and final fields
+            $orderModel->setData('order_number', $orderNumber);
+            $orderModel->setData('status', 'pending');
+            $orderModel->setData('subtotal', $subtotal);
+            $orderModel->setData('shipping_cost', $shippingCost);
+            $orderModel->setData('tax', $tax);
+            $orderModel->setData('discount_amount', $couponDiscount);
+            $orderModel->setData('final_amount', $total);
+            $orderModel->setData('customer_email', $_POST['email']);
+            $orderModel->setData('customer_phone', $_POST['phone']);
+            $orderModel->setData('updated_at', date('Y-m-d H:i:s'));
 
-        // Save order
-        $orderId = $orderModel->save($orderData);
+            $orderModel->save();
 
-        if ($orderId) {
-            // Clear cart
+            // Clear the cart
             $cartModel->clearCart();
-
-            // Remove coupon
-            $couponModel->remove();
-
-            // Remove saved checkout data
+            Session::remove('checkout_data');
             Session::remove('pending_checkout_data');
+            Session::remove('selected_shipping_method');
 
-            Session::setFlash('success', 'Order placed successfully! Order #' . $orderNumber);
-            $this->redirect('orders');
+            Session::setFlash('success', 'Thank you! Your order #' . $orderNumber . ' has been placed.');
+            $this->redirect('order/success/' . $orderId);
         } else {
-            Session::setFlash('error', 'Failed to place order. Please try again.');
+            Session::setFlash('error', 'Failed to process order. Please try again.');
             $this->redirect('checkout');
         }
     }

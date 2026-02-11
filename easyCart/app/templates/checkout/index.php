@@ -41,7 +41,7 @@
                     <div class="form-row">
                         <div>
                             <label class="form-label">Email Address *</label>
-                            <input type="email" name="email" required class="form-input" value="<?php echo htmlspecialchars($savedData['email'] ?? ($currentUser['email'] ?? '')); ?>">
+                            <input type="email" name="email" required class="form-input" value="<?php echo htmlspecialchars($getVal('email')); ?>">
                         </div>
                         <div>
                             <label class="form-label">Phone Number *</label>
@@ -73,9 +73,10 @@
                         <div>
                             <label class="form-label">Country *</label>
                             <select name="country" required class="form-input" style="height: auto;">
-                                <option value="IN" selected>India</option>
-                                <option value="US">United States</option>
-                                <option value="UK">United Kingdom</option>
+                                <?php $sc = $getVal('country'); ?>
+                                <option value="IN" <?php echo ($sc == 'IN' || $sc == 'India' || !$sc) ? 'selected' : ''; ?>>India</option>
+                                <option value="US" <?php echo ($sc == 'US') ? 'selected' : ''; ?>>United States</option>
+                                <option value="UK" <?php echo ($sc == 'UK') ? 'selected' : ''; ?>>United Kingdom</option>
                             </select>
                         </div>
                     </div>
@@ -140,18 +141,20 @@
                 <div class="checkout-section">
                     <h2 class="checkout-section-title">💳 Payment Selection</h2>
                     
+                    <?php $selectedPayment = $getVal('payment_method') ?: 'cod'; ?>
+                    
                     <label class="payment-option">
-                        <input type="radio" name="payment_method" value="cod" checked>
+                        <input type="radio" name="payment_method" value="cod" <?php echo ($selectedPayment === 'cod') ? 'checked' : ''; ?> onchange="triggerPersistence()">
                         <span><strong>Cash on Delivery</strong> (Pay when you receive)</span>
                     </label>
 
                     <label class="payment-option">
-                        <input type="radio" name="payment_method" value="upi">
+                        <input type="radio" name="payment_method" value="upi" <?php echo ($selectedPayment === 'upi') ? 'checked' : ''; ?> onchange="triggerPersistence()">
                         <span><strong>UPI / Digital Wallets</strong> (Instant & Safe)</span>
                     </label>
 
                     <label class="payment-option last">
-                        <input type="radio" name="payment_method" value="card">
+                        <input type="radio" name="payment_method" value="card" <?php echo ($selectedPayment === 'card') ? 'checked' : ''; ?> onchange="triggerPersistence()">
                         <span><strong>Credit / Debit Card</strong> (Powered by Razorpay)</span>
                     </label>
                 </div>
@@ -229,26 +232,30 @@
 
     <script>
     const API_URL = '<?php echo BASE_URL; ?>/api';
-    // No need to redeclare subtotalAfterCoupon if not used or already available in wider scope
-    // const subtotalAfterCoupon = <?php echo $subtotalAfterCoupon; ?>;
+    const PERSIST_URL = '<?php echo BASE_URL; ?>/checkout/persistAjax';
+
+    function triggerPersistence() {
+        const form = document.getElementById('checkout-form');
+        const formData = new FormData(form);
+        fetch(PERSIST_URL, {
+            method: 'POST',
+            body: new URLSearchParams(formData)
+        });
+    }
 
     function updateOrderSummary() {
-        // ... (Shipping update logic remains similar but streamlined if needed)
         const selectedRadio = document.querySelector('input[name="shipping_method"]:checked');
         if (!selectedRadio) return;
         
         const selectedMethod = selectedRadio.value;
-        const subtotal = <?php echo $subtotalAfterCoupon; ?>; // PHP injection
+        const subtotal = <?php echo $subtotalAfterCoupon; ?>;
 
-        // Optimistic UI update or simple fetch to calculate
-        // For simplicity, let's just trigger the fetch to update totals
-        
-        // 1. Update Session
+        // 1. Update Session / Persistence
         fetch('<?php echo BASE_URL; ?>/api/shipping-method-update', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
             body: 'shipping_method=' + encodeURIComponent(selectedMethod)
-        });
+        }).then(() => triggerPersistence());
 
         // 2. Calculate Costs
         fetch('<?php echo BASE_URL; ?>/api/shipping-calculate', {
@@ -279,60 +286,27 @@
         const form = document.getElementById('checkout-form');
         const storageKey = 'easycart_checkout_form_data';
 
-        // 1. Restore data on load
-        const savedPacket = sessionStorage.getItem(storageKey);
-        const currentSessionId = '<?php echo session_id(); ?>';
-        
-        if (savedPacket) {
-            try {
-                const packet = JSON.parse(savedPacket);
-                
-                // Only restore if from SAME session
-                if (packet.sessionId === currentSessionId && packet.formData) {
-                    const data = packet.formData;
-                    Object.keys(data).forEach(key => {
-                        const input = form.querySelector(`[name="${key}"]`);
-                        if (input) {
-                            if (input.type === 'radio' || input.type === 'checkbox') {
-                                if (input.value === data[key]) input.checked = true;
-                            } else {
-                                input.value = data[key];
-                            }
-                        }
-                    });
-                    
-                    // If shipping method was restored, update summary
-                    if (data['shipping_method']) {
-                        const radio = form.querySelector(`input[name="shipping_method"][value="${data['shipping_method']}"]`);
-                        if (radio) {
-                            radio.checked = true;
-                            updateOrderSummary();
-                        }
-                    }
-                } else {
-                    // Session mismatch - clear stale data
-                    sessionStorage.removeItem(storageKey);
-                }
-            } catch (e) {
-                console.error('Error parsing saved checkout data', e);
-                sessionStorage.removeItem(storageKey);
-            }
-        }
-
-        // 2. Save data on input
+        // 2. Save data on input with Debounce
+        let debounceTimer;
         form.addEventListener('input', function(e) {
             const formData = new FormData(form);
             const data = {};
             formData.forEach((value, key) => {
                 data[key] = value;
             });
-            // Bind to session ID to validation freshness
+            // Local Storage Persistence
             const storagePacket = {
                 sessionId: '<?php echo session_id(); ?>',
                 timestamp: new Date().getTime(),
                 formData: data
             };
             sessionStorage.setItem(storageKey, JSON.stringify(storagePacket));
+
+            // Server Persistence (AJAX)
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                triggerPersistence();
+            }, 1000);
         });
 
         // 3. Clear data on successful submit
@@ -342,7 +316,7 @@
         // --- DATA PERSISTENCE LOGIC END ---
 
         // Initial summary update
-        updateOrderSummary();
+        // updateOrderSummary(); // Actually, index already provides correct values on load
     });
     </script>
 

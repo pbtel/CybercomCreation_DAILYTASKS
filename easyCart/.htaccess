@@ -1,9 +1,14 @@
+# Disable Apache-level Auth to avoid conflicts and use PHP-level auth instead
+# AuthType Basic
+# AuthName "Restricted Area"
+# AuthUserFile "c:/Users/pbpat/OneDrive/Desktop/dailyTasks/.htpasswd"
+# Require valid-user
+
 RewriteEngine On
 
-# Block direct access to .php files
-RewriteCond %{THE_REQUEST} \.php [NC]
-RewriteRule ^ - [F,L]
+# Ensure Authorization header is passed to PHP
+CGIPassAuth On
+RewriteRule ^ - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
 
-# Redirect everything to public directory
-RewriteCond %{REQUEST_URI} !public/
-RewriteRule ^(.*)$ public/$1 [L]
+# Root access processed by index.php
+# No routing needed here.
