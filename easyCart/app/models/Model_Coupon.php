@@ -30,7 +30,26 @@ class Model_Coupon extends Core_Model
 
     public function getApplied()
     {
-        return isset($_SESSION['applied_coupon']) ? $_SESSION['applied_coupon'] : null;
+        if (isset($_SESSION['applied_coupon'])) {
+            return $_SESSION['applied_coupon'];
+        }
+
+        // --- NEW: Recover from pending checkout data (DB-synced session) ---
+        $pending = Session::get('pending_checkout_data');
+        if ($pending && !empty($pending['coupon_code'])) {
+            // Self-apply if valid
+            $code = strtoupper(trim($pending['coupon_code']));
+            if (isset($this->_validCoupons[$code])) {
+                $couponData = [
+                    'code' => $code,
+                    'discount_percent' => $this->_validCoupons[$code]
+                ];
+                $_SESSION['applied_coupon'] = $couponData;
+                return $couponData;
+            }
+        }
+
+        return null;
     }
 
     public function calculateDiscount($subtotal)

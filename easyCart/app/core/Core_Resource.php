@@ -26,8 +26,12 @@ abstract class Core_Resource
             $field = $this->_primaryKey;
         }
 
-        $sql = "SELECT * FROM {$this->_tableName} WHERE {$field} = $1";
-        $result = $this->_db->query($sql, [$value]);
+        $query = (new Query())
+            ->select('*')
+            ->from($this->_tableName)
+            ->where($field, $value);
+
+        $result = $this->_db->query((string) $query, $query->getParams());
         $data = $this->_db->fetch($result);
 
         if ($data) {
@@ -52,33 +56,18 @@ abstract class Core_Resource
 
             $data['updated_at'] = date('Y-m-d H:i:s');
 
-            $fields = [];
-            $values = [];
-            $i = 1;
-            foreach ($data as $key => $val) {
-                if (is_array($val))
-                    $val = json_encode($val);
-                $fields[] = "{$key} = \${$i}";
-                $values[] = $val;
-                $i++;
-            }
-            $values[] = $id;
+            $query = (new Query())
+                ->update($this->_tableName, $data)
+                ->where($pk, $id);
 
-            $sql = "UPDATE {$this->_tableName} SET " . implode(', ', $fields) . " WHERE {$pk} = \${$i}";
-            $this->_db->query($sql, $values);
+            $this->_db->query((string) $query, $query->getParams());
         } else {
             // Insert
-            $keys = array_keys($data);
-            $values = array_values($data);
-            $placeholders = [];
-            foreach ($values as $idx => &$val) {
-                if (is_array($val))
-                    $val = json_encode($val);
-                $placeholders[] = '$' . ($idx + 1);
-            }
+            $query = (new Query())
+                ->insert($this->_tableName, $data)
+                ->returning($pk);
 
-            $sql = "INSERT INTO {$this->_tableName} (" . implode(', ', $keys) . ") VALUES (" . implode(', ', $placeholders) . ") RETURNING {$pk}";
-            $result = $this->_db->query($sql, $values);
+            $result = $this->_db->query((string) $query, $query->getParams());
             $row = $this->_db->fetch($result);
             if ($row) {
                 $model->setData($pk, $row[$pk]);
@@ -94,8 +83,10 @@ abstract class Core_Resource
     {
         $id = $model->getData($this->_primaryKey);
         if ($id) {
-            $sql = "DELETE FROM {$this->_tableName} WHERE {$this->_primaryKey} = $1";
-            $this->_db->query($sql, [$id]);
+            $query = (new Query())
+                ->delete($this->_tableName)
+                ->where($this->_primaryKey, $id);
+            $this->_db->query((string) $query, $query->getParams());
         }
         return $this;
     }

@@ -82,4 +82,9 @@ class Model_Shipping extends Core_Model
         Session::set('selected_shipping_method', $method);
         return $this;
     }
+
+    public function calculateOrderTotal($subtotalAfterCoupon, $shippingCost, $tax)
+    {
+        return $subtotalAfterCoupon + $shippingCost + $tax;
+    }
 }

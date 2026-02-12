@@ -35,8 +35,8 @@ class Controller_Checkout extends Controller
         // Add saved data (pending form entries) 
         $savedData = Session::get('pending_checkout_data', []);
 
-        // Check for session data expiration
-        if (isset($savedData['_timestamp']) && (time() - $savedData['_timestamp'] > 1800)) {
+        // Check for session data expiration (1 hour)
+        if (isset($savedData['_timestamp']) && (time() - $savedData['_timestamp'] > 3600)) {
             Session::remove('pending_checkout_data');
             $savedData = [];
         }
@@ -47,23 +47,19 @@ class Controller_Checkout extends Controller
             $dbCheckoutData = $cartModel->getCheckoutData($user['user_id']);
 
             // Merge: Combine both, preferring non-empty values
-            if (empty($savedData)) {
-                $savedData = $dbCheckoutData;
-            } else {
-                foreach ($dbCheckoutData as $key => $value) {
-                    if (!empty($value) && (empty($savedData[$key]))) {
-                        $savedData[$key] = $value;
-                    }
+            foreach ($dbCheckoutData as $key => $value) {
+                if (!empty($value) && (!isset($savedData[$key]) || trim($savedData[$key]) === '')) {
+                    $savedData[$key] = $value;
                 }
             }
 
-            // Fallback: If First Name/Last Name still empty, split from user name
+            // Fallback: If First Name/Last Name still empty, split from user name from session user
             if ((empty($savedData['first_name']) || empty($savedData['last_name'])) && !empty($user['name'])) {
                 $parts = explode(' ', trim($user['name']));
                 if (empty($savedData['first_name'])) {
                     $savedData['first_name'] = $parts[0] ?? '';
                 }
-                if (empty($savedData['last_name'])) {
+                if (count($parts) > 1 && empty($savedData['last_name'])) {
                     array_shift($parts);
                     $savedData['last_name'] = implode(' ', $parts);
                 }

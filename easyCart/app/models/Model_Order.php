@@ -4,56 +4,61 @@ require_once __DIR__ . '/../core/Core_Model.php';
 
 class Model_Order extends Core_Model
 {
+    private $db;
+
     protected function _init()
     {
         $this->_resourceName = 'Resource_Order';
+        $this->db = Database::getInstance();
     }
 
     public function afterLoad()
     {
         $data = $this->getData();
         if (isset($data['order_id'])) {
-            $db = Database::getInstance();
+            $orderId = $data['order_id'];
 
             // Load Items
-            $itemSql = "SELECT * FROM sales_order_product WHERE order_id = $1";
-            $itemResult = $db->query($itemSql, [$data['order_id']]);
-            $data['items'] = $db->fetchAll($itemResult) ?? [];
+            $itemQuery = (new Query())->select('*')->from('sales_order_product')->where('order_id', $orderId);
+            $itemResult = $this->db->query((string) $itemQuery, $itemQuery->getParams());
+            $data['items'] = $this->db->fetchAll($itemResult) ?? [];
 
             // Load Address
-            $addrSql = "SELECT * FROM sales_order_address WHERE order_id = $1";
-            $addrResult = $db->query($addrSql, [$data['order_id']]);
-            $data['address'] = $db->fetch($addrResult) ?? [];
+            $addrQuery = (new Query())->select('*')->from('sales_order_address')->where('order_id', $orderId);
+            $addrResult = $this->db->query((string) $addrQuery, $addrQuery->getParams());
+            $data['address'] = $this->db->fetch($addrResult) ?? [];
 
             // Load Payment Info
-            $billingSql = "SELECT payment_method FROM sales_order_billing WHERE order_id = $1 LIMIT 1";
-            $billingResult = $db->query($billingSql, [$data['order_id']]);
-            $billingRow = $db->fetch($billingResult);
+            $billingQuery = (new Query())->select('payment_method')->from('sales_order_billing')->where('order_id', $orderId)->limit(1);
+            $billingResult = $this->db->query((string) $billingQuery, $billingQuery->getParams());
+            $billingRow = $this->db->fetch($billingResult);
             $data['payment_method'] = $billingRow['payment_method'] ?? 'not_specified';
 
             // Load Shipping Method
-            $shipSql = "SELECT shipping_method FROM sales_order_shipping_method WHERE order_id = $1 LIMIT 1";
-            $shipResult = $db->query($shipSql, [$data['order_id']]);
-            $shipRow = $db->fetch($shipResult);
+            $shipQuery = (new Query())->select('shipping_method')->from('sales_order_shipping_method')->where('order_id', $orderId)->limit(1);
+            $shipResult = $this->db->query((string) $shipQuery, $shipQuery->getParams());
+            $shipRow = $this->db->fetch($shipResult);
             $data['shipping_method'] = $shipRow['shipping_method'] ?? 'Standard';
 
             // Unserialize variant_data and map fields for template compatibility
             foreach ($data['items'] as &$item) {
-                // Map unit_price to price
                 if (isset($item['unit_price'])) {
                     $item['price'] = $item['unit_price'];
                 }
 
-                // Handle variant data
                 if (isset($item['variant_data']) && is_string($item['variant_data'])) {
                     $item['variant'] = json_decode($item['variant_data'], true) ?? [];
                 }
 
-                // Try to get primary image from database if not present
                 if (!isset($item['image']) && isset($item['product_id'])) {
-                    $imgSql = "SELECT image_emoji FROM catalog_product_image WHERE product_id = $1 AND is_primary = true LIMIT 1";
-                    $imgResult = $db->query($imgSql, [$item['product_id']]);
-                    $imgRow = $db->fetch($imgResult);
+                    $imgQuery = (new Query())
+                        ->select('image_emoji')
+                        ->from('catalog_product_image')
+                        ->where('product_id', $item['product_id'])
+                        ->where('is_primary', true)
+                        ->limit(1);
+                    $imgResult = $this->db->query((string) $imgQuery, $imgQuery->getParams());
+                    $imgRow = $this->db->fetch($imgResult);
                     $item['image'] = $imgRow['image_emoji'] ?? '📦';
                 }
             }
@@ -155,22 +160,21 @@ class Model_Order extends Core_Model
 
     public function getChartData($userId = null)
     {
-        $db = Database::getInstance();
-        $params = [];
-        $where = "WHERE status != 'cancelled' AND status != 'cart'";
+        $query = (new Query())
+            ->select(['DATE(created_at) as date', 'SUM(final_amount) as total', 'MAX(order_number) as order_number'])
+            ->from('sales_order')
+            ->where('status', 'cancelled', '!=')
+            ->where('status', 'cart', '!=');
 
         if ($userId) {
-            $where .= " AND user_id = $1";
-            $params[] = $userId;
+            $query->where('user_id', $userId);
         }
 
-        $sql = "SELECT DATE(created_at) as date, SUM(final_amount) as total, MAX(order_number) as order_number 
-                FROM sales_order 
-                $where 
-                GROUP BY DATE(created_at) 
-                ORDER BY date ASC 
-                LIMIT 30";
-        $result = $db->query($sql, $params);
-        return $db->fetchAll($result) ?? [];
+        $query->groupBy('DATE(created_at)')
+            ->orderBy('date', 'ASC')
+            ->limit(30);
+
+        $result = $this->db->query((string) $query, $query->getParams());
+        return $this->db->fetchAll($result) ?? [];
     }
 }

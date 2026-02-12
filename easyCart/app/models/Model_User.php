@@ -14,7 +14,32 @@ class Model_User extends Core_Model
      */
     public function isLoggedIn()
     {
-        return Session::isLoggedIn();
+        if (!Session::isLoggedIn()) {
+            return false;
+        }
+
+        // Check if user still exists in DB
+        $sessionUser = Session::getUser();
+        $userId = $sessionUser['id'] ?? null;
+
+        if ($userId) {
+            $db = Database::getInstance();
+            $query = (new Query())
+                ->select(['entity_id'])
+                ->from('customer_entity')
+                ->where('entity_id', $userId);
+
+            $result = $db->query((string) $query, $query->getParams());
+            $user = $db->fetch($result);
+
+            if (!$user) {
+                // User was deleted from DB, force logout
+                $this->logout();
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function requireLogin($redirect = 'home')
@@ -28,10 +53,11 @@ class Model_User extends Core_Model
 
     public function getCurrentUser()
     {
-        $sessionUser = Session::getUser();
-        if (!$sessionUser['logged_in']) {
+        if (!$this->isLoggedIn()) {
             return null;
         }
+
+        $sessionUser = Session::getUser();
 
         // Return standardized user data (with user_id for compatibility)
         return [
@@ -44,6 +70,8 @@ class Model_User extends Core_Model
 
     public function login($userId, $name, $email)
     {
+        // 1. Establish User context immediately
+        Session::set('session_type', 'user');
         Session::setUser([
             'logged_in' => true,
             'id' => $userId,
@@ -52,25 +80,31 @@ class Model_User extends Core_Model
             'email' => $email
         ]);
 
-        // Merge guest cart logic
+        // 2. Perform deep merge of guest data into user account
         require_once __DIR__ . '/Model_Cart.php';
         $cartModel = new Model_Cart();
         $cartModel->mergeGuestCart($userId, $email);
-
-        Session::set('session_type', 'user');
 
         return true;
     }
 
     public function logout()
     {
-        // Deactivate guest cart if any
+        $user = $this->getCurrentUser();
+        $userId = $user['user_id'] ?? null;
+
         require_once __DIR__ . '/Model_Cart.php';
         $cartModel = new Model_Cart();
-        $cartModel->deactivateGuestCart();
 
+        // 1. Deactivate old rows (is_active=false)
+        $cartModel->deactivateGuestCart($userId);
+
+        // 2. Clear Session (Removes user/session_type)
         Session::logout();
-        Session::clearAppData();
+
+        // 3. IMMEDIATELY create new guest row (is_active=true)
+        $cartModel->getOrCreateDbCart(session_id());
+
         return true;
     }
 
@@ -92,8 +126,8 @@ class Model_User extends Core_Model
             'email' => $email,
             'password_hash' => $passwordHash,
             'name' => $fullName,
-            'created_at' => date('Y-m-d H:i:s'),
-            'updated_at' => date('Y-m-d H:i:s')
+            'created_at' => (new DateTime('now', new DateTimeZone('Asia/Kolkata')))->format('Y-m-d H:i:s'),
+            'updated_at' => (new DateTime('now', new DateTimeZone('Asia/Kolkata')))->format('Y-m-d H:i:s')
         ];
 
         try {

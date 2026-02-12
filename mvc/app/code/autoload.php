@@ -1,8 +1,9 @@
 <?php 
-  spl_autoload_register(function($class){
-    $base = __DIR__ . '\\';
-    $file = str_replace('_','/',$class);
-    $file = sprintf("%s.php",$base.$file);
-    require_once($file);
-  })
+    spl_autoload_register(function($class){
+        $root = __DIR__ . '\\';
+        $path = str_replace('_','/',$class);
+        $path = sprintf("%s.php",$root .'/'. $path);
+        require_once $path;
+
+    })
 ?>

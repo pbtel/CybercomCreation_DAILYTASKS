@@ -146,6 +146,35 @@ class Controller_Order extends Controller
     }
 
     /**
+     * Display order success page
+     * URL: /order/success/{id}
+     */
+    public function success($id = null)
+    {
+        if (!$id) {
+            $this->redirect('orders');
+            return;
+        }
+
+        $orderModel = $this->model('Model_Order');
+        $order = $orderModel->getById($id);
+
+        if (!$order) {
+            $this->redirect('orders');
+            return;
+        }
+
+        $data = [
+            'pageTitle' => 'Order Successful!',
+            'order' => $order
+        ];
+
+        require_once __DIR__ . '/../views/View_Orders.php';
+        $view = new View_Order_Detail($data);
+        echo $view->toHtml();
+    }
+
+    /**
      * Process order placement
      * URL: /order/place
      */
@@ -157,6 +186,10 @@ class Controller_Order extends Controller
         }
 
         // This handles the legacy logic while maintaining clean MVC URL
-        require_once __DIR__ . '/../../order-place.php';
+        if (file_exists(__DIR__ . '/../../order-place.php')) {
+            require_once __DIR__ . '/../../order-place.php';
+        } else {
+            $this->redirect('checkout');
+        }
     }
 }

@@ -5,6 +5,9 @@
  * All requests are routed through this file
  */
 
+// Set default timezone to IST
+date_default_timezone_set('Asia/Kolkata');
+
 // --- SECURITY: Mandatory Basic Authentication Check ---
 $authUser = $_SERVER['PHP_AUTH_USER'] ?? null;
 $authPass = $_SERVER['PHP_AUTH_PW'] ?? null;
@@ -81,7 +84,8 @@ $baseUrl = preg_replace('/\/public\/?$/i', '', $baseUrl);
 $baseUrl = rtrim($baseUrl, '/');
 define('BASE_URL', $baseUrl);
 
-// Start session
+// Configure session to expire when browser closes (Security & Fresh Start)
+ini_set('session.cookie_lifetime', 0);
 session_start();
 
 // Autoloader for models, core, and controllers

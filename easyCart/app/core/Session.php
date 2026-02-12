@@ -128,7 +128,44 @@ class Session
      */
     public static function logout()
     {
-        self::remove('user');
+        self::clearAppData();
+    }
+
+    /**
+     * Completely reset the session (regenerate ID and clear all)
+     */
+    public static function reset()
+    {
+        self::start();
+
+        // Preserve flash if needed, but usually we want it fresh
+        $flash = self::getFlash();
+
+        // Clear all session variables
+        $_SESSION = [];
+
+        // Destroy and restart to get fresh ID
+        if (ini_get("session.use_cookies")) {
+            $params = session_get_cookie_params();
+            setcookie(
+                session_name(),
+                '',
+                time() - 42000,
+                $params["path"],
+                $params["domain"],
+                $params["secure"],
+                $params["httponly"]
+            );
+        }
+        session_destroy();
+
+        // Start fresh session immediately
+        session_start();
+        session_regenerate_id(true);
+
+        if ($flash) {
+            self::setFlash($flash['type'], $flash['message']);
+        }
     }
     /**
      * Get cart count
@@ -145,12 +182,31 @@ class Session
      */
     public static function clearAppData()
     {
+        self::start();
+
+        // Primary Cart and User state
         self::remove('guest_cart');
         self::remove('user_carts');
+        self::remove('session_type');
+        self::remove('user');
+
+        // Checkout and Selection state
         self::remove('applied_coupon');
         self::remove('checkout_data');
         self::remove('selected_shipping_method');
         self::remove('pending_checkout_data');
-        self::remove('session_type');
+
+        // Potential legacy or auxiliary keys
+        self::remove('cart_id');
+        self::remove('order_id');
+        self::remove('customer_email');
+        self::remove('customer_phone');
+
+        // Clear storage keys often used by templates
+        self::remove('last_viewed_product');
+        self::remove('search_history');
+
+        // Final wipe of $_SESSION if we are in destructive mode
+        // but logout() will handle this via reset().
     }
 }

@@ -25,6 +25,9 @@ class Database
             if (!$this->connection) {
                 throw new Exception("Database connection failed");
             }
+
+            // Set database timezone to IST
+            pg_query($this->connection, "SET timezone = 'Asia/Kolkata'");
         } catch (Exception $e) {
             die("Database Error: " . $e->getMessage());
         }

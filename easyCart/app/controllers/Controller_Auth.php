@@ -22,7 +22,7 @@ class Controller_Auth extends Controller
         // Pass data to view
         $data = [
             'pageTitle' => 'Login',
-            'redirect' => $this->get('redirect', 'home')
+            'redirect' => $this->get('redirect', 'dashboard')
         ];
 
         // Use View_Auth_Login class
@@ -44,7 +44,7 @@ class Controller_Auth extends Controller
         // Get form data
         $email = $this->post('email');
         $password = $this->post('password');
-        $redirect = $this->post('redirect', 'home');
+        $redirect = $this->post('redirect', 'dashboard');
 
         // Validate
         if (!$email || !$password) {
@@ -70,7 +70,7 @@ class Controller_Auth extends Controller
             Session::setFlash('error', $result['message']);
             // Preserve redirect param
             $redirectUrl = 'login';
-            if ($redirect && $redirect !== 'home') {
+            if ($redirect && $redirect !== 'dashboard') {
                 $redirectUrl .= '?redirect=' . urlencode($redirect);
             }
             $this->redirect($redirectUrl);
@@ -92,7 +92,7 @@ class Controller_Auth extends Controller
         // Pass data to view
         $data = [
             'pageTitle' => 'Sign Up',
-            'redirect' => $this->get('redirect', 'home')
+            'redirect' => $this->get('redirect', 'dashboard')
         ];
 
         // Use View_Auth_Signup class
@@ -111,7 +111,7 @@ class Controller_Auth extends Controller
             return;
         }
 
-        $redirect = $this->post('redirect', 'home');
+        $redirect = $this->post('redirect', 'dashboard');
 
         // Get form data
         $firstName = $this->post('first_name');
@@ -156,7 +156,7 @@ class Controller_Auth extends Controller
             Session::setFlash('error', $result['message']);
             // Preserve redirect param
             $redirectUrl = 'signup';
-            if ($redirect && $redirect !== 'home') {
+            if ($redirect && $redirect !== 'dashboard') {
                 $redirectUrl .= '?redirect=' . urlencode($redirect);
             }
             $this->redirect($redirectUrl);

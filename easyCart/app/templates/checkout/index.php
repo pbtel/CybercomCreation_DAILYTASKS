@@ -286,6 +286,27 @@
         const form = document.getElementById('checkout-form');
         const storageKey = 'easycart_checkout_form_data';
 
+        // 1. Recover data if empty from server
+        const stored = sessionStorage.getItem(storageKey);
+        if (stored) {
+            const packet = JSON.parse(stored);
+            // Recover if fresh (< 1 hour)
+            // Note: sessionId might change after login, so we only check timestamp for robustness
+            if (new Date().getTime() - packet.timestamp < 3600000) {
+                const data = packet.formData;
+                for (const key in data) {
+                    const input = form.querySelector(`[name="${key}"]`);
+                    if (input && (input.value === '' || !input.value)) { // Only fill if currently empty
+                        if(input.type === 'radio') {
+                            if(input.value === data[key]) input.checked = true;
+                        } else {
+                            input.value = data[key];
+                        }
+                    }
+                }
+            }
+        }
+
         // 2. Save data on input with Debounce
         let debounceTimer;
         form.addEventListener('input', function(e) {
@@ -316,7 +337,7 @@
         // --- DATA PERSISTENCE LOGIC END ---
 
         // Initial summary update
-        // updateOrderSummary(); // Actually, index already provides correct values on load
+        updateOrderSummary();
     });
     </script>
 

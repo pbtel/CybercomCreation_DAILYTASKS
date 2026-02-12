@@ -69,44 +69,29 @@ abstract class Core_Collection
             return $this;
 
         $tableName = $this->getResource()->getTableName();
-        $sql = "SELECT * FROM {$tableName}";
-        $params = [];
-        $pIdx = 1;
+        $query = (new Query())
+            ->select('*')
+            ->from($tableName);
 
         // Apply filters
-        if (!empty($this->_filters)) {
-            $whereParts = [];
-            foreach ($this->_filters as $filter) {
-                if ($filter['condition'] === 'LIKE') {
-                    $whereParts[] = "{$filter['field']} ILIKE \${$pIdx}";
-                    $params[] = $filter['value'];
-                } else {
-                    $whereParts[] = "{$filter['field']} {$filter['condition']} \${$pIdx}";
-                    $params[] = $filter['value'];
-                }
-                $pIdx++;
-            }
-            $sql .= " WHERE " . implode(' AND ', $whereParts);
+        foreach ($this->_filters as $filter) {
+            $query->where($filter['field'], $filter['value'], $filter['condition']);
         }
 
         // Apply ordering
-        if (!empty($this->_orders)) {
-            $orderParts = [];
-            foreach ($this->_orders as $order) {
-                $orderParts[] = "{$order['field']} {$order['direction']}";
-            }
-            $sql .= " ORDER BY " . implode(', ', $orderParts);
+        foreach ($this->_orders as $order) {
+            $query->orderBy($order['field'], $order['direction']);
         }
 
         // Apply limit/offset
         if ($this->_limit !== null) {
-            $sql .= " LIMIT " . (int) $this->_limit;
+            $query->limit($this->_limit);
         }
         if ($this->_offset !== null) {
-            $sql .= " OFFSET " . (int) $this->_offset;
+            $query->offset($this->_offset);
         }
 
-        $result = $this->_db->query($sql, $params);
+        $result = $this->_db->query((string) $query, $query->getParams());
         $rows = $this->_db->fetchAll($result);
 
         require_once __DIR__ . '/../models/' . $this->_modelName . '.php';
@@ -142,21 +127,15 @@ abstract class Core_Collection
     public function getSize()
     {
         $tableName = $this->getResource()->getTableName();
-        $sql = "SELECT COUNT(*) FROM {$tableName}";
-        $params = [];
-        $pIdx = 1;
+        $query = (new Query())
+            ->select('COUNT(*) as count')
+            ->from($tableName);
 
-        if (!empty($this->_filters)) {
-            $whereParts = [];
-            foreach ($this->_filters as $filter) {
-                $whereParts[] = "{$filter['field']} {$filter['condition']} \${$pIdx}";
-                $params[] = $filter['value'];
-                $pIdx++;
-            }
-            $sql .= " WHERE " . implode(' AND ', $whereParts);
+        foreach ($this->_filters as $filter) {
+            $query->where($filter['field'], $filter['value'], $filter['condition']);
         }
 
-        $result = $this->_db->query($sql, $params);
+        $result = $this->_db->query((string) $query, $query->getParams());
         $row = $this->_db->fetch($result);
         return (int) ($row['count'] ?? 0);
     }

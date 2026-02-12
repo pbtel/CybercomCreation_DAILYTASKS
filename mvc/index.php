@@ -1,6 +1,5 @@
-<?php
- include 'app/code/autoload.php';
- include 'app/Sdp.php';
-    Sdp::run();
-    
- ?>
+<?php 
+   include 'App/Sdp.php';
+   include 'app/code/autoload.php';
+   Sdp :: run();
+?>

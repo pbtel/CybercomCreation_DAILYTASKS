@@ -19,6 +19,9 @@ DROP TRIGGER IF EXISTS update_sales_order_product_updated_at ON sales_order_prod
 DROP TRIGGER IF EXISTS update_sales_order_address_updated_at ON sales_order_address;
 DROP TRIGGER IF EXISTS update_sales_order_billing_updated_at ON sales_order_billing;
 DROP TRIGGER IF EXISTS update_sales_order_shipping_method_updated_at ON sales_order_shipping_method;
+DROP TRIGGER IF EXISTS update_sales_cart_address_updated_at ON sales_cart_address;
+DROP TRIGGER IF EXISTS update_sales_cart_billing_updated_at ON sales_cart_billing;
+DROP TRIGGER IF EXISTS update_sales_cart_shipping_method_updated_at ON sales_cart_shipping_method;
 DROP TRIGGER IF EXISTS update_customer_address_updated_at ON customer_address;
 
 DROP FUNCTION IF EXISTS update_updated_at_column();
@@ -28,6 +31,9 @@ DROP TABLE IF EXISTS sales_order_billing CASCADE;
 DROP TABLE IF EXISTS sales_order_address CASCADE;
 DROP TABLE IF EXISTS sales_order_product CASCADE;
 DROP TABLE IF EXISTS sales_order CASCADE;
+DROP TABLE IF EXISTS sales_cart_shipping_method CASCADE;
+DROP TABLE IF EXISTS sales_cart_billing CASCADE;
+DROP TABLE IF EXISTS sales_cart_address CASCADE;
 DROP TABLE IF EXISTS sales_cart_product CASCADE;
 DROP TABLE IF EXISTS sales_cart CASCADE;
 DROP TABLE IF EXISTS catalog_category_products CASCADE;
@@ -202,6 +208,13 @@ CREATE TABLE sales_cart (
     user_id INTEGER REFERENCES customer_entity(entity_id) ON DELETE CASCADE,
     session_id VARCHAR(255),
     is_active BOOLEAN DEFAULT TRUE,
+    subtotal DECIMAL(10, 2) DEFAULT 0,
+    discount_amount DECIMAL(10, 2) DEFAULT 0,
+    shipping_cost DECIMAL(10, 2) DEFAULT 0,
+    tax DECIMAL(10, 2) DEFAULT 0,
+    final_amount DECIMAL(10, 2) DEFAULT 0,
+    customer_email VARCHAR(255),
+    customer_phone VARCHAR(20),
     coupon_code VARCHAR(50),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -223,6 +236,47 @@ CREATE TABLE sales_cart_product (
 
 CREATE INDEX idx_cart_product_cart ON sales_cart_product(cart_id);
 CREATE INDEX idx_cart_product_product ON sales_cart_product(product_id);
+
+CREATE TABLE sales_cart_address (
+    id SERIAL PRIMARY KEY,
+    cart_id INTEGER NOT NULL REFERENCES sales_cart(cart_id) ON DELETE CASCADE,
+    full_name VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    phone VARCHAR(20),
+    address_line1 VARCHAR(255),
+    address_line2 VARCHAR(255),
+    city VARCHAR(100),
+    state VARCHAR(100),
+    pincode VARCHAR(20),
+    country VARCHAR(100) DEFAULT 'India',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cart_address_cart ON sales_cart_address(cart_id);
+
+CREATE TABLE sales_cart_billing (
+    id SERIAL PRIMARY KEY,
+    cart_id INTEGER NOT NULL REFERENCES sales_cart(cart_id) ON DELETE CASCADE,
+    payment_method VARCHAR(50) NOT NULL,
+    payment_status VARCHAR(50) DEFAULT 'pending',
+    coupon_code VARCHAR(50),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cart_billing_cart ON sales_cart_billing(cart_id);
+
+CREATE TABLE sales_cart_shipping_method (
+    id SERIAL PRIMARY KEY,
+    cart_id INTEGER NOT NULL REFERENCES sales_cart(cart_id) ON DELETE CASCADE,
+    shipping_method VARCHAR(100) NOT NULL,
+    shipping_type VARCHAR(50) NOT NULL DEFAULT 'standard',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_cart_shipping_cart ON sales_cart_shipping_method(cart_id);
 
 -- ============================================
 -- ORDER TABLES
@@ -326,3 +380,6 @@ CREATE TRIGGER update_sales_order_product_updated_at BEFORE UPDATE ON sales_orde
 CREATE TRIGGER update_sales_order_address_updated_at BEFORE UPDATE ON sales_order_address FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_sales_order_billing_updated_at BEFORE UPDATE ON sales_order_billing FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_sales_order_shipping_method_updated_at BEFORE UPDATE ON sales_order_shipping_method FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_sales_cart_address_updated_at BEFORE UPDATE ON sales_cart_address FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_sales_cart_billing_updated_at BEFORE UPDATE ON sales_cart_billing FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_sales_cart_shipping_method_updated_at BEFORE UPDATE ON sales_cart_shipping_method FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

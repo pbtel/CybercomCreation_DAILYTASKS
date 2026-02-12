@@ -23,10 +23,13 @@ class Resource_Product extends Core_Resource
      */
     public function getAttributes($productId)
     {
-        $db = Database::getInstance();
-        $sql = "SELECT attribute_type, attribute_value FROM catalog_product_attribute WHERE product_id = $1";
-        $result = $db->query($sql, [$productId]);
-        return $db->fetchAll($result) ?? [];
+        $query = (new Query())
+            ->select(['attribute_type', 'attribute_value'])
+            ->from('catalog_product_attribute')
+            ->where('product_id', $productId);
+
+        $result = $this->_db->query((string) $query, $query->getParams());
+        return $this->_db->fetchAll($result) ?? [];
     }
 
     /**
@@ -34,9 +37,13 @@ class Resource_Product extends Core_Resource
      */
     public function getImages($productId)
     {
-        $db = Database::getInstance();
-        $sql = "SELECT image_emoji as image FROM catalog_product_image WHERE product_id = $1 ORDER BY image_id ASC";
-        $result = $db->query($sql, [$productId]);
-        return $db->fetchAll($result) ?? [];
+        $query = (new Query())
+            ->select('image_emoji as image')
+            ->from('catalog_product_image')
+            ->where('product_id', $productId)
+            ->orderBy('image_id', 'ASC');
+
+        $result = $this->_db->query((string) $query, $query->getParams());
+        return $this->_db->fetchAll($result) ?? [];
     }
 }
